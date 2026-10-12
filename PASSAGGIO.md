@@ -1,253 +1,268 @@
-# Traspaso — reescritura de pastepad
+# Passaggio di consegne — riscrittura di pastepad
 
-Documento para arrancar la reescritura sin repetir lo ya aprendido.
-Lee esto antes de escribir una línea.
+Documento per avviare la riscrittura senza ripetere ciò che è già stato
+imparato. Leggilo prima di scrivere una riga.
 
----
-
-## Qué es y qué tiene que hacer
-
-Un gestor de portapapeles para Windows. Reemplaza a `Win+V`, que solo
-guarda 25 entradas y las pierde al reiniciar.
-
-**Requisitos, en orden de importancia:**
-
-1. **El atajo global tiene que funcionar siempre.** Sin esto, nada más
-   importa. Es el requisito que la versión en Python nunca cumplió.
-2. **Abrir el panel debe ser instantáneo.** Es una herramienta de
-   productividad: si tarda, no se usa.
-3. **Poco consumo.** Debe poder vivir residente todo el día en una
-   máquina de 4 GB sin que se note.
-4. Aspecto limpio y minimalista, al nivel de `Win+V`.
+Racconta il passaggio dalla versione in Python a quella in C#, scritto
+dall'autore originale. I nomi di file e funzioni della versione in
+Python sono rimasti in spagnolo, perché quel codice vive così nel tag
+`ultima-version-python`.
 
 ---
 
-## Por qué se abandona la versión en Python + Flet
+## Che cos'è e cosa deve fare
 
-**Medido, no supuesto:**
+Un gestore di appunti per Windows. Sostituisce `Win+V`, che conserva
+solo 25 voci e le perde al riavvio.
+
+**Requisiti, in ordine di importanza:**
+
+1. **La scorciatoia globale deve funzionare sempre.** Senza questo,
+   nient'altro conta. È il requisito che la versione in Python non ha
+   mai rispettato.
+2. **Aprire il pannello deve essere istantaneo.** È uno strumento di
+   produttività: se ci mette tanto, non si usa.
+3. **Poco consumo.** Deve poter restare residente tutto il giorno su una
+   macchina da 4 GB senza farsi notare.
+4. Aspetto pulito e minimalista, al livello di `Win+V`.
+
+---
+
+## Perché si abbandona la versione in Python + Flet
+
+**Misurato, non supposto:**
 
 | | |
 |---|---|
-| Memoria total | 207 MB (2 procesos) |
-| — motor de Flutter | 177 MB, intocable |
-| — nuestra interfaz entera | 26 MB |
-| Abrir el panel (residente) | 12–184 ms |
-| Arranque en frío | 1–2 s |
-| Procesos | 2 (python.exe + flet.exe) |
-| Hilos | 13 + 55 |
+| Memoria totale | 207 MB (2 processi) |
+| — motore di Flutter | 177 MB, intoccabile |
+| — tutta la nostra interfaccia | 26 MB |
+| Aprire il pannello (residente) | 12–184 ms |
+| Avvio a freddo | 1–2 s |
+| Processi | 2 (python.exe + flet.exe) |
+| Thread | 13 + 55 |
 
-Una app Flet **vacía** ya son 177 MB. Quitar sombras, animaciones o
-temas no baja de ahí: es el motor arrancando, no el diseño.
+Un'app Flet **vuota** sono già 177 MB. Togliere ombre, animazioni o temi
+non scende sotto: è il motore che si avvia, non il design.
 
-**Y el fallo que no se resolvió:** el atajo global responde unas dos o
-tres veces y después deja de hacerlo, sin excepción y sin rastro.
+**E l'errore che non fu risolto:** la scorciatoia globale risponde due o
+tre volte e poi smette, senza eccezione e senza traccia.
 
-Se intentaron dos implementaciones:
+Furono tentate due implementazioni:
 
-1. **Librería `keyboard`** (hook `WH_KEYBOARD_LL`). Windows desengancha
-   el hook en silencio si el callback tarda más de
-   `LowLevelHooksTimeout` (300 ms). Descartada.
-2. **`RegisterHotKey`** de la API de Windows, en un hilo propio con su
-   bomba de mensajes. Probada en aislamiento con 45 pulsaciones
-   sintéticas: 45 recibidas, 0 perdidas. **Pero dentro de la aplicación
-   sigue muriendo.**
+1. **Libreria `keyboard`** (hook `WH_KEYBOARD_LL`). Windows sgancia
+   l'hook in silenzio se la callback ci mette più di
+   `LowLevelHooksTimeout` (300 ms). Scartata.
+2. **`RegisterHotKey`** della API di Windows, in un thread proprio con
+   il suo ciclo dei messaggi. Provata in isolamento con 45 pressioni
+   sintetiche: 45 ricevute, 0 perse. **Ma dentro l'applicazione continua
+   a morire.**
 
-**La sospecha que quedó sin confirmar:** el problema no es el registro
-del atajo sino qué pasa después. `page.run_thread()` de Flet no crea un
-hilo, entrega el trabajo a un `ThreadPoolExecutor` compartido. La app
-le da dos bucles `while True` que nunca retornan (`_vigilar` y
-`_atender_cola`), ocupando dos trabajadores para siempre. Si ese pool
-se agota o el hilo se bloquea en un `page.update()` sobre una ventana
-oculta, las pulsaciones se encolan y nadie las atiende.
+**Il sospetto rimasto senza conferma:** il problema non è la
+registrazione della scorciatoia ma ciò che succede dopo.
+`page.run_thread()` di Flet non crea un thread, consegna il lavoro a un
+`ThreadPoolExecutor` condiviso. L'app gli dà due cicli `while True` che
+non ritornano mai (`_vigilar` e `_atender_cola`), occupando due
+lavoratori per sempre. Se quel pool si esaurisce o il thread si blocca
+in un `page.update()` su una finestra nascosta, le pressioni si
+accodano e nessuno le serve.
 
-**En una reescritura esto desaparece solo** si el atajo y la ventana
-viven en el mismo hilo de interfaz, que es como funciona una aplicación
-nativa de Windows.
+**In una riscrittura questo sparisce da solo** se la scorciatoia e la
+finestra vivono nello stesso thread dell'interfaccia, che è come
+funziona un'applicazione nativa di Windows.
 
 ---
 
-## El lenguaje: C# con WinUI 3
+## Il linguaggio: C# con WinUI 3
 
-**Decidido tras evaluarlo, no por costumbre.** Microsoft lo señala como
-la vía preferente para aplicaciones nuevas y nativas de Windows; WPF
-queda para bases de código ya existentes.
+**Deciso dopo averlo valutato, non per abitudine.** Microsoft lo indica
+come la strada preferita per le applicazioni nuove e native di Windows;
+WPF resta per le basi di codice già esistenti.
 
-| Por qué | |
+| Perché | |
 |---|---|
-| **Aspecto** | Mica y Acrílico nativos. Son los materiales de Fluent Design que usa `Win+V`: no hay que imitarlos, ya están |
-| **Escalado DPI** | Automático y por monitor. WPF, Win32 y WinForms **no** lo hacen: sin trabajo extra salen borrosos |
-| **Tipografía e iconos** | `Segoe UI Variable` y `Segoe Fluent Icons`, los de Windows 11, de serie |
-| **Tema claro/oscuro** | Cambia solo, sin código |
-| **Memoria** | 15–20% por debajo de WPF en apps equivalentes. Contra los 207 MB de Flet, entre 40 y 60 |
-| **Atajo global** | `RegisterHotKey` sobre el `HWND` de la ventana. Sin hilos, sin colas, sin pools — ahí es donde se perdió la versión anterior |
-| **Portapapeles** | `AddClipboardFormatListener` avisa **por evento**: se acaba el sondeo cada 0,7 s |
-| **Native AOT** | Su compatibilidad va por delante de la de WPF, que arrastra reflexión en el binding |
-| **Firma** | El certificado gratuito de SignPath aplica igual |
+| **Aspetto** | Mica e Acrilico nativi. Sono i materiali di Fluent Design che usa `Win+V`: non bisogna imitarli, ci sono già |
+| **Scalatura DPI** | Automatica e per monitor. WPF, Win32 e WinForms **non** lo fanno: senza lavoro in più escono sfocati |
+| **Tipografia e icone** | `Segoe UI Variable` e `Segoe Fluent Icons`, quelli di Windows 11, di serie |
+| **Tema chiaro/scuro** | Cambia da solo, senza codice |
+| **Memoria** | 15–20% sotto WPF in app equivalenti. Contro i 207 MB di Flet, tra 40 e 60 |
+| **Scorciatoia globale** | `RegisterHotKey` su un `HWND`. Senza thread, senza code, senza pool — è lì che si perse la versione precedente |
+| **Appunti** | `AddClipboardFormatListener` avvisa **con un evento**: finisce il sondaggio ogni 0,7 s |
+| **Native AOT** | La sua compatibilità è più avanti di quella di WPF, che si porta dietro la reflection nel binding |
+| **Firma** | Il certificato gratuito di SignPath si applica allo stesso modo |
 
-**El riesgo, dicho claro:** WinUI 3 tiene ecosistema menos maduro que
-WPF —menos controles de terceros, menos respuestas para casos raros—.
+**Il rischio, detto chiaramente:** WinUI 3 ha un ecosistema meno maturo
+di WPF —meno controlli di terze parti, meno risposte per i casi rari—.
 
-Se acepta por un motivo concreto: **la parte que puede romperse (el
-atajo y el portapapeles) es Win32 puro y es idéntica en los dos.** La
-inmadurez de WinUI no toca lo arriesgado; solo afecta a lo visual, que
-es justo donde WinUI gana.
+Si accetta per un motivo preciso: **la parte che può rompersi (la
+scorciatoia e gli appunti) è Win32 puro ed è identica nei due.**
+L'immaturità di WinUI non tocca ciò che è rischioso; riguarda solo la
+parte visiva, che è proprio dove WinUI vince.
 
-**Alternativas evaluadas y descartadas:**
+**Alternative valutate e scartate:**
 
-- **WPF** — más maduro, pero el aspecto de Windows 11 hay que
-  construirlo a mano y el DPI exige trabajo extra. Es la red de
-  seguridad si WinUI 3 estorbara.
-- **C++/Win32** — lo más ligero (~15 MB) y máximo control, pero el
-  acabado se dibuja a mano y son meses.
-- **Rust/Tauri o Go/Wails** — la interfaz es web: vuelve el peso (~80 MB)
-  y el arranque lento que se acaba de dejar atrás.
-- **Avalonia o MAUI** — multiplataforma que no se necesita, y no tienen
-  el aspecto de Windows 11.
-- **CustomTkinter** — bajaría a ~60 MB, pero se deforma al redimensionar
-  y los bordes salen rasposos. Ya se abandonó una vez por eso.
+- **WPF** — più maturo, ma l'aspetto di Windows 11 va costruito a mano e
+  il DPI richiede lavoro in più. È la rete di sicurezza se WinUI 3 desse
+  fastidio.
+- **C++/Win32** — il più leggero (~15 MB) e massimo controllo, ma la
+  finitura si disegna a mano e sono mesi.
+- **Rust/Tauri o Go/Wails** — l'interfaccia è web: tornano il peso
+  (~80 MB) e l'avvio lento appena lasciati alle spalle.
+- **Avalonia o MAUI** — multipiattaforma che non serve, e non hanno
+  l'aspetto di Windows 11.
+- **CustomTkinter** — scenderebbe a ~60 MB, ma si deforma
+  ridimensionando e i bordi escono ruvidi. Fu già abbandonato una volta
+  per questo.
 
 ---
 
-## Lo que SÍ funciona y hay que conservar
+## Ciò che FUNZIONA e va conservato
 
-No empieces de cero. Estas decisiones están probadas y costaron
-encontrarlas:
+Non partire da zero. Queste decisioni sono provate ed è costato
+trovarle:
 
-**Formatos privados del portapapeles.** Windows define cuatro con los
-que un programa dice «no guardes esto»: `Clipboard Viewer Ignore`,
+**Formati privati degli appunti.** Windows ne definisce quattro con cui
+un programma dice «non salvare questo»: `Clipboard Viewer Ignore`,
 `ExcludeClipboardContentFromMonitorProcessing`,
-`CanIncludeInClipboardHistory`, `CanUploadToCloudClipboard`. Los usan
-KeePass, Bitwarden, el Administrador de credenciales y el incógnito de
-Chrome. Ver `pastepad/windows.py`, función `contenido_privado()`.
+`CanIncludeInClipboardHistory`, `CanUploadToCloudClipboard`. Li usano
+KeePass, Bitwarden, Gestione credenziali e l'incognito di Chrome. Oggi
+in `Sistema/Appunti.cs`.
 
-**Devolver el foco antes de pegar.** Al abrirse el panel, el campo donde
-estaba el cursor lo pierde, y un `Ctrl+V` a secas se va al vacío. Hay
-que guardar el `hwnd` de la ventana activa en el instante del atajo y
-devolvérselo con `AttachThreadInput` antes de pegar — es el truco que
-Windows exige para que `SetForegroundWindow` funcione desde otro
-proceso. Ver `devolver_foco()`.
+**Restituire il focus prima di incollare.** All'apertura del pannello,
+il campo in cui stava il cursore lo perde, e un `Ctrl+V` da solo finisce
+nel vuoto. Bisogna salvare l'`hwnd` della finestra attiva nell'istante
+della scorciatoia e restituirglielo con `AttachThreadInput` prima di
+incollare — è il trucco che Windows esige perché `SetForegroundWindow`
+funzioni da un altro processo. Oggi in `Sistema/FocusFinestra.cs`.
 
-**Soltar Shift y Alt antes del pegado.** Si el atajo los lleva y siguen
-pulsados, el destino recibe `Ctrl+Shift+V` en vez de `Ctrl+V`.
+**Rilasciare Shift e Alt prima di incollare.** Se la scorciatoia li
+contiene e restano premuti, la destinazione riceve `Ctrl+Shift+V`
+invece di `Ctrl+V`.
 
-**Leer el portapapeles solo cuando cambia.** `GetClipboardSequenceNumber`
-sube con cada copia y cuesta una llamada; abrir el portapapeles cuesta
-muchísimo más. En C# esto mejora: `AddClipboardFormatListener` avisa por
-evento y elimina el sondeo.
+**Leggere gli appunti solo quando cambiano.**
+`GetClipboardSequenceNumber` sale a ogni copia e costa una chiamata;
+aprire gli appunti costa moltissimo di più. In C# questo migliora:
+`AddClipboardFormatListener` avvisa con un evento ed elimina il
+sondaggio.
 
-**Guardar diferido.** Escribir el JSON entero en cada copia costaba
-7,8 ms y más de un megabyte por `Ctrl+C`. Acumular en memoria y volcar
-cada pocos segundos lo dejó en 0,020 ms. Lo que el usuario hace a
-propósito (fijar, borrar, vaciar) sí debe escribirse al instante.
+**Salvare in modo rimandato.** Scrivere l'intero JSON a ogni copia
+costava 7,8 ms e più di un megabyte per `Ctrl+C`. Accumulare in memoria
+e riversare ogni pochi secondi lo portò a 0,020 ms. Ciò che l'utente fa
+apposta (fissare, eliminare, svuotare) va invece scritto subito.
 
-**Reconocer cuándo el texto entero es una URL** —un párrafo que la
-menciona de pasada no cuenta— para ofrecer «Abrir en el navegador».
-Ojo: hasta la 4.3.0 ese enlace *se abría en vez de pegarse*, y eso
-resultó ser un fallo, no una comodidad. Como por ahí pasaban también
-«Pegar» y «Pegar sin formato», un enlace copiado no se podía soltar en
-ningún campo. Abrir es una acción del menú; el clic pega, como en todo
-lo demás.
+**Riconoscere quando l'intero testo è una URL** —un paragrafo che la
+menziona di passaggio non conta— per offrire «Apri nel browser».
+Attenzione: fino alla 4.3.0 quel link *si apriva invece di incollarsi*,
+e risultò essere un errore, non una comodità. Siccome da lì passavano
+anche «Incolla» e «Incolla senza formato», un link copiato non si poteva
+mettere in nessun campo. Aprire è un'azione del menu; il clic incolla,
+come in tutto il resto.
 
-**Instalar en `%LOCALAPPDATA%`, no en Archivos de programa.** Ahí
-Windows bloquea la escritura sin avisar: el programa arrancaría pero no
-guardaría nada.
+**Installare in `%LOCALAPPDATA%`, non in Programmi.** Lì Windows blocca
+la scrittura senza avvisare: il programma si avvierebbe ma non
+salverebbe niente.
 
-**Una sola instancia.** Dos procesos se pelean por el atajo global y el
-que pierde queda como una ventana muda. Fue la causa de que el programa
-pareciera roto durante días.
-
----
-
-## Lógica reutilizable
-
-Estos módulos no importan ninguna librería gráfica. Son 1.208 líneas de
-Python que traducir, no que rediseñar:
-
-```
-pastepad/modelo.py      los datos y sus reglas, con 19 pruebas
-pastepad/busqueda.py    ranking: sin tildes, palabras en cualquier
-                        orden, el título pesa más que el cuerpo
-pastepad/windows.py     portapapeles, foco, atajo, autoarranque
-pastepad/idiomas.py     los textos en 4 idiomas
-pastepad/config.py      límites y rutas
-```
-
-**Las 19 pruebas de `prueba.py` son la especificación ejecutable del
-modelo.** Tradúcelas primero y tendrás la lógica verificada antes de
-dibujar nada.
+**Una sola istanza.** Due processi si contendono la scorciatoia globale
+e quello che perde resta come una finestra muta. Fu il motivo per cui il
+programma sembrò rotto per giorni.
 
 ---
 
-## Formato de datos, para no perder lo guardado
+## Logica riusabile
 
-En `%LOCALAPPDATA%\pastepad\`:
+Questi moduli della versione in Python non importavano nessuna libreria
+grafica. Erano 1.208 righe da tradurre, non da riprogettare:
+
+```
+pastepad/modelo.py      i dati e le loro regole, con 19 prove
+pastepad/busqueda.py    punteggio: senza accenti, parole in qualsiasi
+                        ordine, il titolo pesa più del corpo
+pastepad/windows.py     appunti, focus, scorciatoia, avvio automatico
+pastepad/idiomas.py     i testi in 4 lingue
+pastepad/config.py      limiti e percorsi
+```
+
+**Le 19 prove di `prueba.py` erano la specifica eseguibile delle
+regole.** Furono tradotte per prime, così la logica era verificata prima
+di disegnare qualcosa.
+
+---
+
+## Formato dei dati
+
+In `%LOCALAPPDATA%\pastepad\`. Questi sono i nomi di questa copia in
+italiano; nella versione originale file e chiavi erano in spagnolo
+(`historial.json`, `titulo`, `texto`...), e i due formati non si leggono
+a vicenda.
 
 ```jsonc
 // snippets.json
 {
-  "categorias": ["Trabajo", "Notas"],
+  "categorie": ["Lavoro", "Note"],
   "snippets": [
-    { "titulo": "Plantilla de correo",
-      "categoria": "Trabajo",
-      "runs": [ { "t": "Hola [[nombre]]", "f": "Calibri", "s": 11,
+    { "titolo": "Modello di email",
+      "categoria": "Lavoro",
+      "runs": [ { "t": "Ciao [[nome]]", "f": "Calibri", "s": 11,
                   "b": 0, "i": 0, "u": 0, "c": "#000000" } ] }
   ]
 }
 
-// historial.json — lista, los fijados primero
-[ { "tipo": "texto", "texto": "...", "pin": true },
-  { "tipo": "imagen", "ruta": "C:\\...\\imagenes\\img_1699.bmp" } ]
+// cronologia.json — lista, i fissati per primi
+[ { "tipo": "testo", "testo": "...", "pin": true },
+  { "tipo": "immagine", "percorso": "C:\\...\\immagini\\img_1699.bmp" } ]
 
 // config.json
-{ "idioma": "es", "tema": "auto", "acento": "menta",
-  "atajo": "ctrl+shift+v", "ancho": 380, "alto": 560,
-  "pausado": false, "autoarranque": "si" }
+{ "tema": "auto", "accento": "menta",
+  "scorciatoia": "ctrl+shift+v", "larghezza": 380, "altezza": 560,
+  "in_pausa": false, "avvio_automatico": "si" }
 ```
 
-Un `runs` es una lista de fragmentos con formato; las claves van de una
-letra para que el JSON no engorde. Conservar el formato permite que
-quien ya use pastepad no pierda nada.
+Un `runs` è una lista di frammenti con formato; le chiavi sono di una
+lettera perché il JSON non ingrassi.
 
 ---
 
-## Diseño
+## Design
 
-Ya está definido y no hay que reinventarlo:
+È già definito e non va reinventato:
 
-- **`docs/mockups/`** — 35 maquetas SVG de cada pantalla y estado
-- **`docs/ESPECIFICACION-UI.md`** — paleta, medidas, tipografía y
-  comportamiento, con los valores exactos
+- **`docs/mockups/`** — 35 maquette SVG di ogni schermata e stato
+- **`docs/SPECIFICHE-UI.md`** — tavolozza, misure, tipografia e
+  comportamento, con i valori esatti
 
-Cuidado: las maquetas **20 y 33** no están verificadas contra la
-aplicación, y la **26 y 27** son diálogos de Windows, no nuestros.
+Attenzione: le maquette **20 e 33** non sono verificate
+sull'applicazione, e la **26 e 27** sono dialoghi di Windows, non
+nostri.
 
-Paleta base: fondo `#0B0B0D`, tarjeta `#1B1B1F`, acento `#2DD4A7`.
-Filas de 56 px con 6 de separación. Panel de 380×560 por defecto.
-
----
-
-## Errores que no hay que repetir
-
-1. **Ningún `catch` mudo.** El fallo del atajo tardó días en
-   diagnosticarse porque cada hilo se tragaba su excepción en silencio.
-   Todo lo que se capture, se registra.
-2. **Registrar los errores de todos los hilos.** En Python,
-   `sys.excepthook` solo cubre el principal. Cualquier lenguaje tiene su
-   equivalente; hay que enganchar los dos.
-3. **Medir antes de decidir.** La sospecha de que el programa era lento
-   resultó falsa: abría en 12–184 ms. Lo lento era el arranque en frío,
-   y lo roto eran dos instancias peleándose.
-4. **La versión sale del tag, no escrita a mano.** Se publicó una
-   release con binarios viejos por tenerla clavada en doce sitios.
-5. **Probar el ejecutable, no solo el código fuente.** El error de
-   `python311.dll` solo aparecía al separar el `.exe` de su carpeta.
+Tavolozza di base: sfondo `#0B0B0D`, riquadro `#1B1B1F`, accento
+`#2DD4A7`. Righe di 56 px con 6 di separazione. Pannello di 380×560
+come predefinito.
 
 ---
 
-## Estado al momento del traspaso
+## Errori da non ripetere
 
-- Rama `main`, tag `v3.0.1` publicado con instalador y portable
-- 19 pruebas en verde, sin código muerto ni referencias rotas
-- README en inglés y español, 35 maquetas, especificación de interfaz
-- **El atajo global sigue sin ser fiable. Es el motivo de la
-  reescritura.**
+1. **Nessun `catch` muto.** L'errore della scorciatoia richiese giorni
+   di diagnosi perché ogni thread ingoiava la propria eccezione in
+   silenzio. Tutto ciò che si cattura, si registra.
+2. **Registrare gli errori di tutti i thread.** In Python,
+   `sys.excepthook` copre solo il principale. Qualsiasi linguaggio ha il
+   suo equivalente; bisogna agganciarli tutti.
+3. **Misurare prima di decidere.** Il sospetto che il programma fosse
+   lento risultò falso: si apriva in 12–184 ms. Lento era l'avvio a
+   freddo, e rotto era avere due istanze in lotta.
+4. **La versione esce dal tag, non scritta a mano.** Fu pubblicata una
+   release con binari vecchi per averla inchiodata in dodici posti.
+5. **Provare l'eseguibile, non solo il codice sorgente.** L'errore di
+   `python311.dll` compariva solo separando l'`.exe` dalla sua cartella.
+
+---
+
+## Stato al momento del passaggio
+
+- Ramo `main`, tag `v3.0.1` pubblicato con installer e versione
+  portatile
+- 19 prove in verde, senza codice morto né riferimenti rotti
+- README in inglese e spagnolo, 35 maquette, specifiche dell'interfaccia
+- **La scorciatoia globale continuava a non essere affidabile. È il
+  motivo della riscrittura.**

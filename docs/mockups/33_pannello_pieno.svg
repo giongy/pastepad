@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 700" width="380" height="700" role="img" aria-label="Pannello pieno - molte righe">
+<title>pastepad con 12 voci visibili, barra di scorrimento</title>
+<desc>Il pannello allungato a dimensione grande con dodici righe visibili di fila e la barra di scorrimento a destra, a mostrare che si può continuare a scendere.</desc>
+
+<rect x="0" y="0" width="380" height="700" rx="20" fill="#0B0B0D" stroke="#242429" stroke-width="1"/>
+<text x="16" y="26" font-family="Segoe UI" font-size="11" font-weight="400" fill="#6B6B75" text-anchor="start">Ctrl + Shift + V</text>
+<circle cx="300" cy="20" r="10" fill="#1B1B1F" />
+<text x="300" y="24" font-family="Segoe UI" font-size="9" font-weight="400" fill="#9C9CA6" text-anchor="middle">II</text>
+<circle cx="330" cy="20" r="10" fill="#1B1B1F" />
+<text x="330" y="24" font-family="Segoe UI" font-size="9" font-weight="400" fill="#9C9CA6" text-anchor="middle">@</text>
+<circle cx="360" cy="20" r="10" fill="#1B1B1F" />
+<text x="360" y="24" font-family="Segoe UI" font-size="9" font-weight="400" fill="#9C9CA6" text-anchor="middle">x</text>
+<rect x="16" y="38" width="348" height="42" rx="12" fill="#141417" />
+<text x="32" y="64" font-family="Segoe UI" font-size="13" font-weight="400" fill="#6B6B75" text-anchor="start">◎  Cerca ovunque</text>
+<rect x="16" y="90" width="172" height="30" rx="15" fill="#2DD4A7" />
+<text x="102" y="109" font-family="Segoe UI" font-size="12" font-weight="500" fill="#052E23" text-anchor="middle">Recenti</text>
+<rect x="192" y="90" width="172" height="30" rx="15" fill="#1B1B1F" />
+<text x="278" y="109" font-family="Segoe UI" font-size="12" font-weight="400" fill="#9C9CA6" text-anchor="middle">Salvati</text>
+<rect x="16" y="132" width="334" height="52" rx="14" fill="#2DD4A7" />
+<rect x="24" y="144" width="3" height="26" rx="2" fill="#FFFFFF" />
+<text x="34" y="153" font-family="Segoe UI" font-size="11.5" font-weight="500" fill="#052E23" text-anchor="start">Rapporto mensile di fatturazione</text>
+<text x="34" y="170" font-family="Segoe UI" font-size="9.5" font-weight="400" fill="#052E23" text-anchor="start">29 caratteri</text>
+<rect x="16" y="190" width="334" height="52" rx="14" fill="#1B1B1F" />
+<text x="22" y="211" font-family="Segoe UI" font-size="11.5" font-weight="400" fill="#F4F4F5" text-anchor="start">Ciao [[nome]], su [[tema]]</text>
+<text x="22" y="228" font-family="Segoe UI" font-size="9.5" font-weight="400" fill="#6B6B75" text-anchor="start">64 caratteri</text>
+<rect x="16" y="248" width="334" height="52" rx="14" fill="#1B1B1F" />
+<text x="22" y="269" font-family="Segoe UI" font-size="11.5" font-weight="400" fill="#F4F4F5" text-anchor="start">Immagine copiata</text>
+<text x="22" y="286" font-family="Segoe UI" font-size="9.5" font-weight="400" fill="#6B6B75" text-anchor="start">cattura</text>
+<rect x="16" y="306" width="334" height="52" rx="14" fill="#1B1B1F" />
+<text x="22" y="327" font-family="Segoe UI" font-size="11.5" font-weight="400" fill="#F4F4F5" text-anchor="start">git commit -m "fix: typo"</text>
+<text x="22" y="344" font-family="Segoe UI" font-size="9.5" font-weight="400" fill="#6B6B75" text-anchor="start">25 caratteri</text>
+<rect x="16" y="364" width="334" height="52" rx="14" fill="#1B1B1F" />
+<text x="22" y="385" font-family="Segoe UI" font-size="11.5" font-weight="400" fill="#F4F4F5" text-anchor="start">https://docs.python.org/3</text>
+<text x="22" y="402" font-family="Segoe UI" font-size="9.5" font-weight="400" fill="#6B6B75" text-anchor="start">docs.python.org</text>
+<rect x="16" y="422" width="334" height="52" rx="14" fill="#1B1B1F" />
+<text x="22" y="443" font-family="Segoe UI" font-size="11.5" font-weight="400" fill="#F4F4F5" text-anchor="start">Seconda linea di contesto</text>
+<text x="22" y="460" font-family="Segoe UI" font-size="9.5" font-weight="400" fill="#6B6B75" text-anchor="start">41 caratteri</text>
+<rect x="16" y="480" width="334" height="52" rx="14" fill="#1B1B1F" />
+<text x="22" y="501" font-family="Segoe UI" font-size="11.5" font-weight="400" fill="#F4F4F5" text-anchor="start">Email di seguito al cliente</text>
+<text x="22" y="518" font-family="Segoe UI" font-size="9.5" font-weight="400" fill="#6B6B75" text-anchor="start">118 caratteri</text>
+<rect x="16" y="538" width="334" height="52" rx="14" fill="#1B1B1F" />
+<text x="22" y="559" font-family="Segoe UI" font-size="11.5" font-weight="400" fill="#F4F4F5" text-anchor="start">192.168.1.1 - indirizzo del rout</text>
+<text x="22" y="576" font-family="Segoe UI" font-size="9.5" font-weight="400" fill="#6B6B75" text-anchor="start">36 caratteri</text>
+<rect x="16" y="596" width="334" height="52" rx="14" fill="#1B1B1F" />
+<text x="22" y="617" font-family="Segoe UI" font-size="11.5" font-weight="400" fill="#F4F4F5" text-anchor="start">Link alla documentazione interna</text>
+<text x="22" y="634" font-family="Segoe UI" font-size="9.5" font-weight="400" fill="#6B6B75" text-anchor="start">docs.example.com</text>
+<rect x="16" y="654" width="334" height="52" rx="14" fill="#1B1B1F" />
+<text x="22" y="675" font-family="Segoe UI" font-size="11.5" font-weight="400" fill="#F4F4F5" text-anchor="start">Nota rapida senza altri dettagli</text>
+<text x="22" y="692" font-family="Segoe UI" font-size="9.5" font-weight="400" fill="#6B6B75" text-anchor="start">22 caratteri</text>
+<rect x="16" y="712" width="334" height="52" rx="14" fill="#1B1B1F" />
+<text x="22" y="733" font-family="Segoe UI" font-size="11.5" font-weight="400" fill="#F4F4F5" text-anchor="start">Codice di verifica 48213</text>
+<text x="22" y="750" font-family="Segoe UI" font-size="9.5" font-weight="400" fill="#6B6B75" text-anchor="start">28 caratteri</text>
+<rect x="16" y="770" width="334" height="52" rx="14" fill="#1B1B1F" />
+<text x="22" y="791" font-family="Segoe UI" font-size="11.5" font-weight="400" fill="#F4F4F5" text-anchor="start">Ultima voce visibile a scher</text>
+<text x="22" y="808" font-family="Segoe UI" font-size="9.5" font-weight="400" fill="#6B6B75" text-anchor="start">33 caratteri</text>
+<rect x="370" y="132" width="4" height="220" rx="2" fill="#242429" />
+<text x="16" y="684" font-family="Segoe UI" font-size="9.5" font-weight="400" fill="#6B6B75" text-anchor="start">12 di ~40 voci visibili</text>
+</svg>

@@ -1,730 +1,785 @@
 # Changelog
 
-All notable changes to this project are documented here.
-This project follows [Semantic Versioning](https://semver.org/).
+Tutti i cambi rilevanti di questo progetto sono documentati qui.
+Il progetto segue il [Semantic Versioning](https://semver.org/).
+
+## [Non rilasciato] — copia in italiano
+
+Questa copia deriva dalla 4.15.0 del progetto originale di Josemgu.
+
+### Cambiato
+- **Tutto in italiano**: interfaccia, nomi nel codice, commenti,
+  messaggi di log, installer, workflow e documentazione.
+- **Una sola lingua.** Tolte le tabelle di traduzione (spagnolo,
+  inglese, portoghese, francese) e il selettore della lingua in Aspetto.
+- **Formato dei dati tradotto**: `historial.json` è diventato
+  `cronologia.json`, `notas.json` è `note.json`, `imagenes` è
+  `immagini`, e le chiavi dei JSON e di `config.json` sono in italiano.
+  I dati creati dalla versione originale non si leggono più.
+- L'opzione per la cartella dati di prova si chiama `--dati`.
+- La ricerca ignora anche gli accenti italiani (à, è, ì, ò, ù), oltre a
+  quelli che ignorava già.
+- Le lettere dei pulsanti di formato sono G, C e S, come in Word in
+  italiano.
+- 122 prove diventano 118: quattro riguardavano solo le traduzioni.
+
+### Aggiunto
+- `pubblica.ps1`, che compila in Release e copia il programma in una
+  destinazione.
+- Configurazione per avviare e fare il debug da VS Code.
+
+### Tolto
+- Il progetto di sondaggio della scorciatoia, che non si pubblicava.
+- Le schermate della documentazione, che mostravano l'interfaccia
+  originale.
 
 ## [4.15.0] - 2026-09-10
 
-### Added
-- **Notes can be formatted**: bold, italic, underline, bullets, numbering
-  and clear formatting, on a short bar above the note. No font, size or
-  colour pickers — a note never leaves pastepad, so choosing a typeface
-  for one buys nothing; marking what matters and making lists does. The
-  long bar stays where it earns its place, on saved texts, which do
-  travel to Word and Outlook.
+### Aggiunto
+- **Le note si possono formattare**: grassetto, corsivo, sottolineato,
+  punti elenco, numerazione e rimuovi formattazione, in una barra corta
+  sopra la nota. Senza selettori di carattere, dimensione o colore — una
+  nota non esce mai da pastepad, quindi sceglierne il carattere non
+  serve a niente; evidenziare ciò che conta e fare elenchi sì. La barra
+  lunga resta dove si guadagna il posto, nei testi salvati, che
+  viaggiano verso Word e Outlook.
 
-  Underline is here even though it was taken off the saved-text bar. It
-  was taken off there because it added nothing to text about to be pasted
-  into another program, and a note is pasted into none.
+  Il sottolineato qui c'è anche se fu tolto dalla barra dei testi
+  salvati. Lì fu tolto perché non aggiungeva niente a un testo che sta
+  per essere incollato in un altro programma, e una nota non si incolla
+  in nessuno.
 
-### Changed
-- Notes are stored the way saved texts are, as formatted fragments. A
-  `notas.json` written by 4.14.0 or earlier still opens: its plain text
-  becomes one fragment, and the file is rewritten in the new shape
-  without the old key, so the same content cannot exist in two places
-  that disagree. There is a test that fails loudly if this ever breaks —
-  the alternative is a user updating and finding an empty scratchpad.
-- Editing a note from its three-dot menu opens the same board that
-  clicking it does. Two ways in, one editor.
-- 120 tests to 122.
+### Cambiato
+- Le note si salvano come i testi salvati, a frammenti con formato. Un
+  file delle note scritto dalla 4.14.0 o precedente si apre ancora: il
+  suo testo semplice diventa un frammento, e il file si riscrive nella
+  forma nuova senza la chiave vecchia, così lo stesso contenuto non può
+  esistere in due posti che discordano. C'è una prova che fallisce
+  rumorosamente se questo si rompe — l'alternativa è un utente che
+  aggiorna e trova il blocco vuoto.
+- Modificare una nota dal menu dei tre punti apre la stessa lavagna che
+  apre il clic. Due ingressi, un solo editor.
+- Da 120 a 122 prove.
 
 ## [4.14.0] - 2026-09-10
 
-**The notes looked wrong, and the reason was a style they should never
-have inherited.**
+**Le note si vedevano male, e il motivo era uno stile che non avrebbero
+mai dovuto ereditare.**
 
-### Fixed
-- **A note card showed one line and half a card of empty space.** The
-  preview was built with several lines and the card was told to draw
-  them, but it borrowed the row style, which sets `MaxLines` to 1 and
-  turns wrapping off — right for a row, the opposite of right for a
-  card. Four-line notes were shown as one line.
-- **Cards were two different colours.** The selected one was painted at
-  full strength and the rest faded, which read as two kinds of note
-  rather than one selected note. They are all the same colour now, and
-  the selected one is marked with a border, which says "this one" without
-  saying "this is different".
-- **The open note was a dark box inside a yellow card**, with white text
-  that could not be read once the box went away. A `TextBox` brings its
-  own background and its own text colour per state and they beat anything
-  set from outside; the same brushes the search box already turns off had
-  to be turned off here too.
+### Corretto
+- **Il riquadro di una nota mostrava una linea e mezzo riquadro vuoto.**
+  L'anteprima era costruita con più linee e al riquadro si diceva di
+  disegnarle, ma prendeva in prestito lo stile della riga, che imposta
+  `MaxLines` a 1 e spegne l'a capo automatico — giusto per una riga, il
+  contrario di giusto per un riquadro. Le note di quattro linee si
+  mostravano come una.
+- **I riquadri erano di due colori diversi.** Quello selezionato era
+  dipinto a piena forza e gli altri attenuati, e si leggeva come due
+  tipi di nota invece che come una nota selezionata. Adesso sono tutti
+  dello stesso colore, e quello selezionato è marcato con un bordo, che
+  dice "questo" senza dire "questo è diverso".
+- **La nota aperta era una casella scura dentro un riquadro giallo**,
+  con testo bianco che non si poteva leggere una volta sparita la
+  casella. Un `TextBox` porta il proprio sfondo e il proprio colore del
+  testo per stato, e vincono su qualsiasi cosa impostata da fuori; gli
+  stessi pennelli che la barra di ricerca già spegne andavano spenti
+  anche qui.
 
-### Changed
-- The date sits at the top right of the card, where the eye is not
-  reading, instead of at the top left where the text starts.
-- Cards grow with what they hold instead of being a fixed height, so a
-  two-line note is a two-line card.
-- **A ✓ closes the note** and returns to the list. It does not say
-  "Save", because saving already happened on every keystroke — a button
-  promising to save what is already saved teaches you to distrust the
-  rest.
+### Cambiato
+- La data sta in alto a destra nel riquadro, dove l'occhio non sta
+  leggendo, invece che in alto a sinistra dove inizia il testo.
+- I riquadri crescono con ciò che contengono invece di avere un'altezza
+  fissa, quindi una nota di due linee è un riquadro di due linee.
+- **Un ✓ chiude la nota** e torna alla lista. Non dice "Salva", perché
+  il salvataggio è già avvenuto a ogni tasto — un pulsante che promette
+  di salvare ciò che è già salvato insegna a diffidare del resto.
 
 ## [4.13.0] - 2026-09-10
 
-**Notes became a scratchpad you summon.**
+**Le note sono diventate un blocco che si richiama.**
 
-### Added
-- **A note now opens inside the panel and stays open.** Click one, write
-  in it, hide pastepad with your shortcut — and the next time you summon
-  it, that note is still open, with the cursor in it and everything you
-  wrote. No Save button: it writes on every keystroke, because something
-  you call with one shortcut and dismiss with another cannot depend on
-  remembering to save.
-- **Notes can be named**, and in the Notes tab the search box finds them
-  by that name. The name outweighs the body, so calling a note by its
-  name puts it first even when those letters appear inside ten others.
-  Notes still stay out of the general search: everything that shows up
-  there can be pasted, and a note cannot.
-- **The search box stays visible while a note is open.** Searching covers
-  the note without closing it, and clearing the box brings it straight
-  back as it was.
-- A note left completely empty deletes itself, so starting one and
-  changing your mind leaves nothing behind.
+### Aggiunto
+- **Una nota ora si apre dentro il pannello e resta aperta.** Cliccane
+  una, scrivici, nascondi pastepad con la tua scorciatoia — e la
+  prossima volta che lo richiami quella nota è ancora aperta, con il
+  cursore dentro e tutto ciò che hai scritto. Niente pulsante Salva:
+  scrive a ogni tasto, perché qualcosa che chiami con una scorciatoia e
+  congedi con un'altra non può dipendere dal ricordarsi di salvare.
+- **Le note possono avere un nome**, e nella scheda Note la barra di
+  ricerca le trova per quel nome. Il nome pesa più del corpo, quindi
+  chiamare una nota per nome la mette per prima anche quando quelle
+  lettere compaiono dentro altre dieci. Le note restano fuori dalla
+  ricerca generale: tutto ciò che compare lì si può incollare, e una
+  nota no.
+- **La barra di ricerca resta visibile mentre una nota è aperta.**
+  Cercare copre la nota senza chiuderla, e svuotare la ricerca la
+  riporta subito com'era.
+- Una nota lasciata completamente vuota si elimina da sola, quindi
+  iniziarne una e cambiare idea non lascia niente.
 
-### Changed
-- 113 tests to 120.
+### Cambiato
+- Da 113 a 120 prove.
 
 ## [4.12.0] - 2026-09-10
 
-### Changed
-- **Notes are cards now, not rows.** A row shows one line, and a quick
-  note does not fit in one: two notes that begin the same way — the same
-  heading pasted from the same console — looked identical in the list and
-  you had to open both to tell them apart. A card shows the date and the
-  first few lines, so they are told apart at a glance. Measured on two
-  notes sharing their first three lines: one card ends in `334716554232`
-  and the other in `999999999999`.
+### Cambiato
+- **Le note ora sono riquadri, non righe.** Una riga mostra una linea, e
+  una nota rapida in una non ci sta: due note che iniziano allo stesso
+  modo —la stessa intestazione incollata dalla stessa console— nella
+  lista sembravano identiche e bisognava aprirle tutte e due per
+  distinguerle. Un riquadro mostra la data e le prime linee, quindi si
+  distinguono a colpo d'occhio.
 
-  The card uses your accent colour as its background, with the text
-  colour the palette already has checked for contrast against it.
+  Il riquadro usa il tuo colore di accento come sfondo, con il colore di
+  testo che la tavolozza ha già verificato per il contrasto.
 
 ## [4.11.0] - 2026-09-10
 
-### Added
-- **A Notes tab**, for things you write down rather than things you
-  paste. Like Windows' quick notes: you write one, you read it, you
-  delete it. **Nothing in it can be pasted** — clicking a note opens it
-  to edit, and its menu offers Copy, Edit and Delete but not Paste.
-  Notes live in their own file, so nothing you jot down can leak into
-  the lists that exist to be pasted somewhere else.
-- The most recently touched note sits at the top.
+### Aggiunto
+- **Una scheda Note**, per le cose che scrivi invece di quelle che
+  incolli. Come le note rapide di Windows: ne scrivi una, la leggi, la
+  elimini. **Niente lì dentro si può incollare** — cliccare una nota la
+  apre per modificarla, e il suo menu offre Copia, Modifica ed Elimina
+  ma non Incolla. Le note vivono in un file loro, quindi niente di ciò
+  che annoti può finire nelle liste che esistono per essere incollate
+  altrove.
+- La nota toccata più di recente sta in alto.
 
-### Fixed
-- **Templates could not be pasted into Outlook.** Before every paste,
-  pastepad released Shift and Alt in case the shortcut used them — but
-  it released them whether or not they were held, so a shortcut like
-  `Ctrl+Q` still sent an Alt key-up that nobody had pressed. Windows
-  turns a lone Alt release into a menu command: the documentation says
-  `DefWindowProc` sends `WM_SYSCOMMAND` with `SC_KEYMENU` when the ALT
-  key is released. Outlook answered by lettering every button on the
-  ribbon, and the `Ctrl+V` that followed went to the menu instead of the
-  message. Now only keys that are actually held get released, and
-  `Ctrl` goes down first so that releasing Alt is never a lone release.
+### Corretto
+- **I modelli non si potevano incollare in Outlook.** Prima di ogni
+  incolla, pastepad rilasciava Shift e Alt nel caso la scorciatoia li
+  usasse — ma li rilasciava che fossero premuti o no, quindi una
+  scorciatoia come `Ctrl+Q` mandava comunque un rilascio di Alt che
+  nessuno aveva premuto. Windows trasforma un rilascio di Alt isolato in
+  un comando di menu: la documentazione dice che `DefWindowProc` manda
+  `WM_SYSCOMMAND` con `SC_KEYMENU` quando il tasto ALT viene rilasciato.
+  Outlook rispondeva mettendo una lettera su ogni pulsante della barra
+  multifunzione, e il `Ctrl+V` che seguiva andava al menu invece che al
+  messaggio. Adesso si rilasciano solo i tasti davvero premuti, e `Ctrl`
+  scende per primo così che il rilascio di Alt non sia mai isolato.
 
-### Changed
-- Inside Saved, the group that was called **Notes is now called Texts**.
-  Otherwise a tab and a group would share a name while meaning different
-  things — one pastes, the other does not. The type is still `nota` in
-  the file, so nothing needs rewriting.
-- 99 tests to 107.
+### Cambiato
+- Dentro Salvati, il gruppo che si chiamava **Note ora si chiama
+  Testi**. Altrimenti una scheda e un gruppo avrebbero avuto lo stesso
+  nome con significati diversi — uno incolla, l'altro no.
+- Da 99 a 107 prove.
 
 ## [4.10.0] - 2026-08-15
 
-### Changed
-- **A saved bookmark opens again when you click it.** Saving an address
-  as a bookmark means "I want to visit this", not "I want to type this",
-  and 4.4.0 took that away along with the fault it was fixing.
+### Cambiato
+- **Un segnalibro salvato si apre di nuovo quando lo clicchi.** Salvare
+  un indirizzo come segnalibro significa "voglio visitarlo", non "voglio
+  scriverlo", e la 4.4.0 l'aveva tolto insieme all'errore che stava
+  correggendo.
 
-  Both cases now live together, because what decides is the **type**, not
-  whether the text looks like a link:
+  Adesso i due casi convivono, perché a decidere è il **tipo**, non che
+  il testo sembri un link:
 
-  | | Click | Three-dot menu |
+  | | Clic | Menu dei tre punti |
   |---|---|---|
-  | Saved bookmark | Opens the browser | Copy, Paste, Open |
-  | Address in the history | Pastes | Copy, Paste, Open |
-  | Note, email, template, prompt | Pastes | Copy, Paste |
+  | Segnalibro salvato | Apre il browser | Copia, Incolla, Apri |
+  | Indirizzo nella cronologia | Incolla | Copia, Incolla, Apri |
+  | Nota, email, modello, prompt | Incolla | Copia, Incolla |
 
-  A copied address still pastes — that was the 4.4.0 fault and it is not
-  coming back. And a saved address you would rather paste than open just
-  needs its type changed to Note.
+  Un indirizzo copiato continua a incollarsi — quello era l'errore della
+  4.4.0 e non torna. E a un indirizzo salvato che preferisci incollare
+  basta cambiare il tipo in Nota.
 
-  **Paste in the menu still pastes, bookmark or not.** That is the exact
-  trap 4.3.0 fell into: the four paths that lead to pasting all went
-  through one place, so the menu entry saying "Paste" opened Chrome.
+  **Incolla nel menu continua a incollare, segnalibro o no.** È
+  esattamente la trappola in cui cadde la 4.3.0: le quattro strade che
+  portano a incollare passavano tutte da un solo posto, quindi la voce
+  di menu che diceva "Incolla" apriva Chrome.
 
-### Internal
-- **Every row was scanning its whole text twice.** Working out whether it
-  is a link and whether it carries `[[fields]]` was done once for the
-  row, and then again inside the type deduction — up to eighty times per
-  opening, and again on every keystroke in the search box. Saved rows
-  also rejoined all their formatting fragments into one string a second
-  time. Now the work is done once and reused.
-- **Brushes of the same colour are shared** instead of one new object per
-  call, of which each refresh asks for dozens.
+### Interno
+- **Ogni riga percorreva tutto il suo testo due volte.** Capire se è un
+  link e se contiene `[[campi]]` si faceva una volta per la riga, e poi
+  di nuovo dentro la deduzione del tipo — fino a ottanta volte per
+  apertura, e ancora a ogni tasto nella barra di ricerca. Le righe
+  salvate inoltre riunivano una seconda volta tutti i loro frammenti in
+  una stringa. Adesso il lavoro si fa una volta e si riusa.
+- **I pennelli dello stesso colore si condividono** invece di creare un
+  oggetto nuovo a ogni chiamata, e ogni aggiornamento ne chiede decine.
 
-  Measured honestly: **neither of these moved the panel's opening time.**
-  With eighty long entries the median went from 20.3 ms to 19.3 ms, which
-  is noise — the cost there is the window system, not our arithmetic, as
-  the analysis had already said. They stay because doing the same work
-  twice is worth removing on its own, not because they made anything
-  faster. Whether they help while typing in the search box was **not
-  measured**, so nothing is claimed.
+  Misurato onestamente: **nessuna delle due cose ha spostato il tempo di
+  apertura del pannello.** Con ottanta voci lunghe la mediana è passata
+  da 20,3 ms a 19,3 ms, che è rumore — il costo lì è il sistema di
+  finestre, non la nostra aritmetica. Restano perché fare due volte lo
+  stesso lavoro merita di essere tolto di per sé, non perché abbiano
+  reso qualcosa più veloce. Se aiutano mentre si scrive nella barra di
+  ricerca **non è stato misurato**, quindi non si afferma niente.
 
 ## [4.9.0] - 2026-08-14
 
-**Opening the panel could take five and a half seconds, and nobody knew.**
+**Aprire il pannello poteva richiedere cinque secondi e mezzo, e nessuno
+lo sapeva.**
 
-### Fixed
-- **The call that steals the foreground could block for seconds, and it
-  sat in the middle of the path that has to be instant.** Measured
-  against a window whose UI thread was deliberately busy:
-  `SetForegroundWindow` took **5,399 ms** — and then returned false. The
-  cause is documented: attaching to the other window's thread means
-  "keyboard and mouse events received by both threads are processed in
-  the order they were received", so pastepad queues behind whatever that
-  program is doing.
+### Corretto
+- **La chiamata che ruba il primo piano poteva bloccarsi per secondi, e
+  stava in mezzo al percorso che deve essere istantaneo.** Misurato
+  contro una finestra il cui thread di interfaccia era occupato apposta:
+  `SetForegroundWindow` ci mise **5.399 ms** — e poi restituì false. La
+  causa è documentata: agganciarsi al thread dell'altra finestra
+  significa che "keyboard and mouse events received by both threads are
+  processed in the order they were received", quindi pastepad si accoda
+  dietro a qualsiasi cosa stia facendo quel programma.
 
-  This is not a laboratory case. On a work machine loaded with corporate
-  security agents, the program in front is busy far more often, which is
-  exactly why the same panel opens in 18 ms one time and 163 ms the next
-  with no pattern.
+  Non è un caso da laboratorio. Su una macchina di lavoro carica di
+  agenti di sicurezza aziendali, il programma davanti è occupato molto
+  più spesso, ed è esattamente il motivo per cui lo stesso pannello si
+  apre in 18 ms una volta e in 163 ms la successiva senza uno schema.
 
-  The call is not removed — without it the panel comes up visible but
-  without keyboard focus. It now has a fast path in front of it: ask for
-  the foreground **without attaching to anyone**, which is allowed
-  because pastepad was just woken by a global hotkey, and only fall back
-  to the old path if Windows refuses. Measured in the same test:
-  **5,604 ms to 35.7 ms**.
-- **Pasting waited 60 milliseconds every single time, for nothing.** That
-  number was written by hand to let the focus settle. Measured, the
-  target window was already in front when the wait began, so all 60 ms
-  were thrown away — and on a loaded machine the same fixed number could
-  just as easily be too short, sending the Ctrl+V before the target could
-  receive it. It now waits until the window really is in front, and pastes
-  then. A whole paste went from about 130 ms to **73.9 ms**.
-- **Opening the panel rebuilt the list twice** whenever the previous use
-  had left something in the search box: clearing it fires the same
-  refresh that the next line then calls again. Up to 80 rows built for
-  nothing, on the path that has to be instant.
+  La chiamata non si toglie — senza, il pannello compare visibile ma
+  senza focus di tastiera. Adesso ha davanti una strada veloce: chiedere
+  il primo piano **senza agganciarsi a nessuno**, che è permesso perché
+  pastepad è appena stato svegliato da una scorciatoia globale, e
+  ricadere sulla strada vecchia solo se Windows rifiuta. Misurato nella
+  stessa prova: **da 5.604 ms a 35,7 ms**.
+- **Incollare aspettava 60 millisecondi ogni singola volta, per
+  niente.** Quel numero era scritto a mano per lasciare assestare il
+  focus. Misurato, la finestra di destinazione era già davanti quando
+  iniziava l'attesa, quindi tutti i 60 ms erano buttati — e su una
+  macchina carica lo stesso numero fisso poteva altrettanto facilmente
+  essere troppo corto, mandando il Ctrl+V prima che la destinazione
+  potesse riceverlo. Adesso aspetta che la finestra sia davvero davanti,
+  e incolla allora. Un incolla completo è passato da circa 130 ms a
+  **73,9 ms**.
+- **Aprire il pannello ricostruiva la lista due volte** ogni volta che
+  l'uso precedente aveva lasciato qualcosa nella barra di ricerca:
+  svuotarla fa partire lo stesso aggiornamento che la riga successiva
+  poi richiama. Fino a 80 righe costruite per niente, sul percorso che
+  deve essere istantaneo.
 
-### Changed
-- **The publisher is now `Josemgu`**, the GitHub account, instead of a
-  full legal name — in the installer, inside the executable's
-  `CompanyName`, and in both READMEs. Note this does not rewrite what is
-  already published: releases up to 4.8.0 carry the old value, and so
-  does every git commit.
+### Cambiato
+- **L'autore pubblicato è ora `Josemgu`**, l'account GitHub, invece di
+  un nome legale completo — nell'installer, nel `CompanyName`
+  dell'eseguibile e nei README.
 
-### Fixed in the instrumentation itself
-Both of these were making the logs lie, which is worse than not measuring.
+### Corretto nella strumentazione stessa
+Queste due cose facevano mentire i log, che è peggio di non misurare.
 
-- **Opening and closing quickly inflated the drawing figures.** Several
-  timers piled up waiting for the same frame and all reported at once:
-  three lines eight milliseconds apart claiming 588, 322 and 200 ms. None
-  were true, and figures like that send you hunting for slowness that
-  does not exist. Only the opening actually on screen is timed now.
-- **The idle counter measured the wrong thing.** It counted any activity,
-  and copying anything reset it — so someone working normally always
-  looked "just used". One line said "0.5 min idle" with eight minutes of
-  clock between it and the previous open. The log now reports both:
-  minutes since the panel was last opened, which is what predicts a slow
-  open, and minutes since anything happened at all.
+- **Aprire e chiudere in fretta gonfiava le cifre di disegno.** Più
+  timer si accumulavano in attesa dello stesso fotogramma e riportavano
+  tutti insieme: tre righe a otto millisecondi l'una dall'altra che
+  dichiaravano 588, 322 e 200 ms. Nessuna era vera, e cifre così mandano
+  a caccia di una lentezza che non esiste. Adesso si misura solo
+  l'apertura davvero a schermo.
+- **Il contatore di inattività misurava la cosa sbagliata.** Contava
+  qualsiasi attività, e copiare qualsiasi cosa lo azzerava — quindi chi
+  lavorava normalmente risultava sempre "appena usato". Una riga diceva
+  "0,5 min inattivo" con otto minuti di orologio tra quella e l'apertura
+  precedente. Adesso il log riporta tutti e due: i minuti dall'ultima
+  apertura del pannello, che è ciò che predice un'apertura lenta, e i
+  minuti dall'ultima cosa successa.
 
 ## [4.8.0] - 2026-08-14
 
-### Fixed
-- **pastepad no longer changes your shortcut without telling you.** If
-  the combination you picked is already taken by another program,
-  `RegisterHotKey` refuses it — error 1409 — and pastepad quietly fell
-  back to the factory one and carried on. Nothing was shown, because the
-  fallback had worked. You keep pressing your shortcut forever, nothing
-  happens, and the keystroke goes through to whatever program is in
-  front, which is the giveaway that pastepad never received it.
+### Corretto
+- **pastepad non cambia più la tua scorciatoia senza dirtelo.** Se la
+  combinazione che hai scelto è già presa da un altro programma,
+  `RegisterHotKey` la rifiuta —errore 1409— e pastepad ricadeva in
+  silenzio su quella di fabbrica e proseguiva. Non si mostrava niente,
+  perché il ripiego aveva funzionato. Continui a premere la tua
+  scorciatoia per sempre, non succede niente, e il tasto passa al
+  programma davanti, che è il segnale che pastepad non l'ha mai
+  ricevuto.
 
-  This is common on a work machine, where more programs compete for
-  combinations. It now says so **through the tray icon**, naming both the
-  one that was taken and the one being used instead. It cannot be said in
-  the panel alone: the panel is opened with the shortcut, so the person
-  with the problem is exactly the one who cannot reach the message
-  explaining it. Clicking that same icon opens the panel to change it.
-- **Updating over a running copy now closes it first, properly.** The
-  installer used to hand you Windows' own "Preparing to Install" page,
-  which lists pastepad and asks whether it may close it. That is a
-  question with one correct answer, and choosing "do not close the
-  applications" replaced the files underneath a copy that was still
-  running — which is why installing over an existing version did not
-  behave like a clean install.
+  È comune su una macchina di lavoro, dove più programmi si contendono
+  le combinazioni. Adesso lo dice **tramite l'icona nell'area di
+  notifica**, nominando sia quella presa sia quella usata al suo posto.
+  Non si può dire solo nel pannello: il pannello si apre con la
+  scorciatoia, quindi chi ha il problema è esattamente chi non può
+  arrivare al messaggio che lo spiega. Cliccare quella stessa icona apre
+  il pannello per cambiarla.
+- **Aggiornare sopra una copia in esecuzione ora la chiude prima, come
+  si deve.** L'installer ti consegnava la pagina di Windows
+  "Preparazione dell'installazione", che elenca pastepad e chiede se può
+  chiuderlo. È una domanda con una sola risposta giusta, e scegliere
+  "non chiudere le applicazioni" sostituiva i file sotto una copia
+  ancora in esecuzione — motivo per cui installare sopra una versione
+  esistente non si comportava come un'installazione pulita.
 
-  pastepad is now closed before Setup even looks at which files are in
-  use, so that page never appears. It is closed through the same door
-  Windows uses when shutting down, so it flushes what it has not written
-  yet, releases the global shortcut and removes its tray icon, rather
-  than being killed. When the installation finishes it is reopened
-  without asking, including on a silent install: you did not close it,
-  and what you asked for was an update.
+  Adesso pastepad viene chiuso prima ancora che Setup guardi quali file
+  sono in uso, quindi quella pagina non compare mai. Viene chiuso dalla
+  stessa porta che usa Windows spegnendosi, quindi riversa ciò che non
+  ha ancora scritto, rilascia la scorciatoia globale e toglie la sua
+  icona, invece di essere ucciso. A installazione finita viene riaperto
+  senza chiedere, anche in un'installazione silenziosa: non l'hai chiuso
+  tu, e ciò che hai chiesto era un aggiornamento.
 
 ## [4.7.0] - 2026-08-14
 
-**pastepad will no longer start empty and act as if that were normal.**
+**pastepad non partirà più vuoto comportandosi come se fosse normale.**
 
-### Fixed
-- **If pastepad's files are being served from somewhere other than where
-  it asked for them, it now says so and refuses to write.** This is the
-  fault that had been open since 4.0.1 as *"one instance started unable
-  to read or write its folder and, on closing, saved an empty history
-  over the real one. Not reproduced."* It reproduced, and the cause is
-  known now.
+### Corretto
+- **Se i file di pastepad vengono serviti da un posto diverso da quello
+  che ha chiesto, adesso lo dice e si rifiuta di scrivere.** È l'errore
+  che era aperto dalla 4.0.1 come *"un'istanza partì senza poter leggere
+  né scrivere nella sua cartella e, chiudendosi, salvò una cronologia
+  vuota sopra quella reale. Non riprodotto."* Si è riprodotto, e adesso
+  la causa è nota.
 
-  When another packaged application launches pastepad, pastepad inherits
-  that application's container and Windows redirects everything under
-  `%LOCALAPPDATA%` into `…\Packages\<package>\LocalCache\Local`. pastepad
-  works out its path correctly, believes it is reading it, and is in fact
-  reading and writing a copy. Open it later from its own shortcut and
-  **the history and the saved texts are gone** — while on disk they are
-  untouched. That is what happened on 14 August 2026, and starting from
-  scratch without a word is what turned an accident of the environment
-  into "it deleted everything".
+  Quando un'altra applicazione impacchettata lancia pastepad, pastepad
+  eredita il contenitore di quell'applicazione e Windows reindirizza
+  tutto ciò che sta sotto `%LOCALAPPDATA%` in
+  `…\Packages\<pacchetto>\LocalCache\Local`. pastepad calcola
+  correttamente il suo percorso, crede di leggerlo, e in realtà legge e
+  scrive una copia. Aprilo dopo dal suo collegamento e **la cronologia e
+  i testi salvati sono spariti** — mentre su disco sono intatti. È ciò
+  che successe il 14 agosto 2026, e partire da zero senza una parola è
+  ciò che trasformò un incidente dell'ambiente in "ha cancellato tutto".
 
-  At startup pastepad now writes a probe into its data folder and asks
-  Windows where that file actually landed. If the answer is not where it
-  asked, the session goes read-only for good: **nothing is written, in
-  any file**, the reason is logged with both paths, and the panel opens
-  with the explanation instead of an empty list.
+  All'avvio pastepad ora scrive una sonda nella sua cartella dati e
+  chiede a Windows dove quel file è finito davvero. Se la risposta non è
+  dove aveva chiesto, la sessione diventa di sola lettura per sempre:
+  **non si scrive niente, in nessun file**, il motivo si registra con
+  tutti e due i percorsi, e il pannello si apre con la spiegazione
+  invece che con una lista vuota.
 
-  Three things had to be measured to get this right, and two of them
-  looked correct and were not:
-  - **Package identity does not detect it.** `GetCurrentPackageFullName`
-    returns `APPMODEL_ERROR_NO_PACKAGE`: the child process inherits the
-    file redirection but not the identity. Tried first, and it never
-    fired.
-  - **A directory handle does not either.** The folder resolves to
-    itself; only a file reveals the redirection.
-  - **The file has to be freshly written.** Redirection is copy-on-write,
-    file by file, so a file that was already there resolves to the real
-    path until somebody writes it.
+  Tre cose andarono misurate per farlo bene, e due sembravano corrette e
+  non lo erano:
+  - **L'identità di pacchetto non lo rileva.**
+    `GetCurrentPackageFullName` restituisce `APPMODEL_ERROR_NO_PACKAGE`:
+    il processo figlio eredita il reindirizzamento dei file ma non
+    l'identità. Provato per primo, e non scattò mai.
+  - **Nemmeno un handle di cartella.** La cartella si risolve in se
+    stessa; solo un file rivela il reindirizzamento.
+  - **Il file deve essere appena scritto.** Il reindirizzamento è
+    copia-alla-scrittura, file per file, quindi un file che c'era già si
+    risolve nel percorso reale finché qualcuno non lo scrive.
 
-  The guard is a single probe at startup, created with `DELETE_ON_CLOSE`
-  so Windows removes it even if the process dies holding it.
-- 94 tests to 99. The five new ones fix the guarantee that matters: a
-  frozen session writes nothing — not the preferences, not the deferred
-  history dump, and not the things saved instantly like pin, delete and
-  empty, which is what the person actually did on purpose.
+  Il guardiano è una sola sonda all'avvio, creata con `DELETE_ON_CLOSE`
+  così Windows la toglie anche se il processo muore tenendola aperta.
+- Da 94 a 99 prove. Le cinque nuove fissano la garanzia che conta: una
+  sessione congelata non scrive niente — né le preferenze, né il
+  riversamento rimandato della cronologia, né le cose salvate
+  all'istante come fissare, eliminare e svuotare, che sono ciò che la
+  persona ha fatto apposta.
 
 ## [4.6.0] - 2026-08-14
 
-**Two things that failed in silence.** One you could see and not believe,
-the other you could not see at all.
+**Due cose che fallivano in silenzio.** Una si vedeva e non ci si
+credeva, l'altra non si vedeva affatto.
 
-### Fixed
-- **The panel no longer appears half-drawn.** Reported from real use: the
-  first time it opened, the header came up empty — no shortcut label, no
-  buttons — and the next time it was fine. Measured, it was neither the
-  header nor the title bar: at the instant the window appeared, content
-  was missing **everywhere**, about 5,500 painted pixels out of the
-  36,500 a finished panel has, filling in over roughly 150 ms. Normally
-  you never notice. With the machine busy it stretches far enough to look
-  like something is missing.
+### Corretto
+- **Il pannello non compare più disegnato a metà.** Segnalato dall'uso
+  reale: la prima volta che si apriva, l'intestazione usciva vuota —
+  niente etichetta della scorciatoia, niente pulsanti — e la volta dopo
+  andava bene. Misurato, non era né l'intestazione né la barra del
+  titolo: nell'istante in cui la finestra compariva, il contenuto
+  mancava **dappertutto**, circa 5.500 pixel dipinti dei 36.500 di un
+  pannello finito, che si riempivano in circa 150 ms. Di solito non te
+  ne accorgi. Con la macchina occupata si allunga abbastanza da sembrare
+  che manchi qualcosa.
 
-  The panel is now composed once at startup, off screen and without being
-  activated, so the first time you actually open it is no longer the
-  first frame it has ever drawn. Measured over six runs under load: the
-  panel is complete at the instant it appears — 6,562 header pixels and
-  36,518 in the body, identical at 0 ms and at 300 ms, where before those
-  were about 800 and 5,500. **Opening costs nothing extra**, because the
-  work happens at startup, which stayed at 467–493 ms.
-- **The warning you could never read.** When pasting, the panel hides
-  before the focus is handed back, so on the rare occasion that handing
-  it back failed, "Copied, but I could not return to the previous window"
-  was painted onto a window that was already hidden. You were left with
-  the text copied, not pasted, and no idea why. It now comes from the
-  tray icon, which is the only place that can reach you when the panel is
-  not in front of you. Same for a link that fails to open.
-- **A warning could also come back stale.** Because those messages were
-  written to a hidden panel, the next time you opened it — possibly half
-  an hour later, next to something unrelated — the red bar was still
-  there. Warnings are now held the same way the new-version notice
-  already was, and closing the panel marks one as read.
+  Adesso il pannello si compone una volta all'avvio, fuori dallo schermo
+  e senza essere attivato, così la prima volta che lo apri davvero non è
+  più il primo fotogramma che abbia mai disegnato. Misurato su sei giri
+  sotto carico: il pannello è completo nell'istante in cui compare —
+  6.562 pixel nell'intestazione e 36.518 nel corpo, identici a 0 ms e a
+  300 ms, dove prima erano circa 800 e 5.500. **Aprire non costa niente
+  in più**, perché il lavoro avviene all'avvio, che è rimasto a
+  467–493 ms.
+- **L'avviso che non si poteva mai leggere.** Incollando, il pannello si
+  nasconde prima che il focus venga restituito, quindi nella rara
+  occasione in cui la restituzione falliva, "Copiato, ma non sono
+  riuscito a tornare alla finestra precedente" si dipingeva su una
+  finestra già nascosta. Restavi con il testo copiato, non incollato, e
+  senza sapere perché. Adesso arriva dall'icona nell'area di notifica,
+  che è l'unico posto che può raggiungerti quando il pannello non è
+  davanti a te. Lo stesso per un link che non si riesce ad aprire.
+- **Un avviso poteva anche tornare stantio.** Siccome quei messaggi si
+  scrivevano su un pannello nascosto, la volta successiva che lo aprivi
+  —magari mezz'ora dopo, accanto a qualcosa che non c'entrava— la barra
+  rossa era ancora lì. Gli avvisi adesso si conservano come si
+  conservava già l'avviso di versione nuova, e chiudere il pannello ne
+  segna uno come letto.
 
 ## [4.5.0] - 2026-08-14
 
-### Added
-- **AI prompts are the fifth type**, next to bookmarks, templates, emails
-  and notes. Asked for by someone who keeps prompts as part of how they
-  work: mixed in among the notes they cannot be found, and they are among
-  the things most often reused word for word.
+### Aggiunto
+- **I prompt di IA sono il quinto tipo**, accanto a segnalibri, modelli,
+  email e note. Chiesto da chi tiene i prompt come parte del proprio
+  modo di lavorare: mescolati tra le note non si trovano, e sono tra le
+  cose più spesso riusate parola per parola.
 
-  Like emails, this one is never guessed. A prompt is ordinary text, and
-  where an email at least has an @ to grab at, a prompt has nothing —
-  which is precisely why it has to be picked by hand. A prompt with
-  `[[fields]]` is still proposed as a template, and that is right: what
-  decides whether you get asked before pasting is the text, not the type.
-  Move it to prompts and it still asks for its fields.
-- **The first frame of the panel now leaves a line in the log**, once per
-  run: the measured size and colour of the shortcut label and of the
-  close button, the resolved theme, and whether the title bar is
-  extended. It exists because of a fault reported from real use — the
-  first time the panel opens, the header sometimes appears unpainted, and
-  the next time it is fine — that no automated check can see, because the
-  accessibility tree has the elements both times. It is only visible by
-  looking at pixels, and by then it has passed.
+  Come le email, questo non si indovina mai. Un prompt è testo normale,
+  e dove un'email ha almeno una @ a cui aggrapparsi, un prompt non ha
+  niente — che è precisamente il motivo per cui va scelto a mano. Un
+  prompt con `[[campi]]` si propone comunque come modello, ed è giusto:
+  ciò che decide se ti viene chiesto prima di incollare è il testo, non
+  il tipo. Spostalo tra i prompt e chiede ancora i suoi campi.
+- **Il primo fotogramma del pannello ora lascia una riga nel log**, una
+  volta per esecuzione: la dimensione e il colore misurati
+  dell'etichetta della scorciatoia e del pulsante di chiusura, il tema
+  risolto, e se la barra del titolo è estesa. Esiste per un errore
+  segnalato dall'uso reale — la prima volta che il pannello si apre,
+  l'intestazione a volte compare non dipinta, e la volta dopo va bene —
+  che nessun controllo automatico può vedere, perché l'albero di
+  accessibilità ha gli elementi tutte e due le volte. Si vede solo
+  guardando i pixel, e a quel punto è passato.
 
-  What that line already ruled out: the row is laid out correctly at the
-  first frame (label 49×15, close button 20×20) and its colour is opaque
-  and visible, so neither "it never got laid out" nor "the theme resolved
-  late" is the explanation. Measuring the whole window rather than the
-  header strip showed the first frame is partially painted **everywhere**,
-  not just in the header, which also rules out the title bar being at
-  fault. The severe form did not reproduce in 12 attempts under load or 8
-  without, so nothing was changed to chase it: see the note in the report.
-- 90 tests to 94.
+  Ciò che quella riga ha già escluso: la riga è disposta correttamente
+  al primo fotogramma (etichetta 49×15, pulsante di chiusura 20×20) e il
+  suo colore è opaco e visibile, quindi né "non è mai stata disposta" né
+  "il tema si è risolto tardi" è la spiegazione. Misurare l'intera
+  finestra invece della striscia dell'intestazione ha mostrato che il
+  primo fotogramma è dipinto parzialmente **dappertutto**, non solo
+  nell'intestazione, e questo esclude anche la barra del titolo.
+- Da 90 a 94 prove.
 
 ## [4.4.0] - 2026-08-13
 
-### Fixed
-- **A link could not be pasted anywhere.** Copying a web address and
-  trying to drop it into a field did nothing: the row behaved like a
-  button and opened the browser. Opening was deliberate; what was not is
-  that all four routes to pasting went through the same place — the
-  click, Enter from the search box, and **Paste** and **Paste without
-  formatting** in the row menu. So the entry labelled Paste opened
-  Chrome. Clicking now pastes, like every other row, and opening moved
-  to where it cannot be mistaken for pasting: **Open in browser**, at the
-  top of the row menu. Verified end to end against Notepad.
+### Corretto
+- **Un link non si poteva incollare da nessuna parte.** Copiare un
+  indirizzo web e provare a metterlo in un campo non faceva niente: la
+  riga si comportava come un pulsante e apriva il browser. Aprire era
+  voluto; ciò che non lo era è che tutte e quattro le strade verso
+  l'incolla passavano dallo stesso posto — il clic, l'Invio dalla barra
+  di ricerca, e **Incolla** e **Incolla senza formato** nel menu della
+  riga. Quindi la voce etichettata Incolla apriva Chrome. Adesso il clic
+  incolla, come in ogni altra riga, e aprire si è spostato dove non può
+  essere scambiato per incollare: **Apri nel browser**, in cima al menu
+  della riga. Verificato da un capo all'altro con il Blocco note.
 
-### Added
-- **You choose what a saved text is**: bookmark, template, email or
-  note. pastepad proposes the one that fits what you wrote — a whole URL
-  is a bookmark, `[[fields]]` make a template — and stops proposing the
-  moment you touch the drop-down. It sits on the same line as the Name
-  label, which costs 13 pixels of dialog height rather than the 40 a row
-  of its own would take; measured at the default 380×560, Save and
-  Cancel keep all 32 pixels with 42 to spare, and at the 340 minimum
-  they sit below the fold exactly as they already did in 4.3.0, measured
-  side by side.
-- **Emails are the fourth group**, and the one that could never be
-  guessed: a message body is ordinary text and there is nothing inside
-  it that separates it from a note. Five email bodies used to be five
-  more notes. pastepad never proposes this type on its own — offering it
-  because the text contains an @ would turn every note that mentions an
-  address into an email.
-- What you pick is only written to `snippets.json` when it contradicts
-  what would have been deduced anyway, so opening a saved text and
-  pressing Save cannot give it a `tipo` key it did not have. Note this
-  covers the type key only: re-saving a text still normalises its line
-  breaks to `\r\n`, which is the repair 4.0.1 introduced and which grows
-  a file written before it by one byte per line, without touching a
-  character of the content.
+### Aggiunto
+- **Scegli tu cos'è un testo salvato**: segnalibro, modello, email o
+  nota. pastepad propone quello adatto a ciò che hai scritto —una URL
+  intera è un segnalibro, dei `[[campi]]` fanno un modello— e smette di
+  proporre nel momento in cui tocchi la tendina. Sta nella stessa linea
+  dell'etichetta Nome, che costa 13 pixel di altezza del dialogo invece
+  dei 40 che prenderebbe una riga propria.
+- **Le email sono il quarto gruppo**, e quello che non si poteva mai
+  indovinare: il corpo di un messaggio è testo normale e dentro non c'è
+  niente che lo separi da una nota. Cinque corpi di email erano cinque
+  note in più. pastepad non propone mai questo tipo da solo — offrirlo
+  perché il testo contiene una @ trasformerebbe in email ogni nota che
+  menziona un indirizzo.
+- Ciò che scegli si scrive in `snippets.json` solo quando contraddice
+  ciò che si sarebbe dedotto comunque, quindi aprire un testo salvato e
+  premere Salva non può dargli una chiave `tipo` che non aveva. Nota:
+  questo riguarda solo la chiave del tipo; risalvare un testo normalizza
+  comunque i suoi a capo a `\r\n`, che è la riparazione introdotta dalla
+  4.0.1.
 
-### Changed
-- **The installer now says when it found an existing copy.** It always
-  replaced rather than duplicated — that is what the fixed AppId is for
-  — but it never said so, so installing 4.4.0 over 4.3.0 looked exactly
-  like a first install: no way to tell whether you were updating or
-  duplicating, and no word on whether your saved texts survived. It now
-  reads the installed version first and offers to update to this one,
-  saying up front that the history, saved texts, shortcut and
-  preferences are kept because they live in a separate folder. Installing
-  the same version again is offered as a reinstall, and installing an
-  older version over a newer one says so instead of doing it quietly.
-  Nothing is asked during a silent install, where a message box would
-  wait forever for someone who is not watching.
-- **The startup entry is no longer the only way pastepad comes back.**
-  There is now also a logon task, registered by pastepad itself without
-  needing administrator rights, and delayed half a minute so the registry
-  entry wins whenever it works. Both are removed when you turn off
-  "start with Windows".
+### Cambiato
+- **L'installer ora dice quando ha trovato una copia esistente.**
+  Sostituiva sempre invece di duplicare —a questo serve l'AppId fisso—
+  ma non lo diceva mai, quindi installare la 4.4.0 sopra la 4.3.0
+  sembrava esattamente una prima installazione: nessun modo di capire se
+  stavi aggiornando o duplicando, e nessuna parola sul destino dei testi
+  salvati. Adesso legge prima la versione installata e offre di
+  aggiornare a questa, dicendo subito che cronologia, testi salvati,
+  scorciatoia e preferenze si conservano perché vivono in una cartella
+  separata. Installare di nuovo la stessa versione si offre come
+  reinstallazione, e installare una versione più vecchia sopra una più
+  nuova lo dice invece di farlo in silenzio. In un'installazione
+  silenziosa non si chiede niente, perché una finestra di messaggio
+  aspetterebbe per sempre qualcuno che non sta guardando.
+- **La voce di avvio non è più l'unico modo in cui pastepad torna.**
+  Adesso c'è anche un'attività di accesso, registrata da pastepad stesso
+  senza bisogno di diritti di amministratore, e ritardata di mezzo
+  minuto così che la voce di registro vinca ogni volta che funziona.
 
-  This follows a machine where pastepad did not start after a reboot and
-  left nothing to read. The registry entry was correct, pointed at an
-  executable that exists, was not disabled in Task Manager, and Windows
-  did process that key on that boot — OneDrive, another entry in it,
-  started 15 seconds after explorer. pastepad left no line in either log
-  and no crash report, so the process either was never created or died
-  before its first instruction, where the .NET host fails silently. The
-  cause is still unknown; the second route means it no longer has to be
-  found before the program comes back.
-- **Every start now records how long Windows had been running.** Until
-  now pastepad could only log the starts that happened, so a startup that
-  did not happen left nothing behind — which is exactly what made the
-  fault above impossible to diagnose. A few seconds means Windows opened
-  it; nine hours means you did, and the autostart failed.
-- **The shortcut is now timed along its whole path**, in three parts:
-  how long the keypress waited in the queue, how long the panel took to
-  ask for its window, and how long until it was actually drawn. The old
-  figure covered only the middle one and read 25 ms while the panel felt
-  slow, because neither the wait before it nor the first frame after it
-  was being counted. Each line also records how long the program had been
-  idle, so the numbers can be split into "just used" and "left alone for
-  ten minutes".
-- 79 tests to 90.
+  Segue il caso di una macchina in cui pastepad non partì dopo un
+  riavvio e non lasciò niente da leggere. La voce di registro era
+  corretta, puntava a un eseguibile esistente, non era disattivata in
+  Gestione attività, e Windows elaborò quella chiave in quell'avvio —
+  OneDrive, un'altra voce della stessa, partì 15 secondi dopo explorer.
+  pastepad non lasciò nessuna riga in nessuno dei due log e nessun
+  rapporto di errore, quindi il processo o non fu mai creato o morì
+  prima della sua prima istruzione, dove l'host di .NET fallisce in
+  silenzio. La causa è ancora ignota; la seconda strada fa sì che non
+  serva trovarla perché il programma torni.
+- **Ogni avvio ora registra da quanto era acceso Windows.** Finora
+  pastepad poteva registrare solo gli avvii avvenuti, quindi un avvio
+  non avvenuto non lasciava niente — che è esattamente ciò che rese
+  impossibile la diagnosi dell'errore qui sopra. Pochi secondi
+  significano che l'ha aperto Windows; nove ore significano che l'hai
+  aperto tu, e l'avvio automatico è fallito.
+- **La scorciatoia ora si misura lungo tutto il suo percorso**, in tre
+  parti: quanto la pressione ha aspettato in coda, quanto il pannello ci
+  ha messo a chiedere la sua finestra, e quanto è passato prima che
+  fosse davvero disegnato. La cifra vecchia copriva solo quella di mezzo
+  e diceva 25 ms mentre il pannello sembrava lento. Ogni riga registra
+  anche da quanto il programma era inattivo, così i numeri si possono
+  dividere in "appena usato" e "lasciato solo per dieci minuti".
+- Da 79 a 90 prove.
 
 ## [4.3.0] - 2026-08-13
 
-### Added
-- **Any saved text can be given a name**, not just bookmarks. Leaving it
-  blank behaves as before and the first line is used, so saving two
-  sentences still takes no extra typing. It matters when you build a
-  library rather than jot things down: five email bodies that all open
-  with "Hi team," are five identical rows, and the folder tells you they
-  are bodies without telling you which is which.
+### Aggiunto
+- **Qualsiasi testo salvato può avere un nome**, non solo i segnalibri.
+  Lasciarlo vuoto si comporta come prima e si usa la prima linea, quindi
+  salvare due frasi non richiede di scrivere niente in più. Conta quando
+  costruisci una raccolta invece di annotare cose: cinque corpi di email
+  che iniziano tutti con "Hi team," sono cinque righe identiche, e la
+  cartella ti dice che sono corpi senza dirti quale è quale.
 
-### Fixed
-- **The Save and Cancel buttons could end up half below the fold** in the
-  New dialog, at the default panel size, once the name field appeared —
-  which until now only happened when what you typed was a link. The
-  dialog was handing the leftover height to the text box first and the
-  buttons last. Measured on 4.2.0: 19 pixels of button instead of 32.
-  Making the name field permanent would have turned that from a corner
-  case into the normal one.
+### Corretto
+- **I pulsanti Salva e Annulla potevano finire mezzi sotto la piega**
+  nel dialogo Nuovo, alla dimensione predefinita del pannello, quando
+  compariva il campo del nome — che finora succedeva solo quando ciò che
+  scrivevi era un link. Il dialogo dava l'altezza rimasta prima alla
+  casella di testo e ai pulsanti per ultimi. Misurato sulla 4.2.0: 19
+  pixel di pulsante invece di 32.
 
-### Changed
-- The writing box in the New dialog shows 140 pixels at a time instead of
-  180. That is what the name field costs, and the box scrolls inside
-  itself, so it is a change in how much you see at once rather than in
-  how much you can write. Measured at four panel heights: the buttons now
-  stay whole at every size except the 340-pixel minimum, where they sit
-  below the fold exactly as they already did.
-- 78 tests to 79.
+### Cambiato
+- La casella di scrittura del dialogo Nuovo mostra 140 pixel alla volta
+  invece di 180. È ciò che costa il campo del nome, e la casella scorre
+  al suo interno, quindi cambia quanto vedi in una volta e non quanto
+  puoi scrivere.
+- Da 78 a 79 prove.
 
 ## [4.2.0] - 2026-08-13
 
-**Updating pastepad no longer costs you the clipboard you just copied,
-and no longer leaves it closed.** Both of those were happening, and
-neither said anything.
+**Aggiornare pastepad non ti costa più gli appunti che hai appena
+copiato, e non lo lascia più chiuso.** Succedevano tutte e due le cose,
+e nessuna diceva niente.
 
-### Fixed
-- **pastepad did not come back after being updated.** Installing over a
-  running copy left it installed and shut down — no shortcut, no capture,
-  nothing on screen to say so. Windows will only reopen a program that
-  asked to be reopened, and pastepad never asked. Measured with the same
-  API the installer uses: `bRestartable` was `False`.
-- **Up to three seconds of copies were lost every time.** The history is
-  written every few seconds rather than on every copy, and the only thing
-  that forced it out was quitting from the tray. An installer closing
-  pastepad — or Windows shutting down — took whatever had not been
-  written yet. It now saves when Windows warns it, which it did not hear
-  before: the window that handles the shortcut is a message-only window,
-  and those cannot be enumerated, so the warning never reached it. A
-  second window, never drawn and never in Alt+Tab, listens for it.
-- What happened on an update depended on **whether the panel happened to
-  be open**. With it tucked in the tray Windows classified pastepad as a
-  program with no top-level window; with it open, as a normal one. Same
-  program, two behaviours, decided by where you left it.
-- **`--datos` rewrote the real autostart entry.** The option exists to
-  test without touching your installation, and it kept every test run's
-  data separate while pointing Windows' startup entry at a build that
-  would be gone the next day.
+### Corretto
+- **pastepad non tornava dopo essere stato aggiornato.** Installare
+  sopra una copia in esecuzione lo lasciava installato e spento — niente
+  scorciatoia, niente cattura, niente a schermo che lo dicesse. Windows
+  riapre solo un programma che ha chiesto di essere riaperto, e pastepad
+  non lo chiedeva mai. Misurato con la stessa API che usa l'installer:
+  `bRestartable` era `False`.
+- **Si perdevano fino a tre secondi di copie ogni volta.** La cronologia
+  si scrive ogni pochi secondi invece che a ogni copia, e l'unica cosa
+  che la forzava era uscire dall'area di notifica. Un installer che
+  chiudeva pastepad —o Windows che si spegneva— si portava via ciò che
+  non era ancora stato scritto. Adesso salva quando Windows lo avverte,
+  cosa che prima non sentiva: la finestra che gestisce la scorciatoia è
+  una finestra solo-messaggi, e quelle non si possono enumerare, quindi
+  l'avvertimento non le arrivava mai. Una seconda finestra, mai
+  disegnata e mai in Alt+Tab, lo ascolta.
+- Ciò che succedeva in un aggiornamento dipendeva dal fatto che **il
+  pannello fosse aperto**. Con il pannello nell'area di notifica Windows
+  classificava pastepad come un programma senza finestra di primo
+  livello; con il pannello aperto, come uno normale. Stesso programma,
+  due comportamenti, decisi da dove l'avevi lasciato.
+- **L'opzione della cartella dati di prova riscriveva la vera voce di
+  avvio automatico.** L'opzione esiste per provare senza toccare la tua
+  installazione, e teneva separati i dati di ogni prova mentre puntava
+  la voce di avvio di Windows a una build che il giorno dopo non ci
+  sarebbe più stata.
 
-### Changed
-- 74 tests to 78.
+### Cambiato
+- Da 74 a 78 prove.
 
 ## [4.1.0] - 2026-08-13
 
-**This is the last version you have to install by hand.** From here on
-pastepad checks for new releases and tells you inside the panel. If you
-are coming from 4.0.0, you are carrying six faults, two of which
-destroyed text without saying so.
+**Questa è l'ultima versione da installare a mano.** Da qui in poi
+pastepad controlla le nuove release e te lo dice dentro il pannello. Se
+arrivi dalla 4.0.0, ti porti dietro sei errori, due dei quali
+distruggevano testo senza dirlo.
 
-### Added
-- **A whole folder can be edited at once**, as one note per line, in the
-  same box used to add them. Removing a hundred notes out of three
-  thousand took a hundred trips through search, menu, edit and save; now
-  it is one edit and one Save. Lines you did not touch keep their
-  original note, so a bookmark keeps the name you gave it and a
-  formatted note keeps its formatting. Notes that span several lines are
-  left out and left whole, and the dialog says so. Before saving you are
-  told how many notes will disappear, and backing out returns you to
-  what you had typed.
-- **A formatting bar for saved texts**: font, size, bold, italic, ten
-  text colours, bullets, numbering, indent and clear formatting. The
-  data format already carried all of it and the RTF that reaches Outlook
-  and Word already understood it — there had simply never been a way to
-  set it.
-- **A notice when a new version is out**, shown inside the panel with a
-  link to the release. It can be turned off under Appearance. Nothing is
-  downloaded or installed on its own: that stays a decision you make.
+### Aggiunto
+- **Un'intera cartella si può modificare in una volta**, come una nota
+  per linea, nella stessa casella usata per aggiungerle. Togliere cento
+  note su tremila richiedeva cento passaggi tra ricerca, menu, modifica
+  e salvataggio; adesso è una modifica e un Salva. Le linee che non hai
+  toccato conservano la loro nota originale, quindi un segnalibro
+  conserva il nome che gli hai dato e una nota formattata conserva il
+  suo formato. Le note su più linee restano fuori e intere, e il dialogo
+  lo dice. Prima di salvare ti viene detto quante note spariranno, e
+  tornare indietro ti riporta a ciò che avevi scritto.
+- **Una barra di formato per i testi salvati**: carattere, dimensione,
+  grassetto, corsivo, dieci colori di testo, punti elenco, numerazione,
+  rientro e rimuovi formattazione. Il formato dei dati portava già tutto
+  e l'RTF che arriva a Outlook e Word lo capiva già — semplicemente non
+  c'era mai stato un modo di impostarlo.
+- **Un avviso quando esce una versione nuova**, mostrato dentro il
+  pannello con un link alla release. Si può spegnere in Aspetto. Niente
+  viene scaricato o installato da solo: resta una decisione tua.
 
-### Fixed
-- Text fields drew their focus underline in Windows' accent colour
-  rather than the one you picked. A mint-accented app was showing 491
-  pixels of orange.
-- Colours were lost when reopening a formatted text, because the editor
-  was loaded before the dialog was on screen.
-- Right-clicking a folder did nothing on the drop-down and offered only
-  rename and delete on the chips.
+### Corretto
+- I campi di testo disegnavano la sottolineatura di focus nel colore di
+  accento di Windows invece che in quello scelto da te. Un'app con
+  accento menta mostrava 491 pixel di arancione.
+- I colori si perdevano riaprendo un testo formattato, perché l'editor
+  veniva caricato prima che il dialogo fosse a schermo.
+- Il clic destro su una cartella non faceva niente nell'elenco a discesa
+  e offriva solo rinomina ed elimina sulle etichette.
 
-### Changed
-- 51 tests to 74.
+### Cambiato
+- Da 51 a 74 prove.
 
 ## [4.0.1] - 2026-08-13
 
-The first day of real use turned up three faults, and measuring them
-turned up three more. Two of the six destroyed text without saying so.
+Il primo giorno di uso reale fece emergere tre errori, e misurarli ne
+fece emergere altri tre. Due dei sei distruggevano testo senza dirlo.
 
-### Fixed
-- **Editing a saved multi-line text kept only the first line.** Opening
-  the editor and pressing Save — without touching anything — cut a
-  100-line note from 5290 characters to 77. The cause was the order of
-  two lines in an object initialiser: a WinUI `TextBox` with
-  `AcceptsReturn` still `false` truncates whatever is assigned to
-  `Text`, and `Text` came first. This is also the whole of the reported
-  "a long text isn't visible when you edit it".
-- **Saving recalculated the title from the first line**, so opening and
-  saving a bookmark wiped the name it had been given.
-- **Line breaks were read as `\n` when a `TextBox` returns `\r`.**
-  Pasting 60 lines and choosing "one note per line" produced a single
-  note holding all of them, and saved text reached other applications
-  as one line.
-- **Long text pushed the dialog buttons off screen** with no way to
-  scroll to them. The body is now a grid: the footer keeps its place
-  and the text box scrolls inside itself.
-- **Folders could not be edited.** The Python version had that dialog
-  and it was not ported. Rename and Delete were also unreachable while
-  "All folders" was selected, which is the default.
-- **A secondary button was white on white in the light theme**, since
-  `Elevado` and `Tarjeta` are both `#FFFFFF` there.
+### Corretto
+- **Modificare un testo salvato di più linee conservava solo la
+  prima.** Aprire l'editor e premere Salva —senza toccare niente—
+  tagliava una nota di 100 linee da 5290 caratteri a 77. La causa era
+  l'ordine di due righe in un inizializzatore di oggetto: un `TextBox`
+  di WinUI con `AcceptsReturn` ancora a `false` tronca ciò che si
+  assegna a `Text`, e `Text` veniva prima.
+- **Salvare ricalcolava il titolo dalla prima linea**, quindi aprire e
+  salvare un segnalibro cancellava il nome che gli era stato dato.
+- **Gli a capo si leggevano come `\n` quando un `TextBox` restituisce
+  `\r`.** Incollare 60 linee e scegliere "una nota per linea" produceva
+  una sola nota con tutte dentro, e il testo salvato arrivava alle altre
+  applicazioni su una linea.
+- **Un testo lungo spingeva i pulsanti del dialogo fuori dallo schermo**
+  senza modo di scorrere fino a loro. Il corpo adesso è una griglia: il
+  piede conserva il suo posto e la casella di testo scorre al suo
+  interno.
+- **Le cartelle non si potevano modificare.** La versione in Python
+  aveva quel dialogo e non era stato portato. Rinomina ed Elimina erano
+  anche irraggiungibili con "Tutte le cartelle" selezionato, che è il
+  valore predefinito.
+- **Un pulsante secondario era bianco su bianco nel tema chiaro**,
+  perché lì lo sfondo elevato e il riquadro sono tutti e due `#FFFFFF`.
 
-### Added
-- Bookmarks can be given a name. The field appears only when what you
-  typed is a link, and left blank the URL is still used, so nothing
-  ends up untitled. Searching a bookmark by URL was the only option
-  before.
-- Saved items carry a `{}` marker when they hold `[[fields]]`.
-- Saved splits into Bookmarks, Templates and Notes by what the content
-  is rather than where it was filed. The groups start collapsed and
-  remember their state between sessions.
-- "Edit the contents of \<folder\>…" in the folder menu, listing its
-  texts with a pencil on each.
+### Aggiunto
+- I segnalibri possono avere un nome.
+- Gli elementi salvati hanno un contrassegno quando contengono
+  `[[campi]]`.
+- Salvati si divide in Segnalibri, Modelli e Note in base a cos'è il
+  contenuto invece che a dove è stato archiviato. I gruppi partono
+  chiusi e ricordano il loro stato tra una sessione e l'altra.
+- "Modifica il contenuto di \<cartella\>…" nel menu della cartella.
 
-### Changed
-- 45 tests to 51.
+### Cambiato
+- Da 45 a 51 prove.
 
 ## [4.0.0] - 2026-08-13
 
-Rewritten in C# with WinUI 3. Same program, same data, same shortcut —
-but the shortcut now answers every time, which is the reason the rewrite
-happened at all.
+Riscritto in C# con WinUI 3. Stesso programma, stessi dati, stessa
+scorciatoia — ma adesso la scorciatoia risponde ogni volta, che è il
+motivo per cui la riscrittura è avvenuta.
 
-### Changed
-- **The global shortcut sits on a message-only window** that lives as
-  long as the process, not as long as the panel. The Python version
-  registered a thread hotkey and pumped it from a worker; a message with
-  no window attached is never dispatched to a window procedure, so it
-  answered a few times and then stopped. Measured at 100 presses out of
-  100, and again at 30 out of 30 on the installed build.
-- **The clipboard reports by event** instead of being polled every 0.7
-  seconds. `WM_CLIPBOARDUPDATE` arrives more than once per copy, so a
-  sequence-number filter separates a real copy from a repeat.
-- **One process instead of two.** Working set went from 207 MB to
-  120 MB installed; the panel opens in 16–25 ms.
-- The theme follows Windows and switches while the panel is open. Mica
-  shows through unless one of the twelve backgrounds is picked.
-- Settings rows stack instead of splitting into two columns. Two columns
-  need a 380-pixel panel to be 455 wide, and the dropdown truncated from
-  the left without ellipsis — `Ctrl + Shift + V` read as
-  `l + Shift + V`, which looks like a different shortcut rather than a
-  cut one.
-- The program installs to `%LOCALAPPDATA%\Programs\pastepad` and keeps
-  its data in `%LOCALAPPDATA%\pastepad`. Uninstalling can no longer
-  touch the history, by construction rather than by asking first.
+### Cambiato
+- **La scorciatoia globale sta su una finestra solo-messaggi** che vive
+  quanto il processo, non quanto il pannello. La versione in Python
+  registrava una scorciatoia di thread e la pompava da un lavoratore; un
+  messaggio senza finestra associata non viene mai smistato a una
+  procedura di finestra, quindi rispondeva qualche volta e poi smetteva.
+  Misurato a 100 pressioni su 100, e di nuovo a 30 su 30 sulla build
+  installata.
+- **Gli appunti avvisano con un evento** invece di essere sondati ogni
+  0,7 secondi. `WM_CLIPBOARDUPDATE` arriva più di una volta per copia,
+  quindi un filtro sul numero di sequenza separa una copia vera da una
+  ripetizione.
+- **Un processo invece di due.** Il working set è passato da 207 MB a
+  120 MB installato; il pannello si apre in 16–25 ms.
+- Il tema segue Windows e cambia a pannello aperto. Mica traspare a meno
+  che non si scelga uno dei dodici sfondi.
+- Le righe delle impostazioni si impilano invece di dividersi in due
+  colonne. Due colonne richiedono che un pannello da 380 pixel sia largo
+  455, e la tendina tagliava da sinistra senza puntini —
+  `Ctrl + Shift + V` si leggeva come `l + Shift + V`, che sembra
+  un'altra scorciatoia invece di una tagliata.
+- Il programma si installa in `%LOCALAPPDATA%\Programs\pastepad` e tiene
+  i dati in `%LOCALAPPDATA%\pastepad`. Disinstallare non può più toccare
+  la cronologia, per costruzione e non perché lo chiede prima.
 
-### Added
-- An installer: one 47 MB `.exe`, no administrator prompt, an entry in
-  Add or remove programs, and its own uninstaller.
-- Language picker for the four translations that already existed but
-  had no way to be chosen.
-- Accessible names on the icon buttons and the eighteen accent swatches,
-  which had none.
+### Aggiunto
+- Un installer: un solo `.exe` da 47 MB, nessuna richiesta di
+  amministratore, una voce in Installazione applicazioni, e il suo
+  disinstallatore.
+- Selettore della lingua per le quattro traduzioni che esistevano già ma
+  non si potevano scegliere.
+- Nomi accessibili sui pulsanti con icona e sui diciotto campioni di
+  accento, che non ne avevano.
 
-### Fixed
-- Accents and opening punctuation across all four languages. The Spanish
-  read `Como se enseñan` and `Si, borrar`; French had none at all.
-- Every accent colour now clears WCAG AA contrast, checked by
-  calculation. The subtitle colour failed on all twelve backgrounds.
-- Saved titles are stored whole. A one-line summary was being written to
-  `snippets.json` with its ellipsis inside the data.
-- A file that exists but cannot be read is marked and never overwritten.
-  `File.Exists` returns false when permission is denied, so an
-  unreadable history could pass for a first run and get replaced with an
-  empty one.
+### Corretto
+- Accenti e punteggiatura di apertura nelle quattro lingue.
+- Ogni colore di accento ora supera il contrasto WCAG AA, verificato con
+  il calcolo. Il colore del sottotitolo falliva su tutti e dodici gli
+  sfondi.
+- I titoli salvati si conservano interi. Un riassunto di una linea
+  veniva scritto in `snippets.json` con i puntini di sospensione dentro
+  i dati.
+- Un file che esiste ma non si può leggere viene segnato e mai
+  sovrascritto. `File.Exists` restituisce false quando il permesso è
+  negato, quindi una cronologia illeggibile poteva passare per un primo
+  avvio ed essere sostituita da una vuota.
 
-### Removed
-- The Python implementation. It lives in the `ultima-version-python`
-  tag and in `v3.0.1`.
-- The window size presets. The panel resizes by dragging and remembers
-  where it was left.
+### Tolto
+- L'implementazione in Python. Vive nel tag `ultima-version-python` e in
+  `v3.0.1`.
+- Le preimpostazioni di dimensione della finestra. Il pannello si
+  ridimensiona trascinando e ricorda dove è stato lasciato.
 
 ## [2.0.0] - 2026-08-12
 
-### Changed
-- **Rewritten as a package.** One 2,300-line file with a 950-line class
-  became eight modules with one job each: `modelo` owns the data and
-  never imports tkinter, `windows` holds everything that talks to the
-  OS, `busqueda` does the ranking, `tema` holds the colours and the
-  reusable pieces, `lista` draws the rows, `dialogos` has the popups,
-  and `panel` only coordinates them.
-- Saving is atomic — writes go to a temporary file and get moved into
-  place, so a crash mid-write can no longer leave a truncated JSON.
-- Roomier layout: bigger rows, a real type scale, spacing on a 4px grid,
-  and a palette with mid-tones instead of jumping from card to text.
+### Cambiato
+- **Riscritto come pacchetto.** Un file da 2.300 righe con una classe da
+  950 righe è diventato otto moduli con un compito ciascuno: `modelo`
+  possiede i dati e non importa mai tkinter, `windows` contiene tutto
+  ciò che parla con il sistema operativo, `busqueda` fa il punteggio,
+  `tema` contiene i colori e i pezzi riusabili, `lista` disegna le
+  righe, `dialogos` ha i popup, e `panel` si limita a coordinarli.
+- Il salvataggio è atomico — le scritture vanno su un file temporaneo
+  che poi viene spostato al suo posto, quindi un crash a metà scrittura
+  non può più lasciare un JSON troncato.
+- Disposizione più ariosa: righe più grandi, una vera scala tipografica,
+  spaziatura su una griglia da 4px, e una tavolozza con toni intermedi
+  invece di saltare dal riquadro al testo.
 
-### Added
-- 15 tests covering folders, pinning, trimming, templates and search
-  ranking. They run without opening a window, and the release workflow
-  runs them before building.
+### Aggiunto
+- 15 prove che coprono cartelle, fissati, ritaglio, modelli e punteggio
+  di ricerca. Girano senza aprire una finestra, e il workflow di release
+  le esegue prima di compilare.
 
 ## [1.2.0] - 2026-08-12
 
-### Added
-- The shortcut is configurable, and now defaults to Ctrl+Shift+V, which
-  the left hand reaches without letting go of the mouse
-- Its own icon, bundled into the executable and shown on dialogs
-- Error log: an unhandled failure now writes to `errores.log` and says so,
-  instead of the window vanishing with no trace
-- Illustrations in the README, drawn as SVG so they follow GitHub's theme
+### Aggiunto
+- La scorciatoia è configurabile, e adesso il valore predefinito è
+  Ctrl+Shift+V, che la mano sinistra raggiunge senza lasciare il mouse
+- Una sua icona, inclusa nell'eseguibile e mostrata nei dialoghi
+- Log degli errori: un errore non gestito ora scrive in un file di log e
+  lo dice, invece di far sparire la finestra senza traccia
+- Illustrazioni nel README, disegnate in SVG così seguono il tema di
+  GitHub
 
-### Fixed
-- Rounded corners actually apply: the region was being set on Tk's inner
-  widget rather than the window Windows knows about
+### Corretto
+- Gli angoli arrotondati si applicano davvero: la regione veniva
+  impostata sul widget interno di Tk invece che sulla finestra che
+  Windows conosce
 
-### Changed
-- The build embeds version metadata, so the file has a name and an author
-  in Properties instead of showing up blank
+### Cambiato
+- La build incorpora i metadati di versione, quindi il file ha un nome e
+  un autore in Proprietà invece di comparire vuoto
 
 ## [1.1.0] - 2026-08-11
 
-### Added
-- Delete a folder and everything inside it, from a labelled button or
-  the folder chip's right-click menu
-- Rename folders — saved texts move with them
-- Multi-select mode: tick several rows and delete them together
-- Four panel sizes — mini, small, medium, large — from the appearance dialog.
-  Free edge-dragging was tried and dropped: CustomTkinter does not
-  repaint its widgets reliably when a window resizes dozens of times a
-  second, which left stripes of the previous frame on screen and made
-  the whole panel sluggish. Applying a size once does neither.
-- Honours the Windows clipboard formats that password managers use to
-  mark content as private — that content is never even read
-- Pause button that stops capture without closing the app
+### Aggiunto
+- Eliminare una cartella e tutto ciò che contiene, da un pulsante con
+  etichetta o dal menu del clic destro sull'etichetta della cartella
+- Rinominare le cartelle — i testi salvati si spostano con loro
+- Modo selezione multipla: spunta più righe ed eliminale insieme
+- Quattro dimensioni del pannello — mini, piccolo, medio, grande — dal
+  dialogo dell'aspetto. Il trascinamento libero dei bordi fu provato e
+  abbandonato: CustomTkinter non ridisegna in modo affidabile i suoi
+  widget quando una finestra si ridimensiona decine di volte al secondo
+- Rispetta i formati degli appunti di Windows che i gestori di password
+  usano per marcare un contenuto come privato — quel contenuto non viene
+  nemmeno letto
+- Pulsante di pausa che ferma la cattura senza chiudere l'app
 
-### Changed
-- The clipboard is only read when Windows' sequence number changes,
-  instead of every 900 ms regardless
-- Search index caches normalised text per entry; rebuilding it dropped
-  from ~27 ms to ~0.02 ms
-- The resize cursor only updates when the edge zone actually changes
-- Hover and selection recolour two rows instead of redrawing the whole
-  canvas — with a large window that alone was eating most of a core
-
+### Cambiato
+- Gli appunti si leggono solo quando cambia il numero di sequenza di
+  Windows, invece che ogni 900 ms comunque
+- L'indice di ricerca tiene in cache il testo normalizzato per voce;
+  ricostruirlo è sceso da ~27 ms a ~0,02 ms
+- Il cursore di ridimensionamento si aggiorna solo quando la zona del
+  bordo cambia davvero
+- Hover e selezione ricolorano due righe invece di ridisegnare l'intera
+  tela — con una finestra grande solo questo consumava quasi un core
 
 ## [1.0.0] - 2026-08-11
 
-### Added
-- Automatic clipboard history with pinning, text and images
-- Saved texts organised into folders
-- Ranked search across both tabs, accent-insensitive, words in any order
-- Fill-in templates using `[[field]]` placeholders
-- Rich text paste into Word and Outlook; plain text with Ctrl+Enter
-- Bulk import: one note per line, or everything in a single note
-- Six accent colours; follows the Windows light/dark theme
-- Starts with Windows
+### Aggiunto
+- Cronologia automatica degli appunti con fissati, testo e immagini
+- Testi salvati organizzati in cartelle
+- Ricerca con punteggio nelle due schede, insensibile agli accenti,
+  parole in qualsiasi ordine
+- Modelli da riempire con segnaposto `[[campo]]`
+- Incolla con formato in Word e Outlook; testo semplice con Ctrl+Invio
+- Importazione in blocco: una nota per linea, o tutto in una sola nota
+- Sei colori di accento; segue il tema chiaro/scuro di Windows
+- Si avvia con Windows

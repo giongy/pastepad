@@ -1,663 +1,618 @@
-# Plan — reescritura en C# con WinUI 3
+# Piano — riscrittura in C# con WinUI 3
 
-Plan técnico verificado contra documentación oficial, 12 ago 2026.
-Complementa a `TRASPASO.md`: aquel dice qué conservar y por qué se
-abandonó Flet; este dice cómo se construye lo nuevo y en qué orden.
+Piano tecnico verificato sulla documentazione ufficiale, 12 ago 2026.
+Completa `PASSAGGIO.md`: quello dice cosa conservare e perché fu
+abbandonato Flet; questo dice come si costruisce il nuovo e in che
+ordine.
 
-Todo lo que se afirma aquí lleva fuente. Lo que no se pudo comprobar
-está marcado como tal y tiene un paso o un plan B que lo cubre.
+Tutto ciò che si afferma qui ha una fonte. Ciò che non si è potuto
+verificare è segnato come tale e ha un passo o un piano B che lo copre.
+
+È un documento storico, scritto dall'autore originale durante la
+riscrittura. I nomi di file e classi sono riportati come sono oggi in
+questa copia in italiano; quelli della versione in Python (`modelo.py`,
+`windows.py`...) sono rimasti com'erano.
 
 ---
 
-## Estado
+## Stato
 
-| Paso | Estado |
+| Passo | Stato |
 |---|---|
-| 1 — atajo y portapapeles | Mecanismo probado. Falta el remojo largo. Ver `csharp/PruebaAtajo/RESULTADOS.md` |
-| 2 — lógica y 19 pruebas | **Hecho.** 22 en verde en `csharp/Pastepad.Nucleo.Pruebas` (las 19 de `prueba.py` más 3 que vigilan el formato del archivo) |
-| 3 — la cáscara | Montado y verificado por el qa: **el pegado pasa** (12/12), atajo 30/30 dos veces, instancia única, bandeja, bordes. Queda 1 fallo abierto (ver abajo) |
-| 4 — la interfaz | **Hecho.** El qa lo da por listo: 24 comprobaciones, 24 pasan. Dos vueltas del ciclo diseñador → programador → planificador → qa |
-| 5 — publicar y medir | **Hecho.** Instalador de 47,1 MB, verificado por el qa: 22 comprobaciones, 21 limpias |
-| 6 — retirar la versión en Python | **Hecho.** Vive en el tag `ultima-version-python` |
+| 1 — scorciatoia e appunti | Meccanismo provato in un progetto di sondaggio a parte, poi tolto dal repo |
+| 2 — logica e 19 prove | **Fatto.** In verde in `csharp/Pastepad.Nucleo.Prove` (le 19 della versione in Python più quelle che sorvegliano il formato del file) |
+| 3 — il guscio | Montato e verificato dal qa: **l'incolla passa** (12/12), scorciatoia 30/30 due volte, istanza unica, area di notifica, bordi |
+| 4 — l'interfaccia | **Fatto.** Il qa la dà per pronta: 24 controlli, 24 passano. Due giri del ciclo designer → programmatore → pianificatore → qa |
+| 5 — pubblicare e misurare | **Fatto.** Installer di 47,1 MB, verificato dal qa: 22 controlli, 21 puliti |
+| 6 — ritirare la versione in Python | **Fatto.** Vive nel tag `ultima-version-python` |
 
-Solución en `csharp/Pastepad.slnx`. Las pruebas corren con
-`dotnet test csharp/Pastepad.Nucleo.Pruebas`, sin ventana y sin el
-Windows App SDK. Son **40**.
+Soluzione in `csharp/Pastepad.slnx`. Le prove girano con
+`dotnet test csharp/Pastepad.Nucleo.Prove`, senza finestra e senza il
+Windows App SDK. Oggi sono **118**.
 
-**Compila siempre por la solución**, no por el proyecto. Escriben en
-carpetas distintas —`bin\x86\Debug\...\win-x86\` la solución,
-`bin\Debug\...\win-x64\` el proyecto— y medir sobre el binario viejo ya
-dio dos conclusiones falsas: al programador, que `ResizeClient`
-funcionaba; y al qa, que el apilado no ocurría y que el margen del
-diálogo era de 17 px. Comprobar la marca de tiempo del `.exe` antes de
-creerse una medida.
+**Occhio a quale binario si misura.** Le diverse architetture scrivono
+in cartelle diverse, e misurare sul binario vecchio ha già dato due
+conclusioni false: al programmatore, che `ResizeClient` funzionava; e al
+qa, che l'impilamento non avveniva e che il margine del dialogo era di
+17 px. Controllare data e ora dell'`.exe` prima di credere a una misura.
 
-### Abierto: el instalador silencioso no devuelve el control
+### Aperto: l'installer silenzioso non restituisce il controllo
 
-Encontrado el 13 ago 2026 actualizando de la 4.2.0 a la 4.3.0 en la
-máquina del usuario, con el instalador publicado.
+Trovato il 13 ago 2026 aggiornando dalla 4.2.0 alla 4.3.0 sulla macchina
+dell'utente, con l'installer pubblicato.
 
-**La actualización salió perfecta.** Cerró limpio, volcó —una copia hecha
-300 ms antes y aún no escrita sobrevivió— y pastepad volvió solo seis
-segundos después:
+**L'aggiornamento riuscì perfettamente.** Chiuse in modo pulito, riversò
+—una copia fatta 300 ms prima e non ancora scritta sopravvisse— e
+pastepad tornò da solo sei secondi dopo.
 
-```
-13:37:44.457  nos cierran para actualizarnos; volcando
-13:37:44.459  buzon cerrado
-13:37:50.847  === arranque === pastepad 4.3.0
-```
+La cosa strana è un'altra: `Start-Process -Wait` sull'installer **non
+tornò mai**, e fu interrotto dopo 10 minuti. Il lavoro era fatto dopo 15
+secondi.
 
-Lo raro es otra cosa: `Start-Process -Wait` sobre el instalador **no
-volvió nunca**, y se cortó a los 10 minutos. El trabajo estaba hecho a
-los 15 segundos.
+Il sospetto, non verificato: `RmRestart` lancia pastepad e il processo
+eredita gli handle dell'installer, quindi chi aspetta l'installer
+finisce per aspettare pastepad, che non si chiude mai. Se è così,
+**qualsiasi script di aggiornamento silenzioso resta appeso** — e la
+4.2.0 fu pubblicata proprio perché aggiornare senza sorveglianza
+funzionasse.
 
-La sospecha, sin comprobar: `RmRestart` lanza pastepad y el proceso hereda
-los descriptores del instalador, así que quien espera al instalador acaba
-esperando a pastepad, que no se cierra nunca. Si es eso, **cualquier
-script de actualización silenciosa se queda colgado** — y la 4.2.0 se
-publicó precisamente para que actualizar sin vigilancia funcionara.
+Non riguarda chi esegue l'installer a mano. Verificarlo è guardare il
+processo padre del pastepad riaperto, o lanciare l'installer
+reindirizzando l'output su un file e vedere se torna.
 
-No afecta a quien ejecuta el instalador a mano. Comprobarlo es mirar el
-proceso padre del pastepad reabierto, o lanzar el instalador
-redirigiendo la salida a un archivo y ver si vuelve.
+### Ciò che resta aperto alla chiusura del passo 6
 
-### Lo que queda abierto al cerrar el paso 6
+- **L'avvio a freddo dopo il riavvio non è ancora misurato.** È l'unico
+  numero che manca al requisito due. Lo dà la prima riga di
+  `errori.log` il giorno in cui si riavvia il computer: cerca `pronto
+  in`. A caldo sono 420–463 ms.
+- ~~**L'opzione della cartella dati isola i dati ma NON l'avvio
+  automatico.**~~ **Chiuso nella 4.2.0.** Era successo altre due volte
+  durante il lavoro su quella versione, quindi quell'opzione ora implica
+  non toccare il registro e lo dice nel log.
+- **Senza firma.** SmartScreen avvisa. Il certificato di SignPath è da
+  richiedere, ed esige verifica in due passaggi e approvazione manuale
+  di ogni release. Bisogna firmare **due volte**: l'`.exe` prima di
+  costruire l'installer e l'installer dopo.
+- **Il changelog non ha voci per la 3.0.0 né per la 3.0.1**, anche se i
+  tag esistono. Salta dalla 2.0.0 alla 4.0.0.
 
-- **El arranque en frío tras reiniciar sigue sin medirse.** Es el único
-  número que le falta al requisito dos. Lo da la primera línea de
-  `errores.log` el día que se reinicie el equipo: busca `listo en`.
-  En caliente son 420–463 ms.
-- ~~**`--datos` aísla los datos pero NO el autoarranque.**~~ **Cerrado en
-  la 4.2.0.** Volvió a pasar dos veces durante el trabajo de esa versión,
-  así que `--datos` ya implica no tocar el registro y lo dice en el log.
-- **Sin firmar.** SmartScreen avisa. El certificado de SignPath está por
-  solicitar, y exige verificación en dos pasos y aprobación manual de
-  cada release. Hay que firmar **dos veces**: el `.exe` antes de
-  construir el instalador y el instalador después.
-- **El changelog no tiene entradas de 3.0.0 ni 3.0.1**, aunque los tags
-  existen. Salta de la 2.0.0 a la 4.0.0.
+### Ciò che rimase aperto alla chiusura del passo 4
 
-### Lo que quedó abierto al cerrar el paso 4
+Niente di questo blocca; resta scritto perché non si perda.
 
-Nada de esto bloquea; queda escrito para que no se pierda.
+- **I 18 pallini di accento espongono il loro identificatore crudo**
+  come nome accessibile: `menta_fredda`, `ambra`, `pesca`.
+- **`Registro.PercorsoUsato` non lo legge nessuno.** O si usa
+  nell'avviso di avvio degradato —che oggi dice cosa è fallito ma non
+  dove sta il dettaglio— o si toglie.
+- **`App.xaml` e `Stile.cs` dichiarano gli stessi colori due volte.**
+  Oggi coincidono. Niente impedisce che smettano di farlo, e non ci
+  sarebbe un errore di compilazione a segnalarlo.
 
-- **Las 18 bolitas de acento exponen su identificador crudo** como
-  nombre accesible: `menta_fria`, `ambar`, `durazno`. Iguales en los
-  cuatro idiomas. Con lector de pantalla en inglés se oye `menta_fria`.
-  Traducirlas son 18 claves nuevas.
-- **`Almacen.Problema` sigue solo en español.** Es la única cadena que
-  ve el usuario que no pasa por `T()`, y ahora ya se puede traducir.
-- **`Registro.RutaUsada` no la lee nadie.** O se usa en el aviso de
-  arranque degradado —que hoy dice qué falló pero no dónde está el
-  detalle— o se borra.
-- **`App.xaml` y `Estilo.cs` declaran los mismos colores dos veces.**
-  Hoy coinciden. Nada impide que dejen de hacerlo, y no habría error de
-  compilación que lo cazara.
-- **La causa del fallo de la carpeta sigue sin encontrarse.** El daño
-  está contenido y ahora deja rastro: `HResult` en el log, reintento
-  con espera, y la ruta real del almacén en la línea de arranque.
+### L'errore dell'istanza che non vede la sua cartella
 
-### Fallo abierto: la instancia que no ve su carpeta
+Trovato dal qa il 12 ago 2026, ed era lo stesso sintomo già visto due
+volte senza spiegazione.
 
-Encontrado por el qa el 12 ago 2026, y es el mismo síntoma que ya se
-había visto dos veces sin explicación.
+Un'istanza partì **senza poter usare `%LOCALAPPDATA%\pastepad` per
+niente**: non lesse la cronologia né `config.json`, e non scrisse una
+sola riga nel log. Eppure la scorciatoia andava perfettamente (60/60) e
+l'incolla funzionava. Da fuori sembrava sana. Chiudendosi salvò la
+cronologia vuota sopra quella reale e si perse tutto ciò che era di
+quella sessione.
 
-Una instancia arrancó **sin poder usar `%LOCALAPPDATA%\pastepad` para
-nada**: no leyó `historial.json` ni `config.json`, y no escribió una
-sola línea en `errores.log`. Y sin embargo el atajo iba perfecto
-(60/60) y el pegado funcionaba. Desde fuera parecía sana. Al cerrarse
-guardó el historial vacío encima del real y se perdió todo lo de esa
-sesión.
+Ciò che fu sistemato subito è il danno, che era la cosa grave:
 
-**No se ha reproducido.** La sospecha es que arrancó mientras se
-mataba a la instancia anterior, pero no está confirmado.
+- Un file che esiste e non si può leggere **resta segnato e non si
+  sovrascrive** per tutta la sessione. Quattro prove lo fissano.
+- L'avvio in quello stato **apre il pannello con l'avviso**, invece di
+  fingere normalità.
+- Il log accanto all'eseguibile dice dove sta il dettaglio, e avvisa se
+  quello principale non si è potuto scrivere.
 
-Lo que sí está arreglado es el daño, que era lo grave:
-
-- Un archivo que existe y no se puede leer **queda marcado y no se
-  sobrescribe** en toda la sesión. Cuatro pruebas lo fijan.
-- El arranque en ese estado **abre el panel con el aviso**, en vez de
-  fingir normalidad.
-- El log junto al ejecutable dice dónde está el detalle, y avisa si el
-  principal no se pudo escribir.
-
-La causa raíz sigue sin encontrar. Si vuelve a pasar, ahora deja
-rastro.
+La causa fu trovata il 14 ago 2026: era il reindirizzamento di
+contenitore descritto in `CLAUDE.md`.
 
 ---
 
-**Cuidado al probar:** la versión nueva usa `%LOCALAPPDATA%\pastepad`,
-que es donde está instalada la v3 en esta máquina. Lee y escribe **los
-datos de verdad**. La compatibilidad quedó comprobada en vivo, pero
-cualquier prueba ensucia el historial real. Antes de tocar nada,
-copiar la carpeta.
+**Attenzione provando:** senza l'opzione `--dati` il programma usa
+`%LOCALAPPDATA%\pastepad`, che è la cartella dei **dati veri**.
+Qualsiasi prova sporca la cronologia reale.
 
 ---
 
-## El problema en una frase
+## Il problema in una frase
 
-Reescribir pastepad conservando la lógica ya probada (1.208 líneas y
-19 pruebas) y el formato de datos, de modo que **el atajo global no
-vuelva a morir** — que es lo único que la versión en Python nunca
-logró.
+Riscrivere pastepad conservando la logica già provata (1.208 righe e 19
+prove) e il formato dei dati, in modo che **la scorciatoia globale non
+muoia più** — che è l'unica cosa che la versione in Python non ottenne
+mai.
 
 ---
 
-## Lo que se averiguó
+## Ciò che fu scoperto
 
-### Versiones y plantilla de partida
+### Versioni e modello di partenza
 
-| Qué | Valor |
+| Cosa | Valore |
 |---|---|
-| Windows App SDK estable | 2.3.1 (16 jul 2026) |
+| Windows App SDK stabile | 2.3.1 (16 lug 2026) |
 | .NET | SDK 10; TFM `net10.0-windows10.0.26100.0` |
 | IDE | Visual Studio 2026, workload *WinUI application development* |
-| Sin VS | `dotnet new install Microsoft.WindowsAppSDK.WinUI.CSharp.Templates` y luego `dotnet new winui` |
-| Mínimo de Windows | 10 v1809 (17763) |
+| Senza VS | `dotnet new install Microsoft.WindowsAppSDK.WinUI.CSharp.Templates` e poi `dotnet new winui` |
+| Minimo di Windows | 10 v1809 (17763) |
 
-Fuentes: [descargas del SDK][d1], [primera app WinUI 3][d2],
+Fonti: [download dell'SDK][d1], [prima app WinUI 3][d2],
 [WinUI 3][d3].
 
-**Desempaquetado.** `<WindowsPackageType>None</WindowsPackageType>`
-activa el auto-inicializador del bootstrapper. Requiere el Visual C++
-Redistributable en la máquina destino. El runtime del SDK se resuelve
-de dos formas: instalador aparte, o
-`<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>`, que lo
-mete en la carpeta de salida y elimina la dependencia externa.
-Ver [despliegue desempaquetado][d4] y [distribuir desempaquetado][d5].
+**Non impacchettato.** `<WindowsPackageType>None</WindowsPackageType>`
+attiva l'auto-inizializzatore del bootstrapper. Richiede il Visual C++
+Redistributable sulla macchina di destinazione. Il runtime dell'SDK si
+risolve in due modi: installer a parte, o
+`<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>`, che lo
+mette nella cartella di output ed elimina la dipendenza esterna.
+Vedi [distribuzione non impacchettata][d4] e
+[distribuire non impacchettato][d5].
 
-Sin identidad de paquete se pierden: actualizaciones por App Installer,
-tareas en segundo plano por manifiesto, asociaciones de archivo por
-manifiesto y personalización de mosaico. **Nada de eso lo usa
-pastepad.** La misma página confirma que los mecanismos Win32
-tradicionales —entradas de registro escritas por el instalador y
-accesos directos— siguen funcionando, así que **el autoarranque por
-`HKCU\...\Run` sobrevive tal cual**.
+Senza identità di pacchetto si perdono: aggiornamenti tramite App
+Installer, attività in background da manifesto, associazioni di file da
+manifesto e personalizzazione del riquadro. **pastepad non usa niente di
+tutto questo.** La stessa pagina conferma che i meccanismi Win32
+tradizionali —voci di registro scritte dall'installer e collegamenti—
+continuano a funzionare, quindi **l'avvio automatico da `HKCU\...\Run`
+sopravvive così com'è**.
 
-### El atajo global — el punto crítico
+### La scorciatoia globale — il punto critico
 
-Tres piezas, cada una verificada:
+Tre pezzi, ognuno verificato:
 
-1. **HWND de la ventana** — `WinRT.Interop.WindowNative.GetWindowHandle(this)`.
-   Ver [obtener el HWND][d6].
-2. **Registro** — `RegisterHotKey(hWnd, id, MOD_CONTROL|MOD_SHIFT|MOD_NOREPEAT, vk)`.
-   La documentación dice que con `hWnd` nulo los `WM_HOTKEY` se publican
-   en la cola del **hilo** llamante, y que con un HWND real el sistema
-   los publica en la cola de **esa ventana**. Falla si se asocia el
-   atajo a una ventana creada por otro hilo, así que hay que llamarlo
-   desde el hilo de interfaz. `MOD_NOREPEAT` es `0x4000`, F12 está
-   reservada y el `id` va de `0x0000` a `0xBFFF`.
-   Ver [RegisterHotKey][d7] y [WM_HOTKEY][d8].
-3. **Dónde se atiende** — WinUI 3 no expone `WndProc`. La vía
-   documentada para interceptar los mensajes de un HWND es
-   `SetWindowSubclass` con un `SUBCLASSPROC`, retirado con
-   `RemoveWindowSubclass`. Ver [SetWindowSubclass][d9], la
-   [discusión 8934][d10] del repo de WinUI y la [pregunta 5815][d11],
-   que plantea exactamente esta duda y se cerró sin respuesta oficial.
+1. **HWND della finestra** — `WinRT.Interop.WindowNative.GetWindowHandle(this)`.
+   Vedi [ottenere l'HWND][d6].
+2. **Registrazione** — `RegisterHotKey(hWnd, id, MOD_CONTROL|MOD_SHIFT|MOD_NOREPEAT, vk)`.
+   La documentazione dice che con `hWnd` nullo i `WM_HOTKEY` si
+   pubblicano nella coda del **thread** chiamante, e che con un HWND
+   reale il sistema li pubblica nella coda di **quella finestra**.
+   Fallisce se si associa la scorciatoia a una finestra creata da un
+   altro thread, quindi va chiamato dal thread dell'interfaccia.
+   `MOD_NOREPEAT` è `0x4000`, F12 è riservato e l'`id` va da `0x0000` a
+   `0xBFFF`. Vedi [RegisterHotKey][d7] e [WM_HOTKEY][d8].
+3. **Dove si gestisce** — WinUI 3 non espone `WndProc`. La strada
+   documentata per intercettare i messaggi di un HWND è
+   `SetWindowSubclass` con un `SUBCLASSPROC`, tolto con
+   `RemoveWindowSubclass`. Vedi [SetWindowSubclass][d9], la
+   [discussione 8934][d10] del repo di WinUI e la [domanda 5815][d11],
+   che pone esattamente questo dubbio e fu chiusa senza risposta
+   ufficiale.
 
-**El fallo de fondo de la versión anterior.** El código en Python llama
-a `RegisterHotKey(None, ...)` — atajo de hilo, no de ventana — y bombea
-la cola en un hilo propio. En WinUI eso no vale: un mensaje de hilo
-(`msg.hwnd == NULL`) no lo despacha `DispatchMessage` a ningún
-procedimiento de ventana, así que la bomba de XAML lo descartaría.
-**Hay que pasar un HWND real.** Ese es el cambio de fondo, no un
-detalle del portado.
+**L'errore di fondo della versione precedente.** Il codice in Python
+chiama `RegisterHotKey(None, ...)` — scorciatoia di thread, non di
+finestra — e pompa la coda in un thread proprio. In WinUI non vale: un
+messaggio di thread (`msg.hwnd == NULL`) `DispatchMessage` non lo
+smista a nessuna procedura di finestra, quindi il ciclo di XAML lo
+scarterebbe. **Bisogna passare un HWND reale.** Questo è il cambio di
+fondo, non un dettaglio del porting.
 
-**Los dos mecanismos posibles:**
+**I due meccanismi possibili:**
 
-| | Subclasear la ventana XAML | Ventana solo-mensajes propia (`HWND_MESSAGE`) |
+| | Subclass della finestra XAML | Finestra solo-messaggi propria (`HWND_MESSAGE`) |
 |---|---|---|
-| Fiabilidad | Depende de que la ventana XAML nunca se destruya | Independiente del ciclo de vida de la interfaz |
-| Partes móviles | 1 (el subclase) | 1 (nuestra clase de ventana), pero es código nuestro entero |
-| Riesgo conocido | [issue 8669][d12]: `ExecutionEngineException` aleatorio al subclasear | Sin issue conocido |
-| Verificado | Sí, todas las piezas | `RegisterHotKey` sí; que la bomba de WinUI despache ahí, **no** |
-| Sirve para el portapapeles | Sí | Sí |
+| Affidabilità | Dipende dal fatto che la finestra XAML non venga mai distrutta | Indipendente dal ciclo di vita dell'interfaccia |
+| Parti mobili | 1 (il subclass) | 1 (la nostra classe di finestra), ma è codice interamente nostro |
+| Rischio noto | [issue 8669][d12]: `ExecutionEngineException` casuale facendo il subclass | Nessuna issue nota |
+| Verificato | Sì, tutti i pezzi | `RegisterHotKey` sì; che il ciclo di WinUI smisti lì, **no** (poi verificato) |
+| Serve per gli appunti | Sì | Sì |
 
-**Se elige la ventana solo-mensajes propia, con el subclase como plan
-B.** El requisito número uno es que el atajo funcione siempre, y
-pastepad se oculta a la bandeja: atar el atajo a la ventana visible
-reintroduce justo el acoplamiento que mató la versión anterior. Además
-el patrón ya está escrito y probado en `windows.py` (`abrir_buzon`, con
-los `argtypes` de `HWND_MESSAGE` que costaron encontrar).
+**Si sceglie la finestra solo-messaggi propria, con il subclass come
+piano B.** Il requisito numero uno è che la scorciatoia funzioni sempre,
+e pastepad si nasconde nell'area di notifica: legare la scorciatoia alla
+finestra visibile reintroduce proprio l'accoppiamento che uccise la
+versione precedente. Inoltre lo schema era già scritto e provato in
+`windows.py` (`abrir_buzon`, con gli `argtypes` di `HWND_MESSAGE` che
+era costato trovare).
 
-### El portapapeles
+### Gli appunti
 
 | | `AddClipboardFormatListener` (Win32) | `Clipboard.ContentChanged` (WinRT) |
 |---|---|---|
-| Aviso | `WM_CLIPBOARDUPDATE` a nuestra ventana | Evento estático |
-| Leer en segundo plano | Sí | **No.** La documentación dice que solo se accede al portapapeles con la app enfocada |
-| Formatos privados | `RegisterClipboardFormat`, `IsClipboardFormatAvailable`, `GetClipboardData` | Sin vía documentada |
+| Avviso | `WM_CLIPBOARDUPDATE` alla nostra finestra | Evento statico |
+| Leggere in secondo piano | Sì | **No.** La documentazione dice che agli appunti si accede solo con l'app in primo piano |
+| Formati privati | `RegisterClipboardFormat`, `IsClipboardFormatAvailable`, `GetClipboardData` | Nessuna strada documentata |
 
-**Gana Win32, sin discusión.** Un gestor de portapapeles vive en
-segundo plano por definición: la API WinRT queda descartada por diseño,
-no por gusto. Ver [AddClipboardFormatListener][d13] y
-[Clipboard de WinRT][d14].
+**Vince Win32, senza discussione.** Un gestore di appunti vive in
+secondo piano per definizione: la API WinRT è scartata per progetto,
+non per gusto. Vedi [AddClipboardFormatListener][d13] e
+[Clipboard di WinRT][d14].
 
-Los cuatro formatos privados se leen igual que hoy — dos por presencia
+I quattro formati privati si leggono come prima — due per presenza
 (`Clipboard Viewer Ignore`, `ExcludeClipboardContentFromMonitorProcessing`)
-y dos por valor cero (`CanIncludeInClipboardHistory`,
-`CanUploadToCloudClipboard`) — portando `contenido_privado()` línea por
-línea.
+e due per valore zero (`CanIncludeInClipboardHistory`,
+`CanUploadToCloudClipboard`) — portando `contenido_privado()` riga per
+riga.
 
-### Ventana y bandeja
+### Finestra e area di notifica
 
-- **Sin marco** — `OverlappedPresenter.SetBorderAndTitleBar(false, false)`,
-  con `IsAlwaysOnTop`, `IsResizable` y
-  `PreferredMinimum/MaximumWidth/Height`, que cubre los límites de
-  300×340 a 720×1100 de `config.py` sin escribir código.
-  Ver [OverlappedPresenter][d15].
-- **Ocultar sin destruir** — `AppWindow.Hide()` oculta la ventana de
-  todas las representaciones del sistema pero mantiene el objeto vivo.
-  Además `IsShownInSwitchers` para que no salga en Alt+Tab ni en la
-  barra de tareas, y `MoveAndResize` para colocarla junto al cursor.
-  Ver [AppWindow][d16].
+- **Senza cornice** — `OverlappedPresenter.SetBorderAndTitleBar(...)`,
+  con `IsAlwaysOnTop`, `IsResizable` e
+  `PreferredMinimum/MaximumWidth/Height`, che copre i limiti da 300×340
+  a 720×1100 senza scrivere codice. Vedi [OverlappedPresenter][d15].
+- **Nascondere senza distruggere** — `AppWindow.Hide()` nasconde la
+  finestra da tutte le rappresentazioni del sistema ma tiene vivo
+  l'oggetto. Inoltre `IsShownInSwitchers` perché non compaia in Alt+Tab
+  né nella barra delle applicazioni, e `MoveAndResize` per collocarla
+  vicino al cursore. Vedi [AppWindow][d16].
 - **Mica** — `<Window.SystemBackdrop><MicaBackdrop/></Window.SystemBackdrop>`,
-  propiedad desde el SDK 1.3. Acrílico con `DesktopAcrylicBackdrop`.
-  **Mica solo pinta en Windows 11 (22000+)**; por debajo, con
-  transparencia desactivada o en ahorro de batería, cae a un color
-  sólido. La paleta `#0B0B0D` de `ESPECIFICACION-UI.md` es el plan B
-  natural. Ver [system backdrops][d17] y [Mica][d18].
-- **Bandeja** — WinUI 3 no la trae y la [propuesta 2020][d19] sigue sin
-  implementarse. Se elige `Shell_NotifyIcon` directo sobre la misma
-  ventana solo-mensajes del atajo, no la librería `H.NotifyIcon.WinUI`:
-  ese `WndProc` ya va a existir, así que el icono cuesta unas 40 líneas
-  más y cero dependencias.
+  proprietà dall'SDK 1.3. Acrilico con `DesktopAcrylicBackdrop`.
+  **Mica dipinge solo su Windows 11 (22000+)**; sotto, con la
+  trasparenza disattivata o in risparmio batteria, ricade su un colore
+  pieno. La tavolozza `#0B0B0D` di `SPECIFICHE-UI.md` è il piano B
+  naturale. Vedi [system backdrops][d17] e [Mica][d18].
+- **Area di notifica** — WinUI 3 non la porta e la [proposta 2020][d19]
+  non è ancora implementata. Si sceglie `Shell_NotifyIcon` diretto sulla
+  stessa finestra solo-messaggi della scorciatoia, non la libreria
+  `H.NotifyIcon.WinUI`: quel `WndProc` esisterà comunque, quindi l'icona
+  costa una quarantina di righe in più e zero dipendenze.
 
-### Instancia única
+### Istanza unica
 
-`AppInstance.FindOrRegisterForKey`, `IsCurrent` y
-`RedirectActivationToAsync`, con `DISABLE_XAML_GENERATED_MAIN` y un
-`Program.cs` propio — obligatorio de todas formas, porque la
-redirección tiene que decidirse antes de crear ninguna ventana. Hay
-[guía oficial con código][d20] y [ejemplo para Win32 desempaquetado][d21].
+`AppInstance.FindOrRegisterForKey`, `IsCurrent` e
+`RedirectActivationToAsync`, con `DISABLE_XAML_GENERATED_MAIN` e un
+`Program.cs` proprio — obbligatorio comunque, perché il
+reindirizzamento va deciso prima di creare qualsiasi finestra. C'è una
+[guida ufficiale con codice][d20] e un
+[esempio per Win32 non impacchettato][d21].
 
-Matiz: la propia guía avisa de problemas conocidos con apps recortadas
-y recomienda `PublishTrimmed=false`. Si estorbara, el mutex con nombre
-de `reservar_instancia()` funciona sin depender del SDK.
+Sfumatura: la guida stessa avverte di problemi noti con le app
+sottoposte a trimming e raccomanda `PublishTrimmed=false`.
 
-### Empaquetado y Native AOT
+### Impacchettamento e Native AOT
 
-- **Native AOT sí es viable**: `PublishAot` está soportado desde el
-  Windows App SDK **1.6** y exige `Microsoft.Windows.CsWinRT` 2.1.1 o
-  posterior. Advertencia oficial en esas notas: las apps compiladas con
-  AOT pueden colgarse tras navegar entre páginas por una condición de
-  carrera en el recolector. Ver [notas de la 1.6][d22].
-- **EXE único**: `PublishSingleFile` funciona solo si es desempaquetado
-  *y* self-contained, con el conjunto exacto `WindowsPackageType=None`,
+- **Native AOT è fattibile**: `PublishAot` è supportato dal Windows App
+  SDK **1.6** ed esige `Microsoft.Windows.CsWinRT` 2.1.1 o successivo.
+  Avvertenza ufficiale in quelle note: le app compilate con AOT possono
+  bloccarsi dopo aver navigato tra le pagine per una condizione di corsa
+  nel garbage collector. Vedi [note della 1.6][d22].
+- **EXE unico**: `PublishSingleFile` funziona solo se non impacchettato
+  *e* self-contained, con l'insieme esatto `WindowsPackageType=None`,
   `WindowsAppSDKSelfContained`, `SelfContained`, `EnableMsixTooling`,
-  `IncludeAllContentForSelfExtract` y `PublishSingleFile`. Extrae
-  dependencias a un temporal en el primer arranque: no es un binario
-  cerrado.
-- **Instalación en `%LOCALAPPDATA%`**: se copia la carpeta de salida.
-  La documentación sugiere WiX o Inno Setup para envolverla.
+  `IncludeAllContentForSelfExtract` e `PublishSingleFile`. Estrae le
+  dipendenze in una cartella temporanea al primo avvio: non è un binario
+  chiuso.
+- **Installazione in `%LOCALAPPDATA%`**: si copia la cartella di
+  output. La documentazione suggerisce WiX o Inno Setup per avvolgerla.
+  Alla fine fu scelto Inno Setup: `installer/pastepad.iss`.
+- **P/Invoke**: [`Microsoft.Windows.CsWin32`][d23], generatore di
+  codice di Microsoft. Alla fine le firme furono scritte a mano in
+  `Sistema/Nativo.cs`, perché sono poche.
 
-  **Corrección al plan original**, comprobada el 12 ago 2026: decía que
-  «Inno Setup ya se usa en el repo». **No es cierto.** En `instalador/`
-  hay `instalar.bat`, `desinstalar.bat`, un `LEEME.txt` y la salida de
-  PyInstaller. No hay ningún `.iss`. Así que el instalador del paso 5
-  se elige de cero: o se traducen esos `.bat`, o se monta Inno Setup
-  por primera vez.
-- **P/Invoke**: [`Microsoft.Windows.CsWin32`][d23], generador de código
-  de Microsoft. Se listan las funciones en `NativeMethods.txt` y genera
-  las firmas correctas — evita el tipo de error que reventó el
-  `HWND_MESSAGE` en Python.
+### Prove
 
-### Pruebas
-
-Las 19 pruebas cubren `modelo.py` y `busqueda.py`, que no importan nada
-gráfico. Van a una **biblioteca de clases `net10.0` pura, sin TFM de
-Windows y sin referencia al Windows App SDK**, y se prueban con
-**MSTest** (`dotnet test`). Sin ventana, sin runtime del SDK, sin hilo
-STA. Es la misma separación que permitió migrar de tkinter a Flet
-reutilizando 906 líneas: se conserva porque funcionó.
+Le 19 prove coprivano `modelo.py` e `busqueda.py`, che non importavano
+niente di grafico. Vanno in una **libreria di classi `net10.0` pura,
+senza TFM di Windows e senza riferimento al Windows App SDK**, e si
+provano con **MSTest** (`dotnet test`). Senza finestra, senza runtime
+dell'SDK, senza thread STA. È la stessa separazione che permise di
+migrare da tkinter a Flet riusando 906 righe: si conserva perché ha
+funzionato.
 
 ---
 
-## El plan por pasos
+## Il piano per passi
 
-### Paso 1 — Prueba de fuego del atajo y el portapapeles
+### Passo 1 — Prova del fuoco della scorciatoia e degli appunti
 
-Antes de nada más. Un proyecto WinUI 3 desempaquetado **vacío**: una
-ventana, un contador en pantalla, nada más.
+Prima di tutto il resto. Un progetto WinUI 3 non impacchettato
+**vuoto**: una finestra, un contatore a schermo, nient'altro.
 
-- `Program.cs` propio con `DISABLE_XAML_GENERATED_MAIN` e instancia
-  única.
-- Crear en el hilo de interfaz una ventana solo-mensajes
-  (`CreateWindowExW` con padre `HWND_MESSAGE`) con `WndProc` propio y
-  el delegado guardado en un campo **estático**.
-- `RegisterHotKey(hwndBuzon, 1, MOD_CONTROL|MOD_SHIFT|MOD_NOREPEAT, 0x56)`
-  y `AddClipboardFormatListener(hwndBuzon)`.
-- Contar `WM_HOTKEY` y `WM_CLIPBOARDUPDATE` en pantalla y en un log.
+- `Program.cs` proprio con `DISABLE_XAML_GENERATED_MAIN` e istanza
+  unica.
+- Creare nel thread dell'interfaccia una finestra solo-messaggi
+  (`CreateWindowExW` con padre `HWND_MESSAGE`) con `WndProc` proprio e
+  il delegato tenuto in un campo **statico**.
+- `RegisterHotKey(hwnd, 1, MOD_CONTROL|MOD_SHIFT|MOD_NOREPEAT, 0x56)` e
+  `AddClipboardFormatListener(hwnd)`.
+- Contare `WM_HOTKEY` e `WM_CLIPBOARDUPDATE` a schermo e in un log.
 
-**Cómo se sabe que quedó bien:** 100 pulsaciones dan 100 incrementos,
-sin ninguna pérdida; y sigue contando después de 8 horas residente,
-tras bloquear y desbloquear la sesión, tras suspender el equipo, y con
-la ventana oculta con `AppWindow.Hide()`. Si falla el despacho a la
-ventana solo-mensajes, se repite con `SetWindowSubclass` sobre el HWND
-de la ventana XAML. **No se pasa al paso 2 hasta que uno de los dos dé
-100 de 100.**
+**Come si sa che è venuto bene:** 100 pressioni danno 100 incrementi,
+senza nessuna perdita; e continua a contare dopo 8 ore residente, dopo
+aver bloccato e sbloccato la sessione, dopo aver sospeso il computer, e
+con la finestra nascosta con `AppWindow.Hide()`. Se fallisce lo
+smistamento alla finestra solo-messaggi, si ripete con
+`SetWindowSubclass` sull'HWND della finestra XAML. **Non si passa al
+passo 2 finché uno dei due non dà 100 su 100.**
 
-### Paso 2 — La lógica y las 19 pruebas
+### Passo 2 — La logica e le 19 prove
 
-Biblioteca `net10.0` pura con `Modelo`, `Busqueda` y `Config`.
-Traducir `modelo.py` y `busqueda.py` respetando el formato JSON al pie
-de la letra: claves `t/f/s/b/i/u/c`, fijados primero, escritura atómica
-a `.tmp` y `File.Move` con sobrescritura, volcado diferido de 3 s con
-guardado inmediato para lo que el usuario hace a propósito. Después,
-las 19 pruebas de `prueba.py` a MSTest, una por una y con el mismo
-nombre.
+Libreria `net10.0` pura con le regole dei dati, la ricerca e la
+configurazione. Tradurre `modelo.py` e `busqueda.py` rispettando il
+formato JSON alla lettera: chiavi `t/f/s/b/i/u/c`, fissati per primi,
+scrittura atomica su `.tmp` e `File.Move` con sovrascrittura,
+riversamento rimandato di 3 s con salvataggio immediato per ciò che
+l'utente fa apposta. Poi, le 19 prove di `prueba.py` in MSTest, una per
+una.
 
-**Cómo se sabe que quedó bien:** `dotnet test` da 19 en verde sin abrir
-ventana, y una instalación existente de v3.0.1 abre con la versión
-nueva sin perder ni un snippet ni un fijado.
+**Come si sa che è venuto bene:** `dotnet test` dà tutto in verde senza
+aprire finestre, e un'installazione esistente della v3.0.1 si apre con
+la versione nuova senza perdere né uno snippet né un fissato.
 
-### Paso 3 — La cáscara
+### Passo 3 — Il guscio
 
-Sobre el esqueleto validado en el paso 1: ventana sin marco,
-`IsShownInSwitchers = false`, Mica con caída a `#0B0B0D`, icono de
-bandeja con `Shell_NotifyIcon` sobre la misma ventana solo-mensajes,
-mostrar y ocultar junto al cursor con `MoveAndResize` respetando el
-área útil del monitor, y el ciclo de pegado portado de `windows.py`:
-guardar el `hwnd` activo **en el instante del atajo**,
-`AttachThreadInput` y `SetForegroundWindow`, soltar Shift y Alt, y
-`Ctrl+V`. Registro de errores desde el primer día, con
-`AppDomain.UnhandledException` y `TaskScheduler.UnobservedTaskException`
-enganchados los dos. Ningún `catch` mudo.
+Sullo scheletro validato nel passo 1: finestra senza cornice,
+`IsShownInSwitchers = false`, Mica con ricaduta su `#0B0B0D`, icona
+nell'area di notifica con `Shell_NotifyIcon` sulla stessa finestra
+solo-messaggi, mostrare e nascondere vicino al cursore con
+`MoveAndResize` rispettando l'area utile del monitor, e il ciclo di
+incolla portato da `windows.py`: salvare l'`hwnd` attivo **nell'istante
+della scorciatoia**, `AttachThreadInput` e `SetForegroundWindow`,
+rilasciare Shift e Alt, e `Ctrl+V`. Registro degli errori dal primo
+giorno, con `AppDomain.UnhandledException` e
+`TaskScheduler.UnobservedTaskException` agganciati tutti e due. Nessun
+`catch` muto.
 
-**Cómo se sabe que quedó bien:** copiar en Word, abrir con el atajo,
-pegar en el Bloc de notas y que el texto caiga donde estaba el cursor.
-Copiar desde KeePass o el modo incógnito de Chrome y que **no**
-aparezca en el historial.
+**Come si sa che è venuto bene:** copiare in Word, aprire con la
+scorciatoia, incollare nel Blocco note e il testo cade dove stava il
+cursore. Copiare da KeePass o dalla modalità in incognito di Chrome e
+**non** compare nella cronologia.
 
-### Paso 4 — La interfaz
+### Passo 4 — L'interfaccia
 
-Contra `docs/ESPECIFICACION-UI.md` y las maquetas 01–19, en el orden
-que el propio documento recomienda: colores primero, luego 13, 14 y 15,
-luego los vacíos 10, 11 y 12. Las maquetas 20 y 33 no son
-especificación, y la 26 y la 27 son diálogos de Windows.
+Su `docs/SPECIFICHE-UI.md` e le maquette 01–19, nell'ordine che il
+documento stesso raccomanda: prima i colori, poi 13, 14 e 15, poi gli
+stati vuoti 10, 11 e 12. Le maquette 20 e 33 non sono specifica, e la 26
+e la 27 sono dialoghi di Windows.
 
-**Cómo se sabe que quedó bien:** los hex del código coinciden uno a uno
-con la tabla de la sección 2 del documento.
+**Come si sa che è venuto bene:** gli esadecimali del codice coincidono
+uno a uno con la tabella della sezione 2 del documento.
 
-### Paso 5 — Publicar y medir
+### Passo 5 — Pubblicare e misurare
 
-`WindowsPackageType=None` y `WindowsAppSDKSelfContained=true`,
-instalador a `%LOCALAPPDATA%\pastepad` —por decidir: traducir los
-`.bat` que ya hay o montar Inno Setup—, autoarranque por
-`HKCU\...\Run`. Medir memoria residente, tiempo de apertura del panel y
-arranque en frío. Native AOT **al final y como experimento medido**, no
-como premisa: si aporta poco o reaparece el cuelgue documentado tras
-navegar, se deja fuera. La versión sale del tag, no escrita a mano.
+`WindowsPackageType=None` e `WindowsAppSDKSelfContained=true`, installer
+per utente, avvio automatico da `HKCU\...\Run`. Misurare la memoria
+residente, il tempo di apertura del pannello e l'avvio a freddo. Native
+AOT **alla fine e come esperimento misurato**, non come premessa: se
+aggiunge poco o ricompare il blocco documentato dopo la navigazione, si
+lascia fuori. La versione esce dal tag, non scritta a mano.
 
-**Cómo se sabe que quedó bien:** el `.exe` instalado —no el proyecto en
-depuración— pasa las pruebas del paso 1 y del paso 3 en una máquina
-limpia, movido de carpeta al menos una vez.
+**Come si sa che è venuto bene:** l'`.exe` installato —non il progetto
+in debug— passa le prove del passo 1 e del passo 3 su una macchina
+pulita, spostato di cartella almeno una volta.
 
-### Cambios que pidió el usuario durante el paso 4
+### Cambi chiesti dall'utente durante il passo 4
 
-No son desvíos del plan: son decisiones suyas, tomadas al ver la
-aplicación corriendo. Quedan aquí porque contradicen a
-`ESPECIFICACION-UI.md`, que se escribió antes.
+Non sono deviazioni dal piano: sono decisioni sue, prese vedendo
+l'applicazione girare. Stanno qui perché contraddicono le specifiche,
+scritte prima.
 
-**1. El diseño se adapta a WinUI 3, no al revés.** Usar los materiales
-y el sistema de temas del framework y luego taparlos es pagar el coste
-sin cobrar el beneficio. Coincide con el motivo por el que
-`TRASPASO.md` eligió WinUI 3.
+**1. Il design si adatta a WinUI 3, non il contrario.** Usare i
+materiali e il sistema di temi del framework e poi coprirli è pagare il
+costo senza incassare il beneficio. Coincide con il motivo per cui
+`PASSAGGIO.md` scelse WinUI 3.
 
-**2. El tema sigue a Windows y cambia en vivo.** Con el panel abierto,
-si Windows pasa de oscuro a claro, el panel pasa con él. `"tema":
-"auto"` de `config.json` significa eso. Claro y oscuro explícitos se
-conservan como preferencia.
+**2. Il tema segue Windows e cambia dal vivo.** A pannello aperto, se
+Windows passa da scuro a chiaro, il pannello passa con lui. `"tema":
+"auto"` di `config.json` significa questo. Chiaro e scuro espliciti si
+conservano come preferenza.
 
-**3. Fuera los tamaños fijos.** `mini`, `chico`, `mediano` y `grande`
-desaparecen de Apariencia: el panel es adaptable y todo su contenido se
-ajusta al redimensionar. Afecta a `Config.Tamanos` y a la sección
-«Tamaño» de la maqueta 08.
+**3. Via le dimensioni fisse.** `mini`, `piccolo`, `medio` e `grande`
+spariscono da Aspetto: il pannello è adattabile e tutto il suo contenuto
+si regola ridimensionando.
 
-**4. Falta el selector de idioma.** `pastepad/idiomas.py` tiene **4
-idiomas** —es, en, pt, fr— con 230 textos, y la maqueta 08 declara
-Color, Tamaño, Carpeta y Atajo, pero **ningún idioma**. Es un hueco de
-la especificación, no del código.
+**4. Mancava il selettore della lingua.** La versione originale aveva 4
+lingue —es, en, pt, fr— e la maquette 08 non dichiarava nessuna lingua.
+Era un buco delle specifiche, non del codice. (In questa copia la
+lingua è una sola e il selettore non c'è.)
 
-**5. Apariencia hay que reorganizarla.** Tal cual está no queda como un
-programa terminado, y el objetivo es que esto salga a producción.
+**5. Aspetto va riorganizzato.** Così com'era non sembrava un programma
+finito, e l'obiettivo è che vada in produzione.
 
-**6. `tenue` sube hasta cumplir contraste AA.** Medido por el diseñador:
-hoy da entre 2.89:1 (`salvia`) y 3.38:1 (`lila`) sobre los 12 fondos,
-cuando WCAG AA pide 4.5:1 para texto normal. Es el color de los
-subtítulos de fila y de los estados vacíos, o sea texto que hay que
-poder leer.
+**6. `tenue` sale fino a rispettare il contrasto AA.** Misurato dal
+designer: dava tra 2.89:1 e 3.38:1 sui 12 sfondi, quando WCAG AA chiede
+4.5:1 per il testo normale. È il colore dei sottotitoli di riga e degli
+stati vuoti, cioè testo che bisogna poter leggere.
 
-El usuario decidió el 12 ago 2026 subirlo **aceptando que cambia el
-aspecto de las doce paletas**. Legibilidad por delante del aspecto
-heredado de `estilo.py`.
+L'utente decise il 12 ago 2026 di alzarlo **accettando che cambiasse
+l'aspetto delle dodici tavolozze**. Leggibilità prima dell'aspetto
+ereditato.
 
-Se recalcula por paleta, no un valor único: cada fondo necesita el suyo
-para llegar a 4.5:1. Y se comprueba **calculando el contraste**, no
-mirándolo.
+Si ricalcola per tavolozza, non un valore unico: ogni sfondo ha bisogno
+del suo per arrivare a 4.5:1. E si verifica **calcolando il contrasto**,
+non guardandolo.
 
-**Y arrastró un ajuste que no estaba pedido: `medio` sube en seis
-paletas.** Al subir `tenue` hasta AA, en cuatro fondos claros quedaba
-pegado a `medio` —en `salvia`, 1.07:1 entre uno y otro— y el subtítulo
-dejaba de leerse como secundario. Como `tenue` ya no puede bajar sin
-romper AA, el escalón solo se recupera subiendo `medio`. Se fijó en
-1.30:1, el que ya tenían las paletas sanas.
+**E si portò dietro una correzione non richiesta: `medio` sale in sei
+tavolozze.** Alzando `tenue` fino ad AA, in quattro sfondi chiari
+restava attaccato a `medio` —in `salvia`, 1.07:1 tra l'uno e l'altro— e
+il sottotitolo smetteva di leggersi come secondario. Siccome `tenue` non
+può più scendere senza rompere AA, il gradino si recupera solo alzando
+`medio`. Fu fissato a 1.30:1, quello che avevano già le tavolozze sane.
 
-El diseñador lo marcó como fuera de lo autorizado y el usuario lo
-aprobó después, el 12 ago 2026: **se queda**. No se revierte sin una
-razón nueva.
+Il designer lo segnò come fuori dall'autorizzato e l'utente lo approvò
+dopo, il 12 ago 2026: **resta**. Non si annulla senza un motivo nuovo.
 
-**7. El radio de esquina lo pone Windows, y es el máximo posible.** El
-usuario pidió más redondeo. No se puede: `DWM_WINDOW_CORNER_PREFERENCE`
-tiene cuatro valores —por defecto, no redondear, redondeado y
-redondeado pequeño— y **ninguno acepta un número de píxeles**. Ya se
-pide el grande, que mide 8 px a escala 100% y sube con el DPI.
+**7. Il raggio degli angoli lo mette Windows, ed è il massimo
+possibile.** L'utente chiese più arrotondamento. Non si può:
+`DWM_WINDOW_CORNER_PREFERENCE` ha quattro valori —predefinito, non
+arrotondare, arrotondato e arrotondato piccolo— e **nessuno accetta un
+numero di pixel**. Si chiede già quello grande, che misura 8 px al 100%
+di scala e cresce con il DPI.
 
-Para más habría que dibujar las esquinas nosotros con una ventana sin
-marco del sistema, y eso **reabre los dos defectos que ya se
-arreglaron**: vuelve la banda de la barra de título y vuelven las cuñas
-en las esquinas. Decidido el 12 ago 2026: **se deja como está.**
+Per averne di più bisognerebbe disegnare gli angoli noi con una
+finestra senza cornice di sistema, e questo **riapre i due difetti già
+sistemati**: torna la fascia della barra del titolo e tornano i cunei
+negli angoli. Deciso il 12 ago 2026: **si lascia com'è.**
 
-Los 20 px que pedía la especificación quedan superados por lo que la
-plataforma permite. El panel ya no dibuja esquinas ni borde propios:
-los ponía encima de los del sistema y esa duplicación era la causa de
-las cuñas.
+**8. Resta da decidere: la barra bianca di focus sull'accento `oro`**
+dà 1.44:1, sotto il 3:1 che chiede WCAG 1.4.11 per gli elementi non
+testuali. Resta bianca perché il suo compito è essere un segnale di
+forma, non di colore, e comanda la maquette. Annotato con il numero nel
+caso un giorno si riveda.
 
-**8. Queda sin decidir: la barra blanca de foco sobre el fondo `oro`**
-da 1.44:1, por debajo del 3:1 que pide WCAG 1.4.11 para elementos no
-textuales. Se mantiene blanca porque su trabajo es ser señal de forma,
-no de color, y la maqueta manda. Anotado con el número por si algún día
-se revisa.
+### Dopo la pubblicazione: che l'aggiornamento arrivi
 
-### Después de publicar: que la actualización llegue
+Deciso il 13 ago 2026, con il piano del pianificatore davanti.
 
-Decidido el 13 ago 2026, con el plan del planificador delante.
+**Il requisito**, con le parole dell'utente: «è importante che chiunque
+abbia il mio programma si aggiorni anche lui». Chi aveva installato la
+4.0.0 restava lì per sempre — e si portava dietro due errori che
+distruggevano testo in silenzio.
 
-**El requisito**, con las palabras del usuario: «es importante que
-cualquier persona que tenga mi programa también se le actualice». Hoy
-quien instaló la 4.0.0 se queda ahí para siempre — y arrastra dos
-fallos que destruían texto en silencio.
+**Si scarta Velopack**, anche se è lo strumento fatto per questo, per
+tre motivi misurati:
 
-**Se descarta Velopack**, aunque sea la herramienta hecha para esto, por
-tres motivos medidos:
+1. Installa in `%LOCALAPPDATA%\{nome}`, che con il nostro nome **è la
+   cartella dei dati**. Metterebbe il suo aggiornatore accanto alla
+   cronologia.
+2. L'avvio automatico scriverebbe il percorso dell'eseguibile interno e
+   non quello del lanciatore che Velopack usa per sopravvivere agli
+   aggiornamenti, e la sua documentazione **non copre l'avvio con
+   Windows**. Il modo di fallire sarebbe «la scorciatoia non parte», che
+   è il requisito numero uno.
+3. Le 4.0.x sono già installate con Inno: migrare lascerebbe **due
+   installazioni**, e quella che perde la scorciatoia resta come
+   finestra muta.
 
-1. Instala en `%LOCALAPPDATA%\{nombre}`, que con nuestro nombre **es la
-   carpeta de datos**. Pondría su actualizador junto a `historial.json`.
-2. `Arranque.cs` escribiría la ruta del ejecutable interno y no la del
-   lanzador que Velopack usa para sobrevivir a las actualizaciones, y su
-   documentación **no cubre el arranque con Windows**. El modo de fallo
-   sería «el atajo no arranca», que es el requisito número uno.
-3. Las 4.0.x ya están instaladas con Inno: migrar dejaría **dos
-   instalaciones**, y la que pierda el atajo queda como ventana muda.
+**Si sceglie il noioso**: avviso dentro il pannello usando la API di
+GitHub. Nessun canale nuovo, nessun modello di installazione nuovo.
+L'installer che c'è sostituisce già senza duplicare, ammette la modalità
+silenziosa e non tocca i dati.
 
-**Se elige lo aburrido**: aviso dentro del panel usando la API de
-GitHub. Nada de canal nuevo, nada de modelo de instalación nuevo. El
-instalador que hay ya reemplaza sin duplicar, admite modo silencioso y
-no toca los datos.
+Dato verificato dal vivo: la API restituisce il **`digest`** dell'asset
+nella stessa risposta della URL di download. Ancora migliore del
+`SHA256.txt`, che è un file sciolto dentro la release stessa.
 
-Dato comprobado en vivo: la API devuelve el **`digest`** del asset en la
-misma respuesta que la URL de descarga. Mejor ancla que el `SHA256.txt`,
-que es un archivo suelto dentro de la propia release.
+**Avvisa, non aggiorna da solo.** Decisione dell'utente: «che chieda
+alle persone». E c'è un motivo tecnico a sostegno: il riversamento della
+cronologia è rimandato e **si forza solo uscendo dall'area di
+notifica**, quindi una chiusura imposta può perdere fino a 3 secondi di
+copie. Chi deve chiudere pastepad è pastepad, riversando prima.
 
-**Avisa, no actualiza solo.** Decisión del usuario: «que pregunte a las
-personas». Y hay un motivo técnico que la respalda: el volcado del
-historial es diferido y **solo se fuerza al salir desde la bandeja**, así
-que un cierre impuesto puede perder hasta 3 segundos de copias. Quien
-tiene que cerrar pastepad es pastepad, volcando primero.
+**Diviso in due, su richiesta dell'utente:**
 
-**Partido en dos, a petición del usuario:**
+- **4.1.0** — controllare, avvisare nel pannello, e il pulsante **apre
+  la pagina della release nel browser**. Un solo pezzo nuovo, zero
+  rischi per la cronologia. Effetto collaterale buono: scaricando con il
+  browser torna il contrassegno del web, quindi SmartScreen continua a
+  proteggere finché il binario non è firmato.
+- **4.2.0 — fatto, e risultò essere un'altra cosa.** La domanda era se
+  il Restart Manager raggiunge la finestra nascosta. Misurato con la sua
+  stessa API su pastepad in esecuzione: **no**, e per due motivi
+  insieme.
 
-- **4.1.0** — comprobar, avisar en el panel, y el botón **abre la página
-  de la release en el navegador**. Una sola pieza nueva, cero riesgo
-  sobre el historial. Efecto secundario bueno: descargando con el
-  navegador vuelve la marca de la web, así que SmartScreen sigue
-  protegiendo mientras el binario no esté firmado.
-- **4.2.0 — hecho, y resultó ser otra cosa.** La pregunta era si el
-  Restart Manager alcanza a la ventana oculta. Medido con su propia API
-  contra pastepad corriendo: **no**, y por dos motivos a la vez.
+  Una finestra solo-messaggi «cannot be enumerated», quindi la cassetta
+  non riceve `WM_QUERYENDSESSION` — non è un errore, è la definizione. E
+  `bRestartable` era `False` perché nessuno aveva chiamato
+  `RegisterApplicationRestart`, che è la condizione posta dalla stessa
+  documentazione di Inno perché `RestartApplications=yes` serva a
+  qualcosa.
 
-  Una ventana solo-mensajes «cannot be enumerated», así que el buzón no
-  recibe `WM_QUERYENDSESSION` — no es un fallo, es la definición. Y
-  `bRestartable` era `False` porque nadie había llamado a
-  `RegisterApplicationRestart`, que es la condición que pone la propia
-  documentación de Inno para que `RestartApplications=yes` sirva de algo.
+  Il peggio non era nessuno dei due: **il tipo che vedeva il Restart
+  Manager cambiava a seconda che il pannello fosse aperto o nascosto**
+  (`RmMainWindow` contro `RmOtherWindow`). Lo stesso programma si
+  comportava in due modi aggiornandosi a seconda di dove lo si era
+  lasciato.
 
-  Lo peor no era ninguno de los dos: **el tipo que veía el Restart
-  Manager cambiaba según el panel estuviera abierto o escondido**
-  (`RmMainWindow` frente a `RmOtherWindow`). El mismo programa se
-  comportaba de dos maneras al actualizarse según dónde lo hubieras
-  dejado.
+  Sistemato con una finestra di primo livello a parte che ascolta
+  soltanto (`Sistema/Chiusura.cs`), la registrazione per il riavvio, e
+  `RestartApplications=yes`. Lo `skipifsilent` resta com'è: con il
+  riavvio funzionante è già di troppo, e toglierlo aprirebbe pastepad a
+  chi installa in silenzio senza averlo aperto.
 
-  Arreglado con una ventana de nivel superior aparte que solo escucha
-  (`Sistema/Cierre.cs`), el registro para reinicio, y
-  `RestartApplications=yes`. El `skipifsilent` se queda como está: con el
-  reinicio funcionando ya sobra, y quitarlo abriría pastepad a quien
-  instale en silencio sin tenerlo abierto.
+  **Verificato con l'installer vero**, sopra l'installazione dell'utente
+  e con pastepad in esecuzione. Ripetuto il ciclo sulla 4.2.0 già
+  installata: chiusura pulita in 205 ms, riapertura in 52 ms, torna con
+  la sua scorciatoia in 414 ms, e una copia che era **non ancora
+  riversata** sopravvive.
 
-  **Comprobado con el instalador de verdad**, encima de la instalación
-  del usuario y con pastepad corriendo. La actualización 4.1.0 → 4.2.0
-  dejó pastepad instalado y **cerrado**, como se esperaba: quien cierra
-  es la versión vieja, que todavía no sabía pedir que la reabrieran. Ese
-  es el último update que se comporta así.
+  Un'avvertenza per chi ripete la prova: il riversamento rimandato può
+  scattare dentro la finestra di mezzo secondo tra il copiare e il
+  lanciare l'installer, e allora la copia è già su disco e la prova non
+  dimostra niente.
 
-  Repetido el ciclo contra la 4.2.0 ya instalada: cierre limpio en
-  205 ms, reapertura en 52 ms, vuelve con su atajo en 414 ms, y una copia
-  que estaba **sin volcar** sobrevive. En el log queda `nos cierran para
-  actualizarnos; volcando`.
+- **Il pulsante che scarica e lancia l'installer** resta da fare. Prima
+  di scriverlo va deciso se pastepad si lancia da solo l'installer o se
+  si limita ad aprire la release, che è ciò che fa oggi.
 
-  Una advertencia para quien repita la prueba: el volcado diferido puede
-  dispararse dentro de la ventana de medio segundo entre copiar y lanzar
-  el instalador, y entonces la copia ya está en disco y la prueba no
-  demuestra nada. Hay que mirar la línea «ya en disco» antes de creerse
-  el resultado — la primera vuelta salió así.
+Con una preferenza per spegnere l'avviso, visibile dal primo giorno.
 
-- **El botón que descarga y lanza el instalador** sigue pendiente, y
-  ahora se apoya en algo verificado. Antes de escribirlo hay que decidir
-  si pastepad se lanza a sí mismo el instalador o si se limita a abrir la
-  release, que es lo que hace hoy.
+### Passo 6 — Ritirare la versione in Python
 
-Con una preferencia para apagar el aviso, visible desde el primer día.
+**Non prima del tempo.** Finché l'interfaccia era in migrazione, quei
+file erano la fonte: il designer leggeva `estilo.py` per la tavolozza,
+`filas.py` per il gruppo dei segnalibri e `ventanas.py` per i dialoghi.
 
-### Paso 6 — Retirar la versión en Python
+**Quando:** a passo 4 chiuso e con la conferma del qa sulla parità di
+funzioni. Prima di pubblicare la release del passo 5, non dopo.
 
-**No antes de tiempo.** Mientras la interfaz se esté migrando, esos
-archivos son la fuente: el diseñador lee `estilo.py` para la paleta,
-`filas.py` para el grupo de marcadores y `ventanas.py` para los
-diálogos. Borrarlos ahora sería quedarse sin especificación a mitad de
-camino.
-
-**Cuándo:** cuando el paso 4 esté cerrado y el qa confirme paridad de
-funciones. Antes de publicar la release del paso 5, no después.
-
-**Qué se va:**
-
-```
-main.py  prueba.py  requirements.txt  build.bat
-pastepad.spec  pastepad-portable.spec
-pastepad/*.py        los diez módulos y el __init__
-build/               salida de PyInstaller
-instalador/dist/     el ejecutable viejo y su _internal
-.venv/
-```
-
-**Qué se queda, y por qué:**
+**Cosa resta, e perché:**
 
 | | |
 |---|---|
-| `docs/mockups/` y `docs/ESPECIFICACION-UI.md` | El diseño no cambia con el lenguaje |
-| `TRASPASO.md` y `PLAN.md` | La memoria de por qué está hecho así |
-| `CHANGELOG.md`, `LICENSE`, `SECURITY.md`, `.github/` | No dependen de la implementación |
-| `README.md` y `docs/README.es.md` | Hay que **actualizarlos**, no borrarlos: hablan de Flet y de 80–150 MB |
-| `instalador/*.bat` y `LEEME.txt` | Se decide en el paso 5 si se traducen o se sustituyen |
+| `docs/mockups/` e le specifiche dell'interfaccia | Il design non cambia con il linguaggio |
+| `PASSAGGIO.md` e `PIANO.md` | La memoria del perché è fatto così |
+| `CHANGELOG.md`, `LICENSE`, `SECURITY.md`, `.github/` | Non dipendono dall'implementazione |
 
-**Qué hacer con `docs/FUNCIONES.md`:** documenta las 133 funciones de
-la versión en Python. Mientras dure la migración es la lista de
-comprobación de qué falta por portar. Se retira con el resto, no antes.
+**Come si sa che è venuto bene:** `dotnet test` resta in verde,
+l'applicazione parte da una copia pulita del repo, e non restano
+riferimenti vivi a file `.py` in documentazione né negli script.
 
-**Cómo se sabe que quedó bien:** `dotnet test` sigue en verde, la
-aplicación arranca desde una copia limpia del repo, y `grep -r "\.py"`
-no devuelve referencias vivas en documentación ni en scripts.
-
-**Antes de borrar, un tag.** La versión en Python fue tres años de
-trabajo y es la única referencia de comportamiento si algo se nos pasó.
-Que quede recuperable con un nombre, no solo en el historial.
+**Prima di cancellare, un tag.** La versione in Python fu tre anni di
+lavoro ed è l'unico riferimento di comportamento se qualcosa è
+sfuggito. Che resti recuperabile con un nome, non solo nella storia.
 
 ---
 
-## Los riesgos
+## I rischi
 
-| Riesgo | Señal que lo delata | Qué hacer |
+| Rischio | Segnale che lo rivela | Cosa fare |
 |---|---|---|
-| La bomba de WinUI no despacha a la ventana solo-mensajes | El contador del paso 1 no sube nunca | Plan B: `SetWindowSubclass` sobre el HWND de la ventana XAML |
-| `ExecutionEngineException` por subclase (issue 8669) | Cierre del proceso sin excepción manejada, aleatorio | Delegado en campo estático y `RemoveWindowSubclass` al destruir. Si persiste, volver a la ventana propia |
-| Otra app se queda con `Ctrl+Shift+V` | `RegisterHotKey` devuelve 0 | Avisar **en la interfaz** con el error real, no en silencio, y ofrecer los otros cinco atajos de `config.ATAJOS` |
-| Mica no aparece | Fondo plano | Es el comportamiento documentado. La paleta `#0B0B0D` ya cubre el caso; verificar que se ve bien, no forzar Mica |
-| Native AOT rompe algo | Cuelgue tras navegar, o fallo solo en Release | Está aislado en el paso 5. Se descarta sin coste |
-| Falta el runtime del SDK en la máquina del usuario | La app no arranca, sin ventana ni mensaje | `WindowsAppSDKSelfContained=true` lo elimina de raíz. El VC++ Redistributable sigue siendo requisito: comprobarlo en el instalador |
-| Las cifras de memoria de `TRASPASO.md` no se cumplen | Medición del paso 5 muy por encima de 60 MB | No es motivo para abandonar: contra los 207 MB de Flet hay margen. Se anota la cifra real y se corrige el documento |
+| Il ciclo di WinUI non smista alla finestra solo-messaggi | Il contatore del passo 1 non sale mai | Piano B: `SetWindowSubclass` sull'HWND della finestra XAML |
+| `ExecutionEngineException` da subclass (issue 8669) | Chiusura del processo senza eccezione gestita, casuale | Delegato in campo statico e `RemoveWindowSubclass` alla distruzione. Se persiste, tornare alla finestra propria |
+| Un'altra app si tiene `Ctrl+Shift+V` | `RegisterHotKey` restituisce 0 | Avvisare **nell'interfaccia** con l'errore reale, non in silenzio, e offrire le altre scorciatoie di `Config.Scorciatoie` |
+| Mica non compare | Sfondo piatto | È il comportamento documentato. La tavolozza `#0B0B0D` copre già il caso; verificare che si veda bene, non forzare Mica |
+| Native AOT rompe qualcosa | Blocco dopo la navigazione, o errore solo in Release | È isolato nel passo 5. Si scarta senza costo |
+| Manca il runtime dell'SDK sulla macchina dell'utente | L'app non parte, senza finestra né messaggio | `WindowsAppSDKSelfContained=true` lo elimina alla radice. Il VC++ Redistributable resta un requisito: verificarlo nell'installer |
+| Le cifre di memoria di `PASSAGGIO.md` non si rispettano | Misura del passo 5 molto sopra i 60 MB | Non è un motivo per abbandonare: contro i 207 MB di Flet c'è margine. Si annota la cifra reale e si corregge il documento |
 
 ---
 
-## Lo que queda fuera y por qué
+## Ciò che resta fuori e perché
 
-- **Volver a discutir el framework.** No hay en documentación oficial
-  ningún bloqueo duro de WinUI 3 para los requisitos innegociables. El
-  único punto donde estorba —no expone `WndProc`— tiene solución
-  documentada, y en WPF ese código Win32 sería idéntico salvo por el
-  `HwndSource`.
-- **La interfaz en el paso 1.** El paso 1 es deliberadamente feo: si
-  mezclara la interfaz, un fallo del atajo volvería a tener veinte
-  sospechosos, que es exactamente cómo se perdieron días la vez
-  anterior.
-- **MSIX y la Tienda.** Requiere identidad de paquete y contradice el
-  requisito de instalar en `%LOCALAPPDATA%` con instalador propio.
-- **`PublishSingleFile`.** Extrae a un temporal en el primer arranque,
-  así que no da lo que promete el nombre y añade una variable al
-  arranque en frío, que ya es lo más lento. Un instalador sobre la
-  carpeta hace el mismo trabajo con menos magia.
-- **Traducir `idiomas.py` y `estilo.py` ahora.** Son datos, no lógica;
-  van con el paso 4.
-- **Pruebas de interfaz automatizadas.** Con 19 pruebas de modelo y una
-  lista de comprobación manual basta para una herramienta de un solo
-  usuario. WinAppDriver añadiría más mantenimiento que señal.
+- **Ridiscutere il framework.** Nella documentazione ufficiale non c'è
+  nessun blocco duro di WinUI 3 per i requisiti non negoziabili. L'unico
+  punto in cui dà fastidio —non espone `WndProc`— ha una soluzione
+  documentata, e in WPF quel codice Win32 sarebbe identico salvo per
+  l'`HwndSource`.
+- **L'interfaccia nel passo 1.** Il passo 1 è deliberatamente brutto: se
+  mescolasse l'interfaccia, un errore della scorciatoia tornerebbe ad
+  avere venti sospettati, che è esattamente come si persero giorni la
+  volta precedente.
+- **MSIX e lo Store.** Richiede identità di pacchetto e contraddice il
+  requisito di installare in `%LOCALAPPDATA%` con un installer proprio.
+- **`PublishSingleFile`.** Estrae in una cartella temporanea al primo
+  avvio, quindi non dà ciò che promette il nome e aggiunge una variabile
+  all'avvio a freddo, che è già la cosa più lenta. Un installer sulla
+  cartella fa lo stesso lavoro con meno magia.
+- **Prove di interfaccia automatizzate.** Con le prove delle regole e
+  una lista di controlli manuali basta per uno strumento di un solo
+  utente. WinAppDriver aggiungerebbe più manutenzione che segnale.
 
 ---
 
-## Lo que NO se pudo verificar
+## Ciò che NON si poté verificare
 
-Dicho con esas palabras, y cada uno cubierto por un paso o un plan B:
+Detto con queste parole, e ognuno coperto da un passo o da un piano B:
 
-1. **Las cifras de memoria de `TRASPASO.md`** (40–60 MB, 15–20% menos
-   que WPF). No hay cifras oficiales de Microsoft. Se miden en el paso 5.
-2. **La causa raíz del `ExecutionEngineException`** del issue 8669: el
-   servidor cortó la conexión al leer el hilo. La sospecha habitual en
-   .NET es que el recolector se lleve el delegado, y la mitigación sería
-   mantenerlo en un campo estático — pero es sospecha, no comprobación.
-3. ~~**Que la bomba de mensajes de WinUI 3 despache a ventanas ajenas
-   al XAML** creadas en el mismo hilo.~~ **Comprobado el 12 ago 2026 en
-   `csharp/PruebaAtajo`: sí despacha.** 100 pulsaciones sintéticas, 100
-   `WM_HOTKEY` recibidos, todos en el hilo de interfaz. Detalle en
-   `csharp/PruebaAtajo/RESULTADOS.md`.
+1. **Le cifre di memoria di `PASSAGGIO.md`** (40–60 MB, 15–20% in meno
+   di WPF). Non ci sono cifre ufficiali di Microsoft. Si misurano nel
+   passo 5.
+2. **La causa dell'`ExecutionEngineException`** della issue 8669: il
+   server interruppe la connessione leggendo il thread. Il sospetto
+   abituale in .NET è che il garbage collector si porti via il delegato,
+   e la mitigazione sarebbe tenerlo in un campo statico — ma è un
+   sospetto, non una verifica.
+3. ~~**Che il ciclo dei messaggi di WinUI 3 smisti a finestre estranee
+   allo XAML** create nello stesso thread.~~ **Verificato il 12 ago 2026
+   nel progetto di sondaggio: smista.** 100 pressioni sintetiche, 100
+   `WM_HOTKEY` ricevuti, tutti nel thread dell'interfaccia.
 
 ---
 

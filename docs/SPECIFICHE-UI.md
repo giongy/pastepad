@@ -1,491 +1,488 @@
-# Especificación de interfaz — pastepad
+# Specifiche dell'interfaccia — pastepad
 
-Documento de referencia para implementar la UI contra las maquetas de
-`docs/mockups/`. Los valores de la paleta deben coincidir con
-`pastepad/estilo.py` — si no coinciden, gana `estilo.py`.
+Documento di riferimento per implementare l'interfaccia sulle maquette
+di `docs/mockups/`. I valori della tavolozza devono coincidere con
+`csharp/Pastepad.App/Stile.cs`.
 
-**La tecnología ya no es Flet.** Este documento se escribió para la v3;
-la reescritura va en C# con WinUI 3 (ver `PLAN.md`). Los números siguen
-valiendo todos; lo que cambia es dónde se escriben. `estilo.py` se
-conserva como **fuente de datos de la paleta**, no como código vivo: su
-traducción es `csharp/Pastepad.App/Estilo.cs`.
+**La tecnologia non è più Flet.** Questo documento fu scritto per la v3;
+la riscrittura è in C# con WinUI 3 (vedi `PIANO.md`). I numeri valgono
+ancora tutti; ciò che cambia è dove si scrivono. Dove il testo cita
+`estilo.py`, `app.py` o `config.py` parla dei file della versione in
+Python, che vive nel tag `ultima-version-python`: `estilo.py` era la
+fonte dei dati della tavolozza, e la sua traduzione è `Stile.cs`.
 
-**Qué pone el sistema y qué ponemos nosotros.** WinUI 3 trae Mica, el
-cambio de tema claro/oscuro en vivo, `Segoe UI Variable`,
-`Segoe Fluent Icons` y las esquinas redondeadas de la ventana. Todo eso
-se usa tal cual. Este documento manda solo donde dice algo distinto a
-propósito: la paleta de acentos, las medidas de fila y la barra blanca
-de la fila activa.
-
----
-
-## 1. Mapa de maquetas
-
-| Archivo | Qué muestra | Estado del código |
-|---|---|---|
-| `01_panel_reciente.svg` | Panel completo, pestaña Reciente, una fila fijada y activa | Implementado |
-| `02_panel_guardados.svg` | Panel completo, pestaña Guardados, carpeta desplegable | Implementado |
-| `03_panel_seleccionar.svg` | Modo selección múltiple, casillas y pie con Borrar (n) | Implementado |
-| `04_dialogo_texto_nuevo.svg` | Diálogo para crear/editar un texto guardado | Implementado |
-| `05_dialogo_carpeta.svg` | Diálogo de una sola línea (nombre de carpeta) | Implementado |
-| `06_dialogo_campos.svg` | Diálogo de plantilla con `[[campos]]` | Implementado |
-| `07_dialogo_lista.svg` | Diálogo de importación masiva | Implementado |
-| `08_dialogo_apariencia.svg` | Color, tamaño, estilo de carpetas, atajo | Implementado |
-| `09_dialogo_confirmar.svg` | Confirmación de borrado | Implementado |
-| `10_estado_vacio_reciente.svg` | "Copia algo y aparecerá aquí" | Implementado |
-| `11_estado_vacio_guardados.svg` | "Vacío. Usa Nuevo para guardar un texto" | Implementado |
-| `12_busqueda_sin_resultados.svg` | "Nada coincide con esa búsqueda" | Implementado |
-| `13_fila_enlace.svg` | Icono de enlace + dominio en vez de contador | Implementado |
-| `14_menu_tres_puntos.svg` | Menú contextual de una fila | Implementado |
-| `15_menu_carpetas.svg` | Menú desplegable de carpetas | Implementado |
-| `16_tamano_mini.svg` | Panel en 300×380 | Implementado |
-| `17_tamano_grande.svg` | Panel en 470×700 | Implementado |
-| `18_tema_claro.svg` | Paleta clara completa | Implementado |
-| `19_pausa_activa.svg` | Cabecera con captura pausada | Implementado |
-| `20_estirando_ventana.svg` | **Especulativo** — no verificado en ejecución | Sin verificar |
-
-**El 20 es distinto a los otros 19.** Los primeros diecinueve describen
-estados que el código ya define explícitamente (textos, colores,
-condiciones en `app.py`). El 20 dibuja una intención de cómo debería
-verse el redimensionado nativo de Flet, pero nadie lo ha visto correr
-en Windows todavía. Trátalo como hipótesis a validar, no como spec.
+**Cosa mette il sistema e cosa mettiamo noi.** WinUI 3 porta Mica, il
+cambio di tema chiaro/scuro dal vivo, `Segoe UI Variable`,
+`Segoe Fluent Icons` e gli angoli arrotondati della finestra. Tutto
+questo si usa così com'è. Questo documento comanda solo dove dice
+apposta qualcosa di diverso: la tavolozza degli accenti, le misure di
+riga e la barra bianca della riga attiva.
 
 ---
 
-## 2. Paleta de colores
+## 1. Mappa delle maquette
 
-Fuente de verdad: `pastepad/estilo.py`, diccionarios `OSCURA` y
-`CLARA`, **salvo `medio` y `tenue`**, que se corrigieron por contraste
-y mandan desde aquí y desde `Estilo.cs` — ver la sección 6. **No** `pastepad/config.py` — ese archivo tiene una copia
-vieja con valores distintos (`borde` difiere: `#1F1F23` en config vs
-`#242429` en estilo; `T_MENOR` es 11 vs 12). Es peso muerto pendiente
-de borrar. Si algo no coincide entre los dos, gana `estilo.py`.
-
-### Oscura (por defecto)
-
-| Token | Valor | Uso |
+| File | Cosa mostra | Stato del codice |
 |---|---|---|
-| `fondo` | `#0B0B0D` | Fondo del panel |
-| `elevado` | `#141417` | Buscador, diálogos |
-| `tarjeta` | `#1B1B1F` | Filas no activas, botones secundarios |
-| `hover` | `#26262B` | Fila bajo el cursor |
-| `borde` | `#242429` | Borde de 1px del panel |
-| `texto` | `#F4F4F5` | Texto principal |
-| `medio` | `#9C9CA6` | Iconos, texto secundario |
-| `tenue` | `#86868E` | Subtítulos, texto deshabilitado |
+| `01_pannello_recenti.svg` | Pannello completo, scheda Recenti, una riga fissata e attiva | Implementato |
+| `02_pannello_salvati.svg` | Pannello completo, scheda Salvati, cartella a discesa | Implementato |
+| `03_pannello_seleziona.svg` | Modo selezione multipla, caselle e piede con Elimina (n) | Implementato |
+| `04_dialogo_testo_nuovo.svg` | Dialogo per creare/modificare un testo salvato | Implementato |
+| `05_dialogo_cartella.svg` | Dialogo di una sola linea (nome della cartella) | Implementato |
+| `06_dialogo_campi.svg` | Dialogo di modello con `[[campi]]` | Implementato |
+| `07_dialogo_elenco.svg` | Dialogo di importazione in blocco | Implementato |
+| `08_dialogo_aspetto.svg` | Colore, dimensione, stile delle cartelle, scorciatoia | Implementato |
+| `09_dialogo_conferma.svg` | Conferma di eliminazione | Implementato |
+| `10_stato_vuoto_recenti.svg` | "Copia qualcosa e apparirà qui" | Implementato |
+| `11_stato_vuoto_salvati.svg` | "Vuoto. Usa Nuovo per salvare un testo" | Implementato |
+| `12_ricerca_senza_risultati.svg` | "Niente corrisponde a questa ricerca" | Implementato |
+| `13_riga_link.svg` | Icona di link + dominio al posto del contatore | Implementato |
+| `14_menu_tre_punti.svg` | Menu contestuale di una riga | Implementato |
+| `15_menu_cartelle.svg` | Menu a discesa delle cartelle | Implementato |
+| `16_dimensione_mini.svg` | Pannello a 300×380 | Implementato |
+| `17_dimensione_grande.svg` | Pannello a 470×700 | Implementato |
+| `18_tema_chiaro.svg` | Tavolozza chiara completa | Implementato |
+| `19_pausa_attiva.svg` | Intestazione con cattura in pausa | Implementato |
+| `20_allungando_finestra.svg` | **Speculativo** — non verificato in esecuzione | Non verificato |
 
-### Clara
+**La 20 è diversa dalle altre 19.** Le prime diciannove descrivono stati
+che il codice definisce già in modo esplicito (testi, colori,
+condizioni). La 20 disegna un'intenzione di come dovrebbe vedersi il
+ridimensionamento nativo, ma nessuno l'ha ancora vista girare su
+Windows. Trattala come un'ipotesi da validare, non come una specifica.
 
-| Token | Valor |
+---
+
+## 2. Tavolozza dei colori
+
+Fonte di verità: `Stile.cs`. Storicamente i valori venivano da
+`pastepad/estilo.py`, dizionari `OSCURA` e `CLARA`, **tranne `medio` e
+`tenue`**, che furono corretti per il contrasto — vedi la sezione 6. La
+versione in Python aveva anche una copia vecchia in `config.py` con
+valori diversi: era peso morto.
+
+### Scura (predefinita)
+
+| Token | Valore | Uso |
+|---|---|---|
+| `sfondo` | `#0B0B0D` | Sfondo del pannello |
+| `elevato` | `#141417` | Barra di ricerca, dialoghi |
+| `riquadro` | `#1B1B1F` | Righe non attive, pulsanti secondari |
+| `hover` | `#26262B` | Riga sotto il cursore |
+| `bordo` | `#242429` | Bordo di 1px del pannello |
+| `testo` | `#F4F4F5` | Testo principale |
+| `medio` | `#9C9CA6` | Icone, testo secondario |
+| `tenue` | `#86868E` | Sottotitoli, testo disabilitato |
+
+### Chiara
+
+| Token | Valore |
 |---|---|
-| `fondo` | `#F6F6F4` |
-| `elevado` / `tarjeta` | `#FFFFFF` |
+| `sfondo` | `#F6F6F4` |
+| `elevato` / `riquadro` | `#FFFFFF` |
 | `hover` | `#EFEFEC` |
-| `borde` | `#E6E6E2` |
-| `texto` | `#141416` |
+| `bordo` | `#E6E6E2` |
+| `testo` | `#141416` |
 | `medio` | `#5C5C66` |
 | `tenue` | `#707079` |
 
-En tema claro, las tarjetas no activas llevan un borde de 1px en vez
-de fondo diferenciado, y una sombra sutil (`#00000012` desplazada 2px
-abajo) para separarse del fondo sin depender solo del color. Ver
-`18_tema_claro.svg`.
+In tema chiaro, i riquadri non attivi hanno un bordo di 1px invece di
+uno sfondo differenziato, e un'ombra leggera (`#00000012` spostata 2px
+in basso) per staccarsi dallo sfondo senza dipendere solo dal colore.
+Vedi `18_tema_chiaro.svg`.
 
-### Los otros diez fondos
+### Gli altri dieci sfondi
 
-Además de Oscura y Clara, `estilo.py` define diez paletas más. Con
-"auto" son doce opciones en el selector de Apariencia, que es lo que
-dice el README.
+Oltre a Scura e Chiara, `Stile.cs` definisce altre dieci tavolozze. Con
+"auto" sono dodici opzioni nel selettore di Aspetto.
 
-**Cuatro oscuras:** `medianoche` (`#0A0F1E`), `grafito` (`#141414`),
-`bosque` (`#0A140F`) y la propia `oscuro`.
-**Siete claras:** `papel` (`#F5F1E8`), `niebla` (`#EEF1F5`), `arena`
-(`#F7F4EF`), `lila` (`#F4F1FA`), `salvia` (`#EEF7F3`), `rubor`
-(`#FBF2F4`) y la propia `claro`.
+**Quattro scure:** `mezzanotte` (`#0A0F1E`), `grafite` (`#141414`),
+`bosco` (`#0A140F`) e la stessa `scuro`.
+**Sette chiare:** `carta` (`#F5F1E8`), `nebbia` (`#EEF1F5`), `sabbia`
+(`#F7F4EF`), `lilla` (`#F4F1FA`), `salvia` (`#EEF7F3`), `rossore`
+(`#FBF2F4`) e la stessa `chiaro`.
 
-Los ocho tokens de cada una están en `estilo.py` y traducidos en
-`Estilo.cs`. **Oscura y Clara las pone el sistema** (`ElementTheme.Default`
-sigue a Windows y cambia en vivo); las otras diez las pone el usuario a
-propósito y mandan sobre el sistema.
+Gli otto token di ciascuna stanno in `Stile.cs`. **Scura e Chiara le
+mette il sistema** (`ElementTheme.Default` segue Windows e cambia dal
+vivo); le altre dieci le mette l'utente apposta e comandano sul sistema.
 
-### Acentos (elegibles desde Apariencia)
+### Accenti (selezionabili da Aspetto)
 
-Son **dieciocho**, no seis. Las seis de la tabla vieja eran las que
-dibuja la maqueta 08; `estilo.py` —que es la fuente de verdad— define
-dieciocho, y el README ya hablaba de "18 acentos y 12 fondos".
+Sono **diciotto**, non sei. I sei della tabella vecchia erano quelli che
+disegna la maquette 08.
 
-| Nombre | Color | Texto encima | Contraste |
+| Nome | Colore | Testo sopra | Contrasto |
 |---|---|---|---|
-| `menta` (por defecto) | `#2DD4A7` | `#052E23` | 7.80 |
-| `azul` | `#4B8DF8` | `#04183C` | 5.38 |
-| `violeta` | `#9B7BF7` | `#1E1046` | 5.40 |
-| `ambar` | `#F5A524` | `#3A2606` | 7.05 |
-| `coral` | `#F76B5C` | `#3D0F09` | 5.68 |
+| `menta` (predefinito) | `#2DD4A7` | `#052E23` | 7.80 |
+| `blu` | `#4B8DF8` | `#04183C` | 5.38 |
+| `viola` | `#9B7BF7` | `#1E1046` | 5.40 |
+| `ambra` | `#F5A524` | `#3A2606` | 7.05 |
+| `corallo` | `#F76B5C` | `#3D0F09` | 5.68 |
 | `rosa` | `#F472B6` | `#3A1128` | 6.14 |
-| `cian` | `#22D3EE` | `#062E36` | 8.00 |
-| `lima` | `#A3E635` | `#1A2E05` | 9.69 |
-| `indigo` | `#818CF8` | `#111539` | 5.92 |
-| `turquesa` | `#2DD4BF` | `#042F2A` | 7.81 |
-| `durazno` | `#FB923C` | `#3B1D06` | 6.80 |
+| `ciano` | `#22D3EE` | `#062E36` | 8.00 |
+| `lime` | `#A3E635` | `#1A2E05` | 9.69 |
+| `indaco` | `#818CF8` | `#111539` | 5.92 |
+| `turchese` | `#2DD4BF` | `#042F2A` | 7.81 |
+| `pesca` | `#FB923C` | `#3B1D06` | 6.80 |
 | `lavanda` | `#C084FC` | `#2E1065` | 5.77 |
-| `esmeralda` | `#34D399` | `#04291C` | 8.16 |
+| `smeraldo` | `#34D399` | `#04291C` | 8.16 |
 | `cielo` | `#38BDF8` | `#052F42` | 6.57 |
 | `oro` | `#FCD34D` | `#3B2606` | 9.94 |
-| `fresa` | `#FB7185` | `#3F0A16` | 6.16 |
-| `menta_fria` | `#5EEAD4` | `#032F2A` | 9.83 |
-| `arena` | `#D6BC8A` | `#332612` | 8.00 |
+| `fragola` | `#FB7185` | `#3F0A16` | 6.16 |
+| `menta_fredda` | `#5EEAD4` | `#032F2A` | 9.83 |
+| `sabbia` | `#D6BC8A` | `#332612` | 8.00 |
 
-El color "texto encima" cambia según el acento porque algunos son
-claros y otros oscuros — nunca usar blanco fijo sobre ámbar o rosa,
-falla el contraste. La columna de contraste está **calculada** con la
-fórmula de WCAG 2.1, no estimada: los dieciocho pasan AA para texto
-normal (4.5:1), y el peor es `azul` con 5.38.
+Il colore "testo sopra" cambia secondo l'accento perché alcuni sono
+chiari e altri scuri — mai usare il bianco fisso su ambra o rosa, il
+contrasto fallisce. La colonna del contrasto è **calcolata** con la
+formula di WCAG 2.1, non stimata: i diciotto passano AA per il testo
+normale (4.5:1), e il peggiore è `blu` con 5.38.
 
-Tres pares cambiaron respecto de la tabla vieja de este documento:
-`azul`, `violeta` y `coral` llevaban `#FFFFFF` encima y se quedaban
-en 3:1. Los valores buenos son los de `estilo.py`, que ya estaban
-corregidos.
+Tre coppie cambiarono rispetto alla tabella vecchia di questo documento:
+`blu`, `viola` e `corallo` avevano `#FFFFFF` sopra e restavano a 3:1.
 
-Rojo de peligro (fijo, no cambia con el tema): `#DC2626`, hover
-`#B91C1C` — reservado para el botón "Borrar" y estados de error.
+Rosso di pericolo (fisso, non cambia con il tema): `#DC2626`, hover
+`#B91C1C` — riservato al pulsante "Elimina" e agli stati di errore.
 
 ---
 
-## 3. Medidas
+## 3. Misure
 
-### Tamaño de la ventana
+### Dimensione della finestra
 
-**El panel es adaptable y no tiene preajustes.** Se estira arrastrando
-sus bordes, recuerda el tamaño entre sesiones, y todo lo de dentro
-—filas, buscador, pestañas, carpetas y pie— se ajusta con él. El
-selector de tamaño que dibujaba la maqueta 08 se retiró: unos
-preajustes fijos al lado de algo que ya se adapta sobran y confunden.
+**Il pannello è adattabile e non ha preimpostazioni.** Si allarga
+trascinandone i bordi, ricorda la dimensione tra una sessione e l'altra,
+e tutto ciò che c'è dentro —righe, barra di ricerca, schede, cartelle e
+piede— si adatta con lui. Il selettore di dimensione che disegnava la
+maquette 08 fu tolto: delle preimpostazioni fisse accanto a qualcosa che
+già si adatta sono di troppo e confondono.
 
 | | |
 |---|---|
-| Tamaño inicial | 380 × 560 |
-| Mínimo | 300 × 340 |
-| Máximo | 720 × 1100 |
-| Umbral de fila compacta | por debajo de **340** de ancho |
+| Dimensione iniziale | 380 × 560 |
+| Minimo | 300 × 340 |
+| Massimo | 720 × 1100 |
+| Soglia di riga compatta | sotto i **340** di larghezza |
 
-Las maquetas **16 y 17** ya no describen una opción: son dos ejemplos
-de cómo tiene que comportarse el panel adaptable a 300 y a 470 de
-ancho. A 300 la fila baja a 42px y pierde el subtítulo; "Seleccionar"
-desaparece del pie y "Nuevo" se queda con el signo más.
+Le maquette **16 e 17** non descrivono più un'opzione: sono due esempi
+di come deve comportarsi il pannello adattabile a 300 e a 470 di
+larghezza. A 300 la riga scende a 42px e perde il sottotitolo;
+"Seleziona" sparisce dal piede e "Nuovo" resta con il segno più.
 
-El tamaño se mide sobre **lo que se ve**, no sobre el rectángulo de
-ventana: una ventana redimensionable lleva alrededor un marco invisible
-—medido en esta máquina, 7px a cada lado y 7 abajo— que `GetWindowRect`
-y `AppWindow.Size` cuentan y la pantalla no enseña. Sin descontarlo, un
-panel pedido de 380×560 se veía de 366×553.
+La dimensione si misura su **ciò che si vede**, non sul rettangolo della
+finestra: una finestra ridimensionabile ha intorno una cornice
+invisibile —misurata, 7px per lato e 7 sotto— che `GetWindowRect` e
+`AppWindow.Size` contano e lo schermo non mostra. Senza toglierla, un
+pannello chiesto di 380×560 si vedeva di 366×553.
 
-`Config.Tamanos` ya no existe: los cuatro preajustes se retiraron del
-núcleo. El tamaño inicial son `Config.AnchoDef` y `Config.AltoDef`, dos
-medidas sueltas junto a los mínimos y máximos, que sí se quedan como
-topes del redimensionado.
+Le quattro preimpostazioni furono tolte dal nucleo. La dimensione
+iniziale sono `Config.LarghezzaDef` e `Config.AltezzaDef`, due misure
+sciolte accanto ai minimi e ai massimi, che invece restano come limiti
+del ridimensionamento.
 
-### Radios y marco de la ventana
+### Raggi e cornice della finestra
 
-| Elemento | Radio |
+| Elemento | Raggio |
 |---|---|
-| Panel completo | **8px, y lo pone Windows** (ver abajo) |
-| Diálogos | 20px |
-| Filas / tarjetas | 14px |
-| Botones, campos de texto | 10–12px |
-| Pestañas, fichas de carpeta | 15–18px (cápsula) |
-| Botones circulares de icono | círculo completo (radio = mitad del lado) |
+| Pannello completo | **8px, e lo mette Windows** (vedi sotto) |
+| Dialoghi | 20px |
+| Righe / riquadri | 14px |
+| Pulsanti, campi di testo | 10–12px |
+| Schede, tessere di cartella | 15–18px (capsula) |
+| Pulsanti circolari con icona | cerchio completo (raggio = metà del lato) |
 
-**El panel no dibuja esquinas ni borde propios.** El `Border` raíz va
-con `CornerRadius="0"` y `BorderThickness="0"` a propósito.
+**Il pannello non disegna angoli né bordo propri.** Il `Border` radice
+ha `CornerRadius="0"` e `BorderThickness="0"` apposta.
 
-Tener dos redondeos —el de la ventana y el nuestro— fue un defecto real
-y visible: si el nuestro es mayor, la franja entre las dos curvas se
-queda sin pintar y asoma lo que haya detrás. Sobre fondo oscuro apenas
-se notaba; en tema claro salían **dos cuñas oscuras en las esquinas de
-arriba**. Un solo redondeo, y lo pone el sistema. El borde de 1px lo
-dibuja Windows con la ventana, así que el nuestro solo lo doblaba.
+Avere due arrotondamenti —quello della finestra e il nostro— fu un
+difetto reale e visibile: se il nostro è maggiore, la fascia tra le due
+curve resta non dipinta e lascia vedere ciò che c'è dietro. Su sfondo
+scuro si notava appena; in tema chiaro uscivano **due cunei scuri negli
+angoli in alto**. Un solo arrotondamento, e lo mette il sistema. Il
+bordo di 1px lo disegna Windows con la finestra, quindi il nostro lo
+raddoppiava soltanto.
 
-La ventana va con `SetBorderAndTitleBar(true, false)`,
-`ExtendsContentIntoTitleBar` y `DWMWCP_ROUND` pedido explícitamente.
+La finestra va con `SetBorderAndTitleBar(true, false)`,
+`ExtendsContentIntoTitleBar` e `DWMWCP_ROUND` chiesto in modo esplicito.
 
-**Radio medido sobre el render**, contando píxeles en la esquina
-superior izquierda a 100% de escalado: 8, 5, 3, 1, 1 px de mordida en
-las filas y = 1, 2, 4, 8 y 12. Es un cuarto de círculo de **radio 8px**.
-Escala con el DPI: a 125% son 10px.
+**Raggio misurato sul render**, contando i pixel nell'angolo in alto a
+sinistra al 100% di scala: 8, 5, 3, 1, 1 px di rientro nelle righe y =
+1, 2, 4, 8 e 12. È un quarto di cerchio di **raggio 8px**. Scala con il
+DPI: al 125% sono 10px.
 
-**No se puede redondear más, y no es una decisión nuestra.**
-`DWM_WINDOW_CORNER_PREFERENCE` solo tiene cuatro valores —`DEFAULT`,
-`DONOTROUND`, `ROUND` y `ROUNDSMALL`— y **ninguno acepta un radio en
-píxeles**; `ROUND` es el mayor que se puede pedir y es el que se pide.
-Fuente: la página de la enumeración en learn.microsoft.com.
+**Non si può arrotondare di più, e non è una nostra decisione.**
+`DWM_WINDOW_CORNER_PREFERENCE` ha solo quattro valori —`DEFAULT`,
+`DONOTROUND`, `ROUND` e `ROUNDSMALL`— e **nessuno accetta un raggio in
+pixel**; `ROUND` è il massimo che si può chiedere ed è quello che si
+chiede. Fonte: la pagina dell'enumerazione su learn.microsoft.com.
 
-Conseguir un radio propio exigiría ventana sin marco del sistema y
-esquinas pintadas por nosotros, y eso trae de vuelta las dos cosas que
-ya se arreglaron: la banda que el sistema reserva arriba para la barra
-de título, y las cuñas —porque el área fuera de nuestra curva sigue sin
-ser transparente—. Los 20px que pedía este documento quedan
-**superados por lo que el sistema permite**.
+Ottenere un raggio proprio richiederebbe una finestra senza cornice di
+sistema e angoli dipinti da noi, e questo riporta le due cose già
+sistemate: la fascia che il sistema riserva in alto per la barra del
+titolo, e i cunei —perché l'area fuori dalla nostra curva continua a non
+essere trasparente—. I 20px che chiedeva questo documento restano
+**superati da ciò che il sistema permette**.
 
-### Espaciado
+### Spaziatura
 
-Grid de 4px. Los valores que se repiten en el código:
-`4, 8, 12, 16, 24`. No usar números sueltos como 15 o 18 para
-padding — redondear al múltiplo de 4 más cercano.
+Griglia di 4px. I valori che si ripetono nel codice:
+`4, 8, 12, 16, 24`. Non usare numeri sciolti come 15 o 18 per il
+padding — arrotondare al multiplo di 4 più vicino.
 
-### Tipografía
+### Tipografia
 
-Fuente: `Segoe UI Variable Display` si está disponible (Windows 11),
-si no `Segoe UI` (Windows 10). Cuatro tamaños, nada intermedio:
+Carattere: `Segoe UI Variable Display` se disponibile (Windows 11),
+altrimenti `Segoe UI` (Windows 10). Quattro dimensioni, niente di
+intermedio:
 
-| Token | Tamaño | Uso |
+| Token | Dimensione | Uso |
 |---|---|---|
-| `T_TITULO` | 15px | Títulos de diálogo |
-| `T_CUERPO` | 13px | Texto de fila, campos de entrada |
-| `T_MENOR` | 12px | Botones, pestañas |
-| `T_MINI` | 11px | Subtítulos, contador de caracteres |
+| `TTitolo` | 15px | Titoli di dialogo |
+| `TCorpo` | 13px | Testo di riga, campi di input |
+| `TMinore` | 12px | Pulsanti, schede |
+| `TMini` | 11px | Sottotitoli, contatore di caratteri |
 
-### Filas de la lista
+### Righe della lista
 
-- Altura normal: **56px**
-- Altura en modo mini: **42px**, una sola línea de texto (sin
-  subtítulo)
-- Separación entre filas: 6px
-- Padding interno: 16px izquierda cuando no hay icono de enlace/marca,
-  22px cuando sí
+- Altezza normale: **56px**
+- Altezza in modo mini: **42px**, una sola linea di testo (senza
+  sottotitolo)
+- Separazione tra le righe: 6px
+- Padding interno: 16px a sinistra quando non c'è l'icona di tipo,
+  22px quando c'è
 
 ---
 
-## 4. Comportamiento (no solo visual)
+## 4. Comportamento (non solo visivo)
 
-Estas reglas están en el código y las maquetas las asumen; si la
-implementación no las cumple, no es un problema de estilo sino de
-lógica.
+Queste regole stanno nel codice e le maquette le danno per scontate; se
+l'implementazione non le rispetta, non è un problema di stile ma di
+logica.
 
-**Barra de acento.** Solo la fila seleccionada lleva una barrita
-blanca vertical de 3px a la izquierda (ver `01`, `13`, `17`). No es
-decorativa nada más — es la señal de foco que no depende solo del
-color de fondo, para quienes tienen dificultad para distinguir
-colores.
+**Barra di accento.** Solo la riga selezionata ha una barretta bianca
+verticale di 3px a sinistra (vedi `01`, `13`, `17`). Non è solo
+decorativa — è il segnale di focus che non dipende solo dal colore di
+sfondo, per chi ha difficoltà a distinguere i colori.
 
-**Iconos por fila, solo al pasar el cursor.** El botón de tres puntos
-(`···`) y el alfiler de "fijar" no están siempre visibles — aparecen
-al hover o cuando la fila está activa. Excepción: si algo ya está
-fijado, el alfiler se queda visible siempre, para saber qué está
-fijado sin pasar el mouse por cada fila.
+**Icone per riga, solo al passaggio del cursore.** Il pulsante dei tre
+punti (`···`) e la puntina di "fissa" non sono sempre visibili —
+compaiono all'hover o quando la riga è attiva. Eccezione: se qualcosa è
+già fissato, la puntina resta sempre visibile, per sapere cosa è fissato
+senza passare il mouse su ogni riga.
 
-**Fila de enlace.** Solo si el texto completo copiado es una URL
-(`Modelo.EsEnlace`) — no si el texto *contiene* una URL en medio de una
-oración. Cuando aplica: el dominio (`Modelo.DominioDe`) en vez del
-contador de caracteres, y «Abrir en el navegador» en el menú de la
-fila. **El clic pega**, como en cualquier otra fila.
+**Riga di link.** Solo se l'intero testo copiato è una URL
+(`Regole.EUnLink`) — non se il testo *contiene* una URL in mezzo a una
+frase. Quando si applica: il dominio (`Regole.DominioDi`) al posto del
+contatore di caratteri, e «Apri nel browser» nel menu della riga. **Il
+clic incolla**, come in qualsiasi altra riga.
 
-Hasta la 4.3.0 el clic abría el navegador. Se quitó porque por el mismo
-sitio pasaban los cuatro caminos que llevan a pegar —el clic, el Enter
-del buscador, y «Pegar» y «Pegar sin formato» del menú—, así que un
-enlace no se podía pegar en ningún campo: el elemento que decía «Pegar»
-abría Chrome. Comprobado de punta a punta contra el Bloc de notas.
+Fino alla 4.3.0 il clic apriva il browser. Fu tolto perché dallo stesso
+posto passavano le quattro strade che portano a incollare —il clic,
+l'Invio della barra di ricerca, e «Incolla» e «Incolla senza formato»
+del menu—, quindi un link non si poteva incollare in nessun campo: la
+voce che diceva «Incolla» apriva Chrome. Verificato da un capo all'altro
+con il Blocco note.
 
-**Guardados va en cinco grupos plegables: marcadores, plantillas,
-correos, prompts de IA y notas.** Ninguno es otro tipo de dato: son
-guardados que se separan porque no se usan igual, y mezclarlos obliga a
-leer la lista entera para encontrar cualquiera de ellos.
+**Salvati va in cinque gruppi richiudibili: segnalibri, modelli, email,
+prompt di IA e note.** Nessuno è un altro tipo di dato: sono salvati che
+si separano perché non si usano allo stesso modo, e mescolarli obbliga a
+leggere l'intera lista per trovarne uno qualsiasi.
 
-Iconos por tipo, todos de Segoe Fluent Icons y verificados en la lista
-oficial: marcador `E71B` (Link), plantilla `E943` (Code), correo `E715`
-(Mail), prompt `EAB7` (ChatSparkle — la familia «sparkle» con la que
-Windows marca lo de IA). La nota no lleva icono: es la mayoría, y una
-columna de iconos en todas las filas sería ruido.
+Icone per tipo, tutte di Segoe Fluent Icons e verificate nella lista
+ufficiale: segnalibro `E71B` (Link), modello `E943` (Code), email `E715`
+(Mail), prompt `EAB7` (ChatSparkle — la famiglia «sparkle» con cui
+Windows segna le cose di IA). La nota non ha icona: è la maggioranza, e
+una colonna di icone in tutte le righe sarebbe rumore.
 
-**El tipo lo elige el usuario** en el desplegable del diálogo de
-guardar, que comparte línea con la etiqueta «Nombre». pastepad propone
-el que se deduce del texto —una URL entera es marcador, unos
-`[[campos]]` plantilla, el resto nota— y deja de proponer en cuanto el
-usuario lo toca. Lo elegido solo se escribe en `snippets.json` si
-contradice a lo deducido, así que un archivo de antes de la 4.4.0 se
-vuelve a escribir sin una clave de más.
+**Il tipo lo sceglie l'utente** nella tendina del dialogo di
+salvataggio, che condivide la linea con l'etichetta «Nome». pastepad
+propone quello che si deduce dal testo —una URL intera è un segnalibro,
+dei `[[campi]]` un modello, il resto nota— e smette di proporre appena
+l'utente lo tocca. Ciò che è scelto si scrive in `snippets.json` solo se
+contraddice il dedotto, quindi un file di prima della 4.4.0 si riscrive
+senza una chiave in più.
 
-**Un marcador guardado se abre al hacer clic; todo lo demas se pega.**
-Lo decide el TIPO, no que el texto parezca un enlace: una direccion en el
-historial se pega —copiarla y no poder soltarla en ningun campo fue el
-fallo de la 4.3.0— y un guardado que el usuario cambie a Nota tambien.
-Copiar y pegar un marcador siguen estando en el menu de tres puntos, y
-«Pegar» de ese menu pega siempre, tambien en un marcador.
+**Un segnalibro salvato si apre al clic; tutto il resto si incolla.** Lo
+decide il TIPO, non che il testo sembri un link: un indirizzo nella
+cronologia si incolla —copiarlo e non poterlo mettere in nessun campo fu
+l'errore della 4.3.0— e anche un salvato che l'utente cambia in Nota.
+Copiare e incollare un segnalibro restano nel menu dei tre punti, e
+«Incolla» di quel menu incolla sempre, anche in un segnalibro.
 
-**Ni correo ni prompt de IA se deducen nunca.** No hay nada en un cuerpo
-de correo que lo separe de una nota, y proponerlo por llevar una arroba
-convertiría en correo cualquier texto que mencione una dirección. Con un
-prompt es peor: no hay ni siquiera una arroba de la que tirar. Son los
-dos tipos que existen precisamente para elegirlos a mano.
+**Né email né prompt di IA si deducono mai.** Nel corpo di un'email non
+c'è niente che lo separi da una nota, e proporlo perché contiene una
+chiocciola trasformerebbe in email qualsiasi testo che menzioni un
+indirizzo. Con un prompt è peggio: non c'è nemmeno una chiocciola a cui
+aggrapparsi. Sono i due tipi che esistono proprio per essere scelti a
+mano.
 
-Un prompt con `[[campos]]` se propone como plantilla, y está bien que
-así sea: lo que decide si pregunta antes de pegar es el texto, no el
-tipo. Quien lo quiera entre sus prompts lo cambia y le sigue
-preguntando los campos igual.
+Un prompt con `[[campi]]` si propone come modello, e va bene così: ciò
+che decide se chiede prima di incollare è il testo, non il tipo. Chi lo
+vuole tra i suoi prompt lo cambia e continua a chiedergli i campi lo
+stesso.
 
-La cabecera de grupo mide 32px, lleva chevron, icono y contador, y
-**solo aparece cuando hay más de un grupo con algo dentro**: con uno
-solo no hay nada que separar.
+L'intestazione di gruppo misura 32px, ha chevron, icona e contatore, e
+**compare solo quando c'è più di un gruppo con qualcosa dentro**: con
+uno solo non c'è niente da separare.
 
-**Carpetas: dos modos intercambiables.** `menu` (desplegable, un solo
-botón) o `fichas` (una cápsula por carpeta en fila horizontal). Se
-elige desde Apariencia y se recuerda entre sesiones en la preferencia
-`"carpetas"`. El desplegable es el modo por defecto porque con muchas
-carpetas las fichas no caben en el ancho del panel.
+**Cartelle: due modi intercambiabili.** `menu` (elenco a discesa, un
+solo pulsante) o `tessere` (una capsula per cartella in fila
+orizzontale). Si sceglie da Aspetto e si ricorda tra una sessione e
+l'altra nella preferenza `"cartelle"`. L'elenco a discesa è il modo
+predefinito perché con molte cartelle le tessere non stanno nella
+larghezza del pannello.
 
-Ojo: la v3 en Python **había retirado el modo fichas** por no usarse
-(`ventanas.py`, línea 286). Se recupera porque el usuario lo pidió
-expresamente, y porque esta sección siempre lo describió.
+Attenzione: la v3 in Python **aveva tolto il modo a tessere** perché non
+si usava. Fu recuperato perché l'utente lo chiese espressamente, e
+perché questa sezione l'ha sempre descritto.
 
-**Idioma.** La aplicación tiene cuatro (`es`, `en`, `pt`, `fr`) con 97
-cadenas traducidas en `idiomas.py`, y el diálogo de Apariencia no las
-ofrecía: hueco de la especificación, no del código. Ya hay selector, y
-se guarda en la preferencia `"idioma"` que el formato de datos ya
-tenía.
+**Lingua.** La versione originale aveva quattro lingue (`es`, `en`,
+`pt`, `fr`) con un selettore in Aspetto. Questa copia è solo in
+italiano: tabelle di traduzione e selettore sono stati tolti.
 
-**Cómo se agrupa Apariencia.** Tres bloques, en el orden en que se
-tocan, con el formato de la Configuración de Windows 11: una tarjeta
-por ajuste, **rótulo arriba y control debajo**, a todos los anchos.
+**Come si raggruppa Aspetto.** Tre blocchi, nell'ordine in cui si
+toccano, nel formato delle Impostazioni di Windows 11: un riquadro per
+impostazione, **dicitura sopra e controllo sotto**, a tutte le
+larghezze.
 
-1. **Color de acento** — las 18 bolitas, y debajo el fondo.
-2. **Carpetas** — desplegable o fichas.
-3. **Sistema** — atajo global e idioma.
+1. **Colore di accento** — i 18 pallini, e sotto lo sfondo.
+2. **Cartelle** — elenco a discesa o tessere.
+3. **Sistema** — scorciatoia globale e avviso delle nuove versioni.
 
-Sin sección de tamaño.
+Senza sezione di dimensione.
 
-**Una sola disposición, y por qué no hay dos.** Hubo un intento de
-poner el rótulo a la izquierda y el control a la derecha cuando el
-panel fuera ancho, y se retiró después de medirlo a siete anchos. La
-fila de dos columnas no entra sin romper algo hasta un panel de unos
-**455 px**, muy por encima de los 380 de fábrica:
+**Una sola disposizione, e perché non ce ne sono due.** Ci fu un
+tentativo di mettere la dicitura a sinistra e il controllo a destra
+quando il pannello era largo, e fu ritirato dopo averlo misurato a sette
+larghezze. La riga a due colonne non entra senza rompere qualcosa fino a
+un pannello di circa **455 px**, molto sopra i 380 di fabbrica:
 
-- por debajo, el rótulo se parte en dos y tres líneas — "Cómo / se /
-  enseñan" con el panel a 366;
-- y si se le da prioridad al rótulo, el que pierde es el desplegable,
-  que **no pone puntos suspensivos: recorta por la izquierda**. Medido:
-  "l + Shift + V" en vez de "Ctrl + Shift + V", que es perder el dato
-  sin avisar.
+- sotto, la dicitura si spezza su due e tre linee con il pannello a 366;
+- e se si dà priorità alla dicitura, a perdere è la tendina, che **non
+  mette i puntini di sospensione: taglia da sinistra**. Misurato:
+  "l + Shift + V" invece di "Ctrl + Shift + V", che è perdere il dato
+  senza avvisare.
 
-Apilar siempre evita las dos cosas en todo el rango 300–720 y quita una
-clase entera de fallos que dependen del ancho.
+Impilare sempre evita le due cose in tutto l'intervallo 300–720 e toglie
+un'intera classe di errori che dipendono dalla larghezza.
 
-**Márgenes del diálogo.** El contenido va centrado por construcción: el
-ancho del diálogo se fija al del panel menos 16, y el relleno es el
-mismo a los dos lados. Medido sobre el render:
+**Margini del dialogo.** Il contenuto è centrato per costruzione: la
+larghezza del dialogo si fissa a quella del pannello meno 16, e il
+riempimento è lo stesso ai due lati. Misurato sul render:
 
-| Ancho del panel | Diálogo | Margen izq. | Margen der. |
+| Larghezza del pannello | Dialogo | Margine sin. | Margine des. |
 |---|---|---|---|
 | 300 | 280 | 49 | 50 |
 | 380 | 360 | 49 | 50 |
 | 720 | 700 | 49 | 49 |
 
-Constante y simétrico. En el caso más apretado, 300, a la tarjeta le
-quedan **149 px por dentro** y el valor más largo del desplegable
-—"Lista desplegable"— sigue entrando entero.
+Costante e simmetrico. Nel caso più stretto, 300, al riquadro restano
+**149 px all'interno**; le misure furono prese con i testi originali, e
+con quelli in italiano vanno ricontrollate.
 
-**Pausa.** El botón cambia de icono (pausa ↔ play) y de color (gris ↔
-rojo `#EF4444`) según el estado. Aparece además un texto "En pausa" en
-rojo a la izquierda de la cabecera quimten está activo. Ver `19`.
-
----
-
-## 5. Qué comparar primero
-
-Si vas a revisar la implementación contra las maquetas, este orden da
-más señal por menos esfuerzo:
-
-1. **Colores exactos** — abre `pastepad/estilo.py` al lado de
-   cualquier maqueta y compara valores hex uno a uno. Es mecánico y
-   encuentra errores rápido.
-2. **`13`, `14`, `15`** — son las que muestran comportamiento
-   (detección de enlace, menú contextual, menú de carpetas), no solo
-   estructura. Ahí es más probable que el código real diverja de la
-   intención.
-3. **`10`, `11`, `12`** — confirma que los tres mensajes de estado
-   vacío están exactamente donde dice `app.py.refrescar()`, no
-   inventados.
-4. **`20` al final, con escepticismo** — es la única maqueta sin
-   verificar en ejecución real. Si el redimensionado se ve distinto a
-   esto, confía en lo que Windows realmente hace, no en el dibujo.
+**Pausa.** Il pulsante cambia icona (pausa ↔ play) e colore (grigio ↔
+rosso `#EF4444`) secondo lo stato. Compare inoltre un testo "In pausa"
+in rosso a sinistra dell'intestazione quando è attiva. Vedi `19`.
 
 ---
 
-## 6. Lo que este documento no cubre
+## 5. Cosa confrontare per primo
 
-- Animaciones y transiciones (duración, curva) — están en el código
-  como `ft.Animation(...)`, no hay maqueta estática que las capture.
-- Comportamiento del atajo global — ver `CLAUDE.md`, sección
-  "Problema abierto".
-- Navegación por teclado de forma sistemática.
+Se devi rivedere l'implementazione sulle maquette, quest'ordine dà più
+segnale con meno sforzo:
 
-### El contraste, auditado y corregido
+1. **Colori esatti** — apri `Stile.cs` accanto a una qualsiasi maquette
+   e confronta i valori esadecimali uno a uno. È meccanico e trova
+   errori in fretta.
+2. **`13`, `14`, `15`** — sono quelle che mostrano comportamento
+   (rilevamento del link, menu contestuale, menu delle cartelle), non
+   solo struttura. Lì è più probabile che il codice reale diverga
+   dall'intenzione.
+3. **`10`, `11`, `12`** — conferma che i tre messaggi di stato vuoto
+   stanno esattamente dove li mette `Pannello.Aggiorna()`, non
+   inventati.
+4. **`20` alla fine, con scetticismo** — è l'unica maquette non
+   verificata in esecuzione reale. Se il ridimensionamento si vede
+   diverso, fidati di ciò che Windows fa davvero, non del disegno.
 
-El contraste se calculó con la fórmula de WCAG 2.1 para toda la paleta,
-no se miró. Salieron tres cosas.
+---
 
-**1. Los 18 acentos pasan** AA para texto normal. El peor es `azul` con
-5.38:1. La tabla está en la sección 2.
+## 6. Ciò che questo documento non copre
 
-**2. `tenue` no llegaba en ninguno de los 12 fondos, y se ha subido.**
+- Animazioni e transizioni (durata, curva) — non c'è una maquette
+  statica che le catturi.
+- Comportamento della scorciatoia globale — vedi `CLAUDE.md`.
+- Navigazione da tastiera in modo sistematico.
 
-`tenue` es el color del subtítulo de cada fila —"29 caracteres", el
-nombre de la carpeta— y del mensaje de los estados vacíos: texto que
-informa, no adorno. Daba entre 2.64:1 y 3.31:1 cuando AA pide 4.5:1.
+### Il contrasto, verificato e corretto
 
-Cada fondo lleva su propio valor: la corrección que arregla `salvia` no
-arregla `lila`. Se obtuvo mezclando `tenue` hacia el `texto` de su
-propia paleta —lo justo para llegar a 4.5:1 y ni un paso más, para
-mover el aspecto lo mínimo— y midiendo contra el peor de sus dos
-fondos (`fondo` y `tarjeta`; en la oscura, también contra el gris de
-Mica, `#202020`, que es lo que se ve de verdad detrás del panel).
+Il contrasto fu calcolato con la formula di WCAG 2.1 per l'intera
+tavolozza, non guardato. Uscirono quattro cose.
 
-| Fondo | `tenue` antes | ratio | `tenue` ahora | ratio |
+**1. I 18 accenti passano** AA per il testo normale. Il peggiore è `blu`
+con 5.38:1. La tabella sta nella sezione 2.
+
+**2. `tenue` non arrivava in nessuno dei 12 sfondi, ed è stato alzato.**
+
+`tenue` è il colore del sottotitolo di ogni riga —"29 caratteri", il
+nome della cartella— e del messaggio degli stati vuoti: testo che
+informa, non ornamento. Dava tra 2.64:1 e 3.31:1 quando AA chiede 4.5:1.
+
+Ogni sfondo ha il suo valore: la correzione che sistema `salvia` non
+sistema `lilla`. Fu ottenuto mescolando `tenue` verso il `testo` della
+propria tavolozza —il minimo per arrivare a 4.5:1 e non un passo di più,
+per spostare l'aspetto il meno possibile— e misurando contro il peggiore
+dei suoi due sfondi (`sfondo` e `riquadro`; nella scura, anche contro il
+grigio di Mica, `#202020`, che è ciò che si vede davvero dietro il
+pannello).
+
+| Sfondo | `tenue` prima | rapporto | `tenue` ora | rapporto |
 |---|---|---|---|---|
-| oscura | `#6B6B75` | 3.09 | `#86868E` | **4.51** |
-| clara | `#8E8E98` | 3.00 | `#707079` | **4.53** |
-| medianoche | `#64708C` | 3.22 | `#7E89A1` | **4.54** |
-| grafito | `#6E6E6E` | 3.04 | `#8B8B8B` | **4.56** |
-| bosque | `#5E7A6B` | 3.31 | `#779082` | **4.51** |
-| papel | `#96897A` | 3.03 | `#776C60` | **4.55** |
-| niebla | `#8A95A6` | 2.67 | `#636E80` | **4.55** |
-| arena | `#948B7E` | 3.06 | `#776F65` | **4.51** |
-| lila | `#9086AE` | 3.03 | `#73698E` | **4.54** |
+| scura | `#6B6B75` | 3.09 | `#86868E` | **4.51** |
+| chiara | `#8E8E98` | 3.00 | `#707079` | **4.53** |
+| mezzanotte | `#64708C` | 3.22 | `#7E89A1` | **4.54** |
+| grafite | `#6E6E6E` | 3.04 | `#8B8B8B` | **4.56** |
+| bosco | `#5E7A6B` | 3.31 | `#779082` | **4.51** |
+| carta | `#96897A` | 3.03 | `#776C60` | **4.55** |
+| nebbia | `#8A95A6` | 2.67 | `#636E80` | **4.55** |
+| sabbia | `#948B7E` | 3.06 | `#776F65` | **4.51** |
+| lilla | `#9086AE` | 3.03 | `#73698E` | **4.54** |
 | salvia | `#849E90` | 2.64 | `#5D766A` | **4.51** |
-| rubor | `#A5858E` | 3.01 | `#866871` | **4.52** |
+| rossore | `#A5858E` | 3.01 | `#866871` | **4.52** |
 
-Comprobado además sobre el render, no solo sobre el código: el píxel del
-subtítulo mide `#86868E` en oscuro y `#707079` en claro.
+Verificato anche sul render, non solo sul codice: il pixel del
+sottotitolo misura `#86868E` in scuro e `#707079` in chiaro.
 
-**3. Al subir `tenue` se perdía el escalón con `medio`, y se ha
-recuperado subiendo `medio` en seis paletas.**
+**3. Alzando `tenue` si perdeva il gradino con `medio`, ed è stato
+recuperato alzando `medio` in sei tavolozze.**
 
-Con `tenue` en 4.5:1, en cuatro fondos claros quedaba pegado a `medio`
-—hasta 1.07:1 en `salvia`— y el subtítulo dejaba de leerse como
-secundario: se cambiaba un problema por otro. Como `tenue` ya no puede
-bajar sin romper AA, el escalón solo se recupera subiendo `medio`. Se
-fijó en 1.30:1, que es el que ya tenían las paletas que no se
-estropearon.
+Con `tenue` a 4.5:1, in quattro sfondi chiari restava attaccato a
+`medio` —fino a 1.07:1 in `salvia`— e il sottotitolo smetteva di
+leggersi come secondario: si scambiava un problema con un altro. Siccome
+`tenue` non può più scendere senza rompere AA, il gradino si recupera
+solo alzando `medio`. Fu fissato a 1.30:1, che è quello che avevano già
+le tavolozze non rovinate.
 
-| Fondo | `medio` antes | `medio` ahora | escalón antes | escalón ahora |
+| Sfondo | `medio` prima | `medio` ora | gradino prima | gradino ora |
 |---|---|---|---|---|
-| papel | `#6B6155` | `#645B4F` | 1.18 | **1.30** |
-| niebla | `#5A6779` | `#505C6E` | 1.12 | **1.31** |
-| arena | `#6E675C` | `#645D53` | 1.13 | **1.31** |
-| lila | `#655885` | `#635682` | 1.26 | **1.30** |
+| carta | `#6B6155` | `#645B4F` | 1.18 | **1.30** |
+| nebbia | `#5A6779` | `#505C6E` | 1.12 | **1.31** |
+| sabbia | `#6E675C` | `#645D53` | 1.13 | **1.31** |
+| lilla | `#655885` | `#635682` | 1.26 | **1.30** |
 | salvia | `#557264` | `#496458` | 1.07 | **1.31** |
-| rubor | `#77565F` | `#76555E` | 1.29 | **1.31** |
+| rossore | `#77565F` | `#76555E` | 1.29 | **1.31** |
 
-Las otras cinco no se tocan. En `lila` y `rubor` el ajuste es del 4% y
-del 1%: existe para que la regla se cumpla en las once, no porque se
-vea. Los seis `medio` nuevos quedan además por encima de 5.9:1, así que
-también suben de sobra el listón de AA.
+Le altre cinque non si toccano. In `lilla` e `rossore` la correzione è
+del 4% e dell'1%: esiste perché la regola valga in tutte e undici, non
+perché si veda. I sei `medio` nuovi restano inoltre sopra 5.9:1, quindi
+superano con margine anche la soglia di AA.
 
-**Estos valores mandan sobre `pastepad/estilo.py`**, que se queda con
-los viejos. Es la única excepción a la regla de la sección 2, y es
-deliberada: legibilidad por delante del aspecto heredado.
+**Questi valori comandano su quelli ereditati dalla versione in
+Python.** È deliberato: leggibilità prima dell'aspetto ereditato.
 
-**4. La barra blanca de foco de 3px da 1.44:1 sobre `oro` y 1.89:1
-sobre `menta`**, por debajo del 3:1 que pide WCAG 1.4.11 para un
-elemento gráfico. Se mantiene blanca porque así lo dicen las maquetas y
-porque su trabajo es ser una señal *de forma*, no de color, sobre una
-fila que ya está diferenciada por el fondo de acento. Dicho con el
-número delante para que se decida a sabiendas.
+**4. La barra bianca di focus di 3px dà 1.44:1 su `oro` e 1.89:1 su
+`menta`**, sotto il 3:1 che chiede WCAG 1.4.11 per un elemento grafico.
+Resta bianca perché così dicono le maquette e perché il suo compito è
+essere un segnale *di forma*, non di colore, su una riga già
+differenziata dallo sfondo di accento. Detto con il numero davanti
+perché si decida consapevolmente.

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 480" width="380" height="480" role="img" aria-label="Menu delle cartelle aperto">
+<title>pastepad elenco a discesa delle cartelle</title>
+<desc>Il menu sotto il pulsante della cartella attiva: Tutte le cartelle, la lista con un segno di spunta su quella scelta, e le azioni Nuova, Rinomina, Elimina.</desc>
+
+<rect x="0" y="0" width="380" height="480" rx="20" fill="#0B0B0D" stroke="#242429" stroke-width="1"/>
+<text x="16" y="26" font-family="Segoe UI" font-size="11" font-weight="400" fill="#6B6B75" text-anchor="start">Ctrl + Shift + V</text>
+<circle cx="300" cy="20" r="10" fill="#1B1B1F" />
+<text x="300" y="24" font-family="Segoe UI" font-size="9" font-weight="400" fill="#9C9CA6" text-anchor="middle">II</text>
+<circle cx="330" cy="20" r="10" fill="#1B1B1F" />
+<text x="330" y="24" font-family="Segoe UI" font-size="9" font-weight="400" fill="#9C9CA6" text-anchor="middle">@</text>
+<circle cx="360" cy="20" r="10" fill="#1B1B1F" />
+<text x="360" y="24" font-family="Segoe UI" font-size="9" font-weight="400" fill="#9C9CA6" text-anchor="middle">x</text>
+<rect x="16" y="38" width="348" height="42" rx="12" fill="#141417" />
+<text x="32" y="64" font-family="Segoe UI" font-size="13" font-weight="400" fill="#6B6B75" text-anchor="start">◎  Cerca ovunque</text>
+<rect x="16" y="90" width="172" height="30" rx="15" fill="#1B1B1F" />
+<text x="102" y="109" font-family="Segoe UI" font-size="12" font-weight="400" fill="#9C9CA6" text-anchor="middle">Recenti</text>
+<rect x="192" y="90" width="172" height="30" rx="15" fill="#2DD4A7" />
+<text x="278" y="109" font-family="Segoe UI" font-size="12" font-weight="500" fill="#052E23" text-anchor="middle">Salvati</text>
+<rect x="16" y="128" width="348" height="34" rx="10" fill="#2DD4A7" />
+<text x="30" y="150" font-family="Segoe UI" font-size="12" font-weight="500" fill="#052E23" text-anchor="start">📁  Lavoro</text>
+<text x="352" y="150" font-family="Segoe UI" font-size="13" font-weight="400" fill="#052E23" text-anchor="middle">▴</text>
+<rect x="19" y="173" width="240" height="250" rx="12" fill="#000000" opacity="0.35"/>
+<rect x="16" y="168" width="240" height="250" rx="12" fill="#141417" stroke="#242429" stroke-width="1"/>
+<text x="32" y="194" font-family="Segoe UI" font-size="10.5" font-weight="400" fill="#F4F4F5" text-anchor="start">📂  Tutte le cartelle</text>
+<line x1="26" y1="213" x2="246" y2="213" stroke="#242429" stroke-width="1"/>
+<text x="32" y="229" font-family="Segoe UI" font-size="10.5" font-weight="400" fill="#EF4444" text-anchor="start">✓  Lavoro</text>
+<text x="32" y="256" font-family="Segoe UI" font-size="10.5" font-weight="400" fill="#F4F4F5" text-anchor="start">     Note</text>
+<text x="32" y="283" font-family="Segoe UI" font-size="10.5" font-weight="400" fill="#F4F4F5" text-anchor="start">     Casi</text>
+<line x1="26" y1="302" x2="246" y2="302" stroke="#242429" stroke-width="1"/>
+<text x="32" y="318" font-family="Segoe UI" font-size="10.5" font-weight="400" fill="#F4F4F5" text-anchor="start">+  Nuova cartella...</text>
+<text x="32" y="345" font-family="Segoe UI" font-size="10.5" font-weight="400" fill="#F4F4F5" text-anchor="start">✎  Rinomina Lavoro</text>
+<text x="32" y="372" font-family="Segoe UI" font-size="10.5" font-weight="400" fill="#EF4444" text-anchor="start">🗑  Elimina Lavoro e il suo contenuto</text>
+</svg>
