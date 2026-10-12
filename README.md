@@ -136,9 +136,9 @@ radice del repo:
 .\pubblica.ps1
 ```
 
-Chiede se pubblicare in modo normale o anche come zip (da portare su un
-altro computer), poi compila in Release e lascia il programma pronto
-nella cartella
+Chiede se pubblicare in modo normale, anche come zip (da portare su un
+altro computer), o caricando lo zip come release su GitHub; poi compila
+in Release e lascia il programma pronto nella cartella
 `pubblicato-x64`, dentro il repo. Si avvia da `pastepad.exe` in quella
 cartella; l'eseguibile da solo non basta, serve l'intera cartella. Per
 metterlo altrove: `.\pubblica.ps1 -Destinazione "D:\programmi\pastepad"`.

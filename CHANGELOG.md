@@ -34,7 +34,7 @@ Questa copia deriva dalla 4.15.0 del progetto originale di Josemgu.
 ### Aggiunto
 - `pubblica.ps1`, che compila in Release e lascia il programma pronto in
   `pubblicato-x64`. Chiede se farne anche uno zip da portare su un altro
-  computer.
+  computer, e se caricarlo come release su GitHub.
 - Configurazione per avviare e fare il debug da VS Code.
 
 ### Tolto
