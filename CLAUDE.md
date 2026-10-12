@@ -70,7 +70,7 @@ csharp/
     Dialoghi.cs, Stile.cs, Riga.cs, Registro.cs
     Program.cs               Main proprio: istanza unica
 installer/pastepad.iss       Inno Setup, l'unico file
-pubblica.ps1                 compila in Release e copia in una destinazione
+pubblica.ps1                 compila in Release e lascia il programma in pubblicato-x64
 docs/                        35 maquette, specifiche, loghi
 ```
 
@@ -87,32 +87,33 @@ di rete no.
 ## Come lavorare qui
 
 ```powershell
-dotnet build csharp/Pastepad.App -p:Platform=x86 -r win-x86
+dotnet build csharp/Pastepad.slnx
 dotnet test csharp/Pastepad.Nucleo.Prove
 ```
 
-**L'architettura va indicata.** La soluzione chiede x86 per
-l'applicazione, ma il progetto deduce l'architettura da quella dell'SDK:
-con un SDK a 64 bit, `dotnet build csharp/Pastepad.slnx` fallisce con
-`NETSDK1032`. I due comandi qui sopra funzionano.
+**Tutto è a 64 bit**: la soluzione, ciò che si prova e ciò che si
+distribuisce. Fino all'ottobre 2026 si distribuiva a 32 bit per
+risparmiare 67 MB —a 64 bit il Windows App SDK copia anche
+`onnxruntime.dll` e `DirectML.dll`, che pastepad non usa—, ma voleva
+dire provare un binario e distribuirne un altro.
 
-**Occhio a quale binario stai misurando.** x86 e x64 scrivono in
-cartelle diverse (`bin/x86/...` e `bin/x64/...`). Misurare sul binario
+**Occhio a quale binario stai misurando.** Ogni architettura scrive
+nella sua cartella (`bin/x64/...`, `bin/x86/...`), e compilare il
+progetto senza piattaforma ne usa un'altra ancora. Misurare sul binario
 vecchio ha già dato due conclusioni false —che `ResizeClient`
 funzionava, e che una correzione di disposizione non era stata
 applicata—. Controlla data e ora dell'`.exe` prima di credere a una
 misura.
 
-Da VS Code: **F5** compila a 64 bit e avvia con dati di prova
-(`.vscode/launch.json`). Il debugger C# di VS Code lavora con processi a
-64 bit; la versione che si distribuisce resta a 32.
+Da VS Code: **F5** compila e avvia con dati di prova
+(`.vscode/launch.json`).
 
 **Per eseguire, sempre `--dati`.** Con quell'opzione non si tocca
 nemmeno la voce di avvio del registro. Comunque, se qualcosa è strano,
 guarda `HKCU\...\Run\pastepad`.
 
 ```powershell
-& ".\csharp\Pastepad.App\bin\x86\Debug\net10.0-windows10.0.26100.0\win-x86\pastepad.exe" --dati "C:\temp\prova"
+& ".\csharp\Pastepad.App\bin\x64\Debug\net10.0-windows10.0.26100.0\win-x64\pastepad.exe" --dati "C:\temp\prova"
 ```
 
 Senza quell'opzione usa `%LOCALAPPDATA%\pastepad`, che è **la cronologia
@@ -128,7 +129,7 @@ Per pubblicare:
 oppure, a mano:
 
 ```powershell
-dotnet publish csharp/Pastepad.App -c Release -p:Platform=x86 -r win-x86
+dotnet publish csharp/Pastepad.App -c Release -p:Platform=x64 -r win-x64
 ```
 
 ## Decisioni misurate. Non buttarle giù senza misurare tu
@@ -234,8 +235,9 @@ fotogramma, perché `AppWindow.Show()` torna prima che ci siano pixel.
   invece di chiedere: un file illeggibile che passa per «non esiste»
   finisce sovrascritto.
 - **I dati dell'utente vivono in `%LOCALAPPDATA%\pastepad`** e il
-  programma in `%LOCALAPPDATA%\Programs\pastepad`. Separati apposta:
-  così disinstallare non può toccare la cronologia.
+  programma altrove: in `pubblicato-x64` con `pubblica.ps1`, o in
+  `%LOCALAPPDATA%\Programs\pastepad` con l'installer. Separati apposta:
+  così togliere il programma non può toccare la cronologia.
 - **Le chiavi delle risorse XAML si usano anche da codice, come
   stringhe.** `Stile.cs` e `Pannello.xaml.cs` cercano `"PpSfondo"`,
   `"PpAccento"` e simili per nome. Rinominarne una nello XAML senza

@@ -82,7 +82,8 @@ reindirizzando l'output su un file e vedere se torna.
 Niente di questo blocca; resta scritto perché non si perda.
 
 - **I 18 pallini di accento espongono il loro identificatore crudo**
-  come nome accessibile: `menta_fredda`, `ambra`, `pesca`.
+  come nome accessibile e come suggerimento: `menta_fredda`, `ambra`,
+  `pesca`. Ancora vero; sta anche in `DA-FARE.md`.
 - **`Registro.PercorsoUsato` non lo legge nessuno.** O si usa
   nell'avviso di avvio degradato —che oggi dice cosa è fallito ma non
   dove sta il dettaglio— o si toglie.
@@ -407,7 +408,9 @@ finito, e l'obiettivo è che vada in produzione.
 
 **6. `tenue` sale fino a rispettare il contrasto AA.** Misurato dal
 designer: dava tra 2.89:1 e 3.38:1 sui 12 sfondi, quando WCAG AA chiede
-4.5:1 per il testo normale. È il colore dei sottotitoli di riga e degli
+4.5:1 per il testo normale. (Le specifiche riportano 2.64–3.31 per la
+stessa misura: la differenza c'era già nei documenti originali e non è
+stata risolta; le specifiche hanno la tabella sfondo per sfondo.) È il colore dei sottotitoli di riga e degli
 stati vuoti, cioè testo che bisogna poter leggere.
 
 L'utente decise il 12 ago 2026 di alzarlo **accettando che cambiasse

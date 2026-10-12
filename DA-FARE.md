@@ -4,7 +4,8 @@ Ciò che è deciso ma non ancora fatto. Si svuota dall'alto: ciò che si
 fa, si toglie da qui e si racconta in `CHANGELOG.md`.
 
 Non è una lista di idee. Qui entra solo ciò che l'utente ha chiesto
-esplicitamente.
+esplicitamente, con un'eccezione dichiarata: la sezione su ciò che è
+rimasto aperto dalla traduzione in italiano.
 
 ### Le righe e il loro pulsante non si annunciano bene
 
@@ -58,20 +59,62 @@ Fu studiato a fondo e resta scritto perché nessuno rifaccia la strada:
 Di tutto questo è rimasto ciò che valeva: togliere la chiamata che si
 bloccava. Vedi la 4.9.0.
 
-## Per la prossima versione
+## Rimasto aperto dalla traduzione in italiano
 
-### Decidere cosa fare del controllo aggiornamenti
+Queste voci non le ha chieste l'utente una per una: sono conseguenze
+della traduzione dell'ottobre 2026, annotate perché non si perdano.
 
-`Sistema/Aggiornamento.cs` chiede ancora a GitHub l'ultima release di
-`Josemgu/pastepad`, cioè del progetto originale in spagnolo. In questa
-copia italiana l'avviso «C'è una versione nuova» porterebbe lì. Va
-puntato al repository di questa copia, oppure tolto.
+### I riferimenti al progetto originale
+
+Tre punti portano ancora a `Josemgu/pastepad`, il progetto originale in
+spagnolo, e non al fork `giongy/pastepad`:
+
+- **Il controllo aggiornamenti.** `Sistema/Aggiornamento.cs` chiede a
+  GitHub l'ultima release dell'originale, quindi l'avviso «C'è una
+  versione nuova» porterebbe a una versione in spagnolo. In una build di
+  sviluppo, che si dichiara 1.0.0, l'avviso scatta di sicuro. Va puntato
+  al fork, oppure tolto.
+- **I link dell'installer.** `installer/pastepad.iss` indica il
+  repository originale come sito, supporto e aggiornamenti.
+- **L'autore nei metadati.** `Pastepad.App.csproj` e l'installer
+  dichiarano `Josemgu` come autore. Il copyright va lasciato; se il nome
+  dell'autore pubblicato debba cambiare è una decisione da prendere.
+
+### Ricontrollare che i testi in italiano ci stiano
+
+Le misure dell'interfaccia furono prese con i testi originali. Diverse
+frasi in italiano sono più lunghe —«Metti in pausa la cattura», «Elenco
+a discesa», «Rimuovi formattazione», «Ctrl + Shift + Spazio»— e nessuno
+ha ancora guardato il pannello e i dialoghi alla larghezza minima di
+300. Da verificare catturando i pixel, come dice `CLAUDE.md`.
+
+### I pallini degli accenti mostrano l'identificatore
+
+Il suggerimento e il nome accessibile dei 18 pallini in Aspetto sono
+l'identificatore crudo: passando il mouse si legge `menta_fredda`, non
+«Menta fredda». C'era già nella versione originale; qui si nota di più
+perché l'identificatore è in italiano e sembra un testo sbagliato.
+
+### Non ancora eseguiti dopo la traduzione
+
+- **L'installer.** `installer/pastepad.iss` si compila con Inno Setup
+  e produce `dist\pastepad-4.15.0-installer.exe` (66,6 MB), ma
+  l'installer non è stato eseguito: restano da provare l'installazione,
+  l'aggiornamento sopra una copia aperta —che dipende dal nome della
+  finestra di chiusura, cambiato— e la disinstallazione.
+- **Il workflow di release.** Non è mai girato sul fork.
+- **`docs/genera-icone.py`.** Tradotto, nomi delle funzioni compresi,
+  ma non eseguito.
+
+`pubblica.ps1`, la compilazione e le 118 prove sono invece verificati.
 
 ### Rifare le immagini della documentazione
 
 Le schermate dell'interfaccia sono state tolte perché mostravano la
 versione originale. Vanno rifatte con l'interfaccia in italiano, e il
 README va aggiornato per mostrarle.
+
+## Per la prossima versione
 
 ### Segnalati il 14 ago 2026, non ancora indagati
 

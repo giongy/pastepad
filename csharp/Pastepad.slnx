@@ -1,6 +1,6 @@
 <Solution>
   <Project Path="Pastepad.App/Pastepad.App.csproj">
-    <Platform Project="x86" />
+    <Platform Project="x64" />
   </Project>
   <Project Path="Pastepad.Nucleo.Prove/Pastepad.Nucleo.Prove.csproj" />
   <Project Path="Pastepad.Nucleo/Pastepad.Nucleo.csproj" />

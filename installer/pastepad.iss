@@ -15,10 +15,10 @@
 #endif
 
 ; La cartella che lascia
-;   dotnet publish csharp/Pastepad.App -c Release -p:Platform=x86 \
-;       -r win-x86 -p:Version=<versione> -o pubblicato-x86
+;   dotnet publish csharp/Pastepad.App -c Release -p:Platform=x64 \
+;       -r win-x64 -p:Version=<versione> -o pubblicato-x64
 #ifndef Publish
-  #define Publish "..\pubblicato-x86"
+  #define Publish "..\pubblicato-x64"
 #endif
 
 ; Dove Inno annota ciò che è installato. È la stessa GUID dell'AppId qui
@@ -60,10 +60,16 @@ DefaultGroupName=pastepad
 DisableProgramGroupPage=yes
 DisableDirPage=auto
 
-; Senza ArchitecturesInstallIn64BitMode apposta: l'installer gira in
-; modalità a 32 bit sulle tre architetture, che è ciò che fa sì che
-; {autopf} e il ramo del registro puntino sempre allo stesso posto. Un
-; eseguibile a 32 bit gira uguale su x64 (WOW64) e su ARM64 (emulazione).
+; Il programma è a 64 bit, quindi l'installer si rifiuta di partire su
+; un Windows a 32 bit, dove l'eseguibile non girerebbe. x64compatible
+; comprende anche ARM64, che esegue x64 in emulazione.
+ArchitecturesAllowed=x64compatible
+
+; Senza ArchitecturesInstallIn64BitMode apposta: l'installer continua a
+; girare in modalità a 32 bit, che è ciò che fa sì che {autopf} e il
+; ramo del registro puntino allo stesso posto di prima. Cambiarlo
+; sposterebbe la chiave di disinstallazione e un aggiornamento non
+; riconoscerebbe più la copia già installata.
 
 LicenseFile=..\LICENSE
 SetupIconFile=..\csharp\Pastepad.App\Assets\AppIcon.ico

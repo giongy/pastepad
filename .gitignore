@@ -12,9 +12,9 @@ obj/
 *.user
 .vs/
 
-# La cartella di publish: 487 file e 200 MB, si rigenera con
-# dotnet publish csharp/Pastepad.App -c Release -p:Platform=x86 -r win-x86
-pubblicato-x86/
+# La cartella di publish: 526 file e 268 MB, si rigenera con
+# dotnet publish csharp/Pastepad.App -c Release -p:Platform=x64 -r win-x64
+pubblicato-x64/
 
 # L'installer che produce Inno Setup: 47 MB, si rigenera con
 # ISCC /DVersion=<versione> installer\pastepad.iss

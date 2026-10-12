@@ -40,10 +40,11 @@ jobs:
         run: dotnet test csharp/Pastepad.Nucleo.Prove -c Release
 
       # publish e non build: build lascia una cartella che non si avvia
-      # da sola. x86 apposta, e non per le macchine vecchie: a 32 bit il
-      # Windows App SDK non copia onnxruntime.dll (21 MB) né DirectML.dll
-      # (18 MB), due librerie di IA che pastepad non usa per niente. Un
-      # eseguibile a 32 bit gira uguale su x64 e su ARM64.
+      # da sola. A 64 bit, come la build che si prova in sviluppo: così
+      # ciò che si distribuisce è lo stesso binario che si è provato. Il
+      # costo è il peso: a 64 bit il Windows App SDK copia anche
+      # onnxruntime.dll (21 MB) e DirectML.dll (18 MB), due librerie di
+      # IA che pastepad non usa, e la cartella passa da 201 a 268 MB.
       # dotnet publish non svuota la cartella di destinazione: ciò che
       # resta da prima viaggia dentro l'installer. Su un runner pulito
       # non può succedere, ma su una macchina di sviluppo sì — qui si
@@ -51,25 +52,25 @@ jobs:
       - name: Svuotare la cartella di publish
         shell: pwsh
         run: |
-          if (Test-Path pubblicato-x86) {
-            Remove-Item pubblicato-x86 -Recurse -Force
+          if (Test-Path pubblicato-x64) {
+            Remove-Item pubblicato-x64 -Recurse -Force
           }
 
-      - name: Pubblicare x86
+      - name: Pubblicare x64
         run: >
           dotnet publish csharp/Pastepad.App
-          -c Release -p:Platform=x86 -r win-x86
+          -c Release -p:Platform=x64 -r win-x64
           -p:Version=${{ steps.v.outputs.version }}
-          -o pubblicato-x86
+          -o pubblicato-x64
 
       - name: Controllare ciò che è pubblicato
         shell: pwsh
         run: |
-          $exe = "pubblicato-x86\pastepad.exe"
+          $exe = "pubblicato-x64\pastepad.exe"
           if (-not (Test-Path $exe)) { throw "pastepad.exe non è stato generato" }
 
-          $n = (Get-ChildItem pubblicato-x86 -Recurse -File).Count
-          $mb = [math]::Round(((Get-ChildItem pubblicato-x86 -Recurse -File |
+          $n = (Get-ChildItem pubblicato-x64 -Recurse -File).Count
+          $mb = [math]::Round(((Get-ChildItem pubblicato-x64 -Recurse -File |
                  Measure-Object Length -Sum).Sum / 1MB), 1)
           $vi = (Get-Item $exe).VersionInfo
           Write-Host "file: $n   dimensione: $mb MB"
@@ -97,7 +98,7 @@ jobs:
           # Tra virgolette: il percorso del runner oggi non ha spazi,
           # ma quello di una macchina qualsiasi sì.
           & $iscc "/DVersion=${{ steps.v.outputs.version }}" `
-                  "/DPublish=$(Join-Path $PWD 'pubblicato-x86')" `
+                  "/DPublish=$(Join-Path $PWD 'pubblicato-x64')" `
                   "installer\pastepad.iss"
           if ($LASTEXITCODE -ne 0) { throw "ISCC è fallito con $LASTEXITCODE" }
 

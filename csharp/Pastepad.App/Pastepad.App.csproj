@@ -42,6 +42,13 @@
     -->
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Platforms>x86;x64;ARM64</Platforms>
+    <!--
+      Il runtime segue la piattaforma chiesta, e solo se non ne è stata
+      chiesta nessuna si prende quella della macchina. Dedurlo sempre
+      dalla macchina faceva fallire la compilazione dalla soluzione con
+      NETSDK1032 ogni volta che le due non coincidevano.
+    -->
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and ('$(Platform)' == 'x86' or '$(Platform)' == 'x64' or '$(Platform)' == 'ARM64')">win-$(Platform.ToLowerInvariant())</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</RuntimeIdentifier>
     <PublishProfile Condition="Exists('Properties\PublishProfiles\win-$(Platform).pubxml')">win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>

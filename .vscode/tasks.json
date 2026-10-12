@@ -7,10 +7,7 @@
             "command": "dotnet",
             "args": [
                 "build",
-                "${workspaceFolder}/csharp/Pastepad.App",
-                "-p:Platform=x64",
-                "-r",
-                "win-x64",
+                "${workspaceFolder}/csharp/Pastepad.slnx",
                 "-nologo",
                 "-v:minimal"
             ],

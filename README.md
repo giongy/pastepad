@@ -136,18 +136,23 @@ radice del repo:
 .\pubblica.ps1
 ```
 
-Compila in Release e copia il programma in
-`%LOCALAPPDATA%\Programs\pastepad`. Si avvia da `pastepad.exe` in quella
-cartella; l'eseguibile da solo non basta, serve l'intera cartella.
+Chiede se pubblicare in modo normale o anche come zip (da portare su un
+altro computer), poi compila in Release e lascia il programma pronto
+nella cartella
+`pubblicato-x64`, dentro il repo. Si avvia da `pastepad.exe` in quella
+cartella; l'eseguibile da solo non basta, serve l'intera cartella. Per
+metterlo altrove: `.\pubblica.ps1 -Destinazione "D:\programmi\pastepad"`.
 
 ```
-programma   %LOCALAPPDATA%\Programs\pastepad
+programma   pubblicato-x64 (o la destinazione scelta)
 dati        %LOCALAPPDATA%\pastepad
 ```
 
-Si installa solo per il tuo utente, quindi non chiede l'amministratore.
-Programma e dati stanno in cartelle separate apposta: togliere il
-programma lascia stare i tuoi dati.
+Non chiede l'amministratore. Programma e dati stanno in cartelle
+separate apposta: togliere il programma lascia stare i tuoi dati.
+
+Al primo avvio pastepad si registra per partire con Windows da quella
+cartella: se la sposti, aprilo una volta dal posto nuovo.
 
 Chi preferisce un installer in un solo file può costruirlo con
 [Inno Setup](https://jrsoftware.org/isinfo.php) a partire da

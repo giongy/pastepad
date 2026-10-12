@@ -22,10 +22,19 @@ Questa copia deriva dalla 4.15.0 del progetto originale di Josemgu.
 - Le lettere dei pulsanti di formato sono G, C e S, come in Word in
   italiano.
 - 122 prove diventano 118: quattro riguardavano solo le traduzioni.
+- **Il programma è a 64 bit.** Prima si distribuiva a 32 bit per
+  risparmiare spazio, mentre in sviluppo si provava a 64: adesso è lo
+  stesso binario. La cartella installata passa da 201 a 268 MB.
+  L'installer si rifiuta di partire su un Windows a 32 bit.
+
+### Corretto
+- `dotnet build` dalla soluzione falliva con `NETSDK1032` quando la
+  piattaforma chiesta e quella della macchina non coincidevano.
 
 ### Aggiunto
-- `pubblica.ps1`, che compila in Release e copia il programma in una
-  destinazione.
+- `pubblica.ps1`, che compila in Release e lascia il programma pronto in
+  `pubblicato-x64`. Chiede se farne anche uno zip da portare su un altro
+  computer.
 - Configurazione per avviare e fare il debug da VS Code.
 
 ### Tolto
