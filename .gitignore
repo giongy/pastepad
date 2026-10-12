@@ -1,38 +1,25 @@
-# Datos del usuario: nunca deben subirse
+# Dati dell'utente: non vanno mai caricati
 snippets.json
-historial.json
+cronologia.json
+note.json
 config.json
-imagenes/
-errores.log*
+immagini/
+errori.log*
 
-# C# / .NET — salidas de compilacion, se regeneran con dotnet build
+# C# / .NET — output di compilazione, si rigenerano con dotnet build
 bin/
 obj/
 *.user
 .vs/
 
-# La carpeta de publish: 487 archivos y 200 MB, se regenera con
+# La cartella di publish: 487 file e 200 MB, si rigenera con
 # dotnet publish csharp/Pastepad.App -c Release -p:Platform=x86 -r win-x86
-publicado-x86/
+pubblicato-x86/
 
-# El instalador que produce Inno Setup: 47 MB, se regenera con
-# ISCC /DVersion=<version> instalador\pastepad.iss
+# L'installer che produce Inno Setup: 47 MB, si rigenera con
+# ISCC /DVersion=<versione> installer\pastepad.iss
 dist/
-
-# El log del sondeo del atajo, que se escribe junto a su ejecutable
-csharp/**/prueba-atajo.log
 
 # Windows
 Thumbs.db
 desktop.ini
-
-# Lo que dejo la version en Python. Las carpetas pueden seguir en disco
-# aunque el codigo ya no este en el repo; vive en el tag
-# ultima-version-python.
-__pycache__/
-.venv/
-venv/
-build/
-instalador/dist/
-instalador/portable/
-*.spec

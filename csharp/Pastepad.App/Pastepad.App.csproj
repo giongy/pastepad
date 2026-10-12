@@ -9,35 +9,36 @@
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
 
     <!--
-      Lo que Windows ensena en Propiedades del archivo, y de donde sale
-      Config.Version. Sin esto CompanyName decia "pastepad" —el nombre
-      del ensamblado, porque nadie lo puso— y LegalCopyright estaba en
-      blanco.
+      Ciò che Windows mostra nelle Proprietà del file, e da dove esce
+      Config.Version. Senza questo CompanyName diceva "pastepad" —il
+      nome dell'assembly, perché nessuno l'aveva messo— e
+      LegalCopyright era vuoto.
 
-      Version NO se fija aqui a proposito: la pone el CI con
-      -p:Version=<tag>. Escrita en el archivo se queda vieja, y ya se
-      publico una release con binarios viejos por tenerla clavada en doce
-      sitios (error 4 de TRASPASO.md). En una compilacion de escritorio
-      sale 1.0.0, que es justo lo que debe verse fuera de una release.
+      Version NON si fissa qui apposta: la mette il CI con
+      -p:Version=<tag>. Scritta nel file resta vecchia, e fu già
+      pubblicata una release con binari vecchi per averla inchiodata in
+      dodici posti (errore 4 di PASSAGGIO.md). In una build da
+      scrivania esce 1.0.0, che è proprio ciò che si deve vedere fuori
+      da una release.
     -->
     <Product>pastepad</Product>
     <AssemblyTitle>pastepad</AssemblyTitle>
-    <Description>pastepad - gestor de portapapeles para Windows</Description>
+    <Description>pastepad - gestore di appunti per Windows</Description>
     <!--
-      El usuario de GitHub y no el nombre real: esto acaba dentro del
-      .exe como CompanyName, que se ve en las propiedades del archivo y
-      lo imprime el CI al comprobar lo publicado.
+      L'utente di GitHub e non il nome reale: questo finisce dentro
+      l'.exe come CompanyName, che si vede nelle proprietà del file e
+      che il CI stampa quando controlla ciò che è pubblicato.
     -->
     <Company>Josemgu</Company>
     <Authors>Josemgu</Authors>
-    <Copyright>Copyright (c) 2026 Josemgu. Licencia MIT.</Copyright>
+    <Copyright>Copyright (c) 2026 Josemgu. Licenza MIT.</Copyright>
 
     <!--
-      Sin el "+<sha>" que el SDK le anade a la version informativa. Lo
-      que se ensena en Propiedades y en Agregar o quitar programas es
-      "4.0.0" y no "4.0.0+4bbe758f...". El commit no se pierde: una
-      release sale siempre de un tag. Config.Version sigue partiendo por
-      "+" por si acaso, que no cuesta nada.
+      Senza il "+<sha>" che l'SDK aggiunge alla versione informativa.
+      Ciò che si mostra in Proprietà e in Installazione applicazioni è
+      "4.0.0" e non "4.0.0+4bbe758f...". Il commit non si perde: una
+      release esce sempre da un tag. Config.Version continua a dividere
+      per "+" per sicurezza, che non costa niente.
     -->
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Platforms>x86;x64;ARM64</Platforms>
@@ -49,16 +50,17 @@
     <Nullable>enable</Nullable>
 
     <!--
-      Lo pide el generador de LibraryImport, que produce el codigo de
-      interoperacion con punteros. No hay ni un bloque unsafe escrito a
-      mano en el proyecto.
+      Lo chiede il generatore di LibraryImport, che produce il codice
+      di interoperabilità con puntatori. Nel progetto non c'è nemmeno
+      un blocco unsafe scritto a mano.
     -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <!--
-      Desempaquetado y con el runtime dentro: es lo que permite instalar
-      en %LOCALAPPDATA% con instalador propio y arrancar en una maquina
-      que no tenga el Windows App SDK. Ver PLAN.md.
+      Non impacchettato e con il runtime dentro: è ciò che permette di
+      installare in %LOCALAPPDATA% con un installer proprio e di
+      avviarsi su una macchina che non ha il Windows App SDK. Vedi
+      PIANO.md.
     -->
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
@@ -66,17 +68,17 @@
     <EnableMsixTooling>false</EnableMsixTooling>
     <EnableWinAppRunSupport>false</EnableWinAppRunSupport>
 
-    <!-- Main propio: la instancia unica se decide antes de crear ventanas. -->
+    <!-- Main proprio: l'istanza unica si decide prima di creare finestre. -->
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
 
   <!--
-    CopyToPublishDirectory en todos: sin el, publish deja la carpeta
-    Assets vacia. AppIcon.ico hace falta de verdad —Bandeja lo carga del
-    disco con LoadImage, y sin el la bandeja cae al icono generico de
-    Windows—, y los demas se copian para que lo publicado y lo compilado
-    tengan el mismo contenido. Cuanto menos se parezcan, mas fallos que
-    solo salen en lo que se distribuye.
+    CopyToPublishDirectory in tutti: senza, publish lascia la cartella
+    Assets vuota. AppIcon.ico serve davvero —AreaNotifica lo carica dal
+    disco con LoadImage, e senza l'area di notifica ricade sull'icona
+    generica di Windows—, e gli altri si copiano perché ciò che è
+    pubblicato e ciò che è compilato abbiano lo stesso contenuto. Meno
+    si somigliano, più errori compaiono solo in ciò che si distribuisce.
   -->
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" CopyToPublishDirectory="PreserveNewest" />
@@ -95,21 +97,23 @@
   </ItemGroup>
 
   <!--
-    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
-    Tools extension to be activated for this project even if the Windows App SDK Nuget
-    package has not yet been restored.
+    Definire qui la ProjectCapability "Msix" permette di attivare
+    l'estensione Single-project MSIX Packaging Tools per questo progetto
+    anche se il pacchetto NuGet del Windows App SDK non è ancora stato
+    ripristinato.
   -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
 
   <!--
-    Microsoft.Windows.SDK.BuildTools.WinApp adds first-class support for
-    `dotnet run` on packaged WinUI apps: it hooks the .NET CLI Run target to
-    register a debug identity via the winapp CLI and launch the app with
-    package identity (AUMID).
-    Set <EnableWinAppRunSupport>false</EnableWinAppRunSupport> in a
-    <PropertyGroup> above to opt out.
+    Microsoft.Windows.SDK.BuildTools.WinApp aggiunge il supporto a
+    `dotnet run` per le app WinUI impacchettate: aggancia il target Run
+    della CLI .NET per registrare un'identità di debug tramite la CLI
+    winapp e lanciare l'app con identità di pacchetto (AUMID).
+    Per escluderlo, impostare
+    <EnableWinAppRunSupport>false</EnableWinAppRunSupport> in un
+    <PropertyGroup> qui sopra.
   -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2526" />
@@ -121,56 +125,59 @@
   </ItemGroup>
 
   <!--
-    Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
-    Explorer "Package and Publish" context menu entry to be enabled for this project even if
-    the Windows App SDK Nuget package has not yet been restored.
+    Definire qui la proprietà "HasPackageAndPublishMenuAddedByProject"
+    permette di abilitare la voce "Package and Publish" del menu
+    contestuale di Esplora soluzioni per questo progetto anche se il
+    pacchetto NuGet del Windows App SDK non è ancora stato ripristinato.
   -->
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 
   <!--
-    El XAML compilado (.xbf) en la carpeta de publish.
+    Lo XAML compilato (.xbf) nella cartella di publish.
 
-    Sin esto, `dotnet publish` deja fuera App.xbf y Panel.xbf y el
-    programa publicado MUERE AL ARRANCAR con XamlParseException en el
-    constructor de Panel. La compilacion normal si funciona, asi que el
-    fallo solo se ve ejecutando lo que se va a distribuir — el error 5 de
-    TRASPASO.md, "probar el ejecutable, no solo el codigo fuente".
+    Senza questo, `dotnet publish` lascia fuori App.xbf e Pannello.xbf e
+    il programma pubblicato MUORE ALL'AVVIO con XamlParseException nel
+    costruttore di Pannello. La compilazione normale funziona, quindi
+    l'errore si vede solo eseguendo ciò che si distribuirà — l'errore 5
+    di PASSAGGIO.md, "provare l'eseguibile, non solo il codice
+    sorgente".
 
-    El motivo: la tarea CopyGeneratedXaml del Windows App SDK copia los
-    .xbf al directorio de salida y los apunta solo en @(FileWrites). Para
-    una aplicacion empaquetada los recoge despues el empaquetador de
-    MSIX; desempaquetada y publicada con dotnet publish no los recoge
-    nadie, porque publish arma su lista desde @(ResolvedFileToPublish).
-    Aqui se anaden a esa lista.
+    Il motivo: il task CopyGeneratedXaml del Windows App SDK copia gli
+    .xbf nella cartella di output e li annota solo in @(FileWrites). Per
+    un'applicazione impacchettata li raccoglie dopo l'impacchettatore
+    MSIX; non impacchettata e pubblicata con dotnet publish non li
+    raccoglie nessuno, perché publish costruisce la sua lista da
+    @(ResolvedFileToPublish). Qui si aggiungono a quella lista.
   -->
-  <Target Name="PublicarXamlCompilado"
+  <Target Name="PubblicaXamlCompilato"
           DependsOnTargets="ComputeProcessXamlFiles"
           BeforeTargets="ComputeResolvedFilesToPublishList">
 
     <ItemGroup>
-      <_XamlCompilado Include="@(ProcessedXamlFiles->'%(FullPath)')" />
+      <_XamlCompilato Include="@(ProcessedXamlFiles->'%(FullPath)')" />
     </ItemGroup>
 
-    <!-- Igual que hace el propio SDK al empaquetar: conserva las
-         subcarpetas si algun dia una pagina XAML deja de estar en la
-         raiz del proyecto. -->
-    <AssignTargetPath Files="@(_XamlCompilado)" RootFolder="$(OutputPath)">
-      <Output TaskParameter="AssignedFiles" ItemName="_XamlCompiladoConDestino" />
+    <!-- Come fa lo stesso SDK impacchettando: conserva le
+         sottocartelle se un giorno una pagina XAML smette di stare
+         nella radice del progetto. -->
+    <AssignTargetPath Files="@(_XamlCompilato)" RootFolder="$(OutputPath)">
+      <Output TaskParameter="AssignedFiles" ItemName="_XamlCompilatoConDestinazione" />
     </AssignTargetPath>
 
     <ItemGroup>
-      <ResolvedFileToPublish Include="@(_XamlCompiladoConDestino)">
+      <ResolvedFileToPublish Include="@(_XamlCompilatoConDestinazione)">
         <RelativePath>%(TargetPath)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>
 
       <!--
-        Y el indice de recursos de la aplicacion, que se queda fuera por
-        lo mismo. Es el que resuelve ms-appx:///Microsoft.UI.Xaml/Themes/
-        themeresources.xaml: sin el, con los .xbf ya en su sitio, el
-        arranque sigue muriendo — solo que un paso mas adelante.
+        E l'indice delle risorse dell'applicazione, che resta fuori per
+        lo stesso motivo. È quello che risolve
+        ms-appx:///Microsoft.UI.Xaml/Themes/themeresources.xaml: senza,
+        con gli .xbf già al loro posto, l'avvio continua a morire —
+        solo un passo più avanti.
       -->
       <ResolvedFileToPublish Include="$(OutputPath)$(TargetName).pri"
                              Condition="Exists('$(OutputPath)$(TargetName).pri')">
@@ -180,21 +187,21 @@
     </ItemGroup>
 
     <!--
-      Que no se pueda publicar en silencio sin el indice: el fallo que
-      provoca no se parece en nada a su causa.
+      Che non si possa pubblicare in silenzio senza l'indice: l'errore
+      che provoca non somiglia per niente alla sua causa.
     -->
     <Error Condition="!Exists('$(OutputPath)$(TargetName).pri')"
-           Text="No existe $(OutputPath)$(TargetName).pri. Sin el indice de recursos, lo publicado arranca y muere con XamlParseException." />
+           Text="Non esiste $(OutputPath)$(TargetName).pri. Senza l'indice delle risorse, ciò che è pubblicato si avvia e muore con XamlParseException." />
 
     <Message Importance="high"
-             Text="Se publican: @(_XamlCompiladoConDestino->'%(TargetPath)'), $(TargetName).pri" />
+             Text="Si pubblicano: @(_XamlCompilatoConDestinazione->'%(TargetPath)'), $(TargetName).pri" />
   </Target>
 
-  <!-- Publish Properties -->
+  <!-- Proprietà di publish -->
   <PropertyGroup>
     <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
-    <!-- Sin recorte: la guia de instancia unica avisa de fallos con el. -->
+    <!-- Senza trimming: la guida sull'istanza unica avverte di errori con il trimming. -->
     <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
 </Project>

@@ -1,8 +1,9 @@
 name: Build and release
 
-# Compila el instalador en un runner limpio de GitHub y lo publica.
-# Ventaja sobre compilar en tu maquina: cualquiera puede ver el registro
-# de la compilacion y comprobar que el binario sale del codigo publicado.
+# Compila l'installer su un runner pulito di GitHub e lo pubblica.
+# Vantaggio rispetto a compilare sulla propria macchina: chiunque può
+# vedere il registro della compilazione e verificare che il binario
+# esce dal codice pubblicato.
 
 on:
   push:
@@ -23,114 +24,113 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      # La version sale del tag, no escrita a mano en doce sitios: se
-      # publico una release con binarios viejos justamente por eso. El
-      # .csproj NO lleva <Version>, la pone aqui -p:Version=.
-      - name: Averiguar la version
+      # La versione esce dal tag, non scritta a mano in dodici posti: fu
+      # pubblicata una release con binari vecchi proprio per questo. Il
+      # .csproj NON ha <Version>, la mette qui -p:Version=.
+      - name: Ricavare la versione
         id: v
         shell: pwsh
         run: |
           $t = "${{ github.ref_name }}" -replace '^v', ''
           if (-not $t -or $t -eq "main") { $t = "0.0.0-dev" }
           "version=$t" | Out-File -Append $env:GITHUB_OUTPUT
-          Write-Host "version: $t"
+          Write-Host "versione: $t"
 
-      - name: Pruebas del nucleo
-        run: dotnet test csharp/Pastepad.Nucleo.Pruebas -c Release
+      - name: Prove del nucleo
+        run: dotnet test csharp/Pastepad.Nucleo.Prove -c Release
 
-      # publish y no build: build deja una carpeta que no arranca sola.
-      # x86 a proposito, y no es por maquinas viejas: en 32 bits el
-      # Windows App SDK no copia onnxruntime.dll (21 MB) ni DirectML.dll
-      # (18 MB), dos bibliotecas de IA que pastepad no usa para nada. Un
-      # ejecutable de 32 bits corre igual en x64 y en ARM64.
-      # dotnet publish no vacia la carpeta de destino: lo que quede de
-      # antes viaja dentro del instalador. En un runner limpio no puede
-      # pasar, pero en una maquina de desarrollo si — aqui se colo un
-      # errores.log de una prueba anterior.
-      - name: Vaciar la carpeta de publish
+      # publish e non build: build lascia una cartella che non si avvia
+      # da sola. x86 apposta, e non per le macchine vecchie: a 32 bit il
+      # Windows App SDK non copia onnxruntime.dll (21 MB) né DirectML.dll
+      # (18 MB), due librerie di IA che pastepad non usa per niente. Un
+      # eseguibile a 32 bit gira uguale su x64 e su ARM64.
+      # dotnet publish non svuota la cartella di destinazione: ciò che
+      # resta da prima viaggia dentro l'installer. Su un runner pulito
+      # non può succedere, ma su una macchina di sviluppo sì — qui si
+      # infilò un errori.log di una prova precedente.
+      - name: Svuotare la cartella di publish
         shell: pwsh
         run: |
-          if (Test-Path publicado-x86) {
-            Remove-Item publicado-x86 -Recurse -Force
+          if (Test-Path pubblicato-x86) {
+            Remove-Item pubblicato-x86 -Recurse -Force
           }
 
-      - name: Publicar x86
+      - name: Pubblicare x86
         run: >
           dotnet publish csharp/Pastepad.App
           -c Release -p:Platform=x86 -r win-x86
           -p:Version=${{ steps.v.outputs.version }}
-          -o publicado-x86
+          -o pubblicato-x86
 
-      - name: Comprobar lo publicado
+      - name: Controllare ciò che è pubblicato
         shell: pwsh
         run: |
-          $exe = "publicado-x86\pastepad.exe"
-          if (-not (Test-Path $exe)) { throw "no se genero pastepad.exe" }
+          $exe = "pubblicato-x86\pastepad.exe"
+          if (-not (Test-Path $exe)) { throw "pastepad.exe non è stato generato" }
 
-          $n = (Get-ChildItem publicado-x86 -Recurse -File).Count
-          $mb = [math]::Round(((Get-ChildItem publicado-x86 -Recurse -File |
+          $n = (Get-ChildItem pubblicato-x86 -Recurse -File).Count
+          $mb = [math]::Round(((Get-ChildItem pubblicato-x86 -Recurse -File |
                  Measure-Object Length -Sum).Sum / 1MB), 1)
           $vi = (Get-Item $exe).VersionInfo
-          Write-Host "archivos: $n   tamano: $mb MB"
-          Write-Host "version : $($vi.ProductVersion)   empresa: $($vi.CompanyName)"
+          Write-Host "file: $n   dimensione: $mb MB"
+          Write-Host "versione: $($vi.ProductVersion)   azienda: $($vi.CompanyName)"
 
-          # Que la version del tag llegue de verdad al ejecutable: es el
-          # fallo que ya se colo una vez.
+          # Che la versione del tag arrivi davvero all'eseguibile: è
+          # l'errore che si è già infilato una volta.
           if ($vi.ProductVersion -ne "${{ steps.v.outputs.version }}") {
-            throw "el .exe dice '$($vi.ProductVersion)' y el tag es '${{ steps.v.outputs.version }}'"
+            throw "l'.exe dice '$($vi.ProductVersion)' e il tag è '${{ steps.v.outputs.version }}'"
           }
 
-      # Inno Setup venia preinstalado en la imagen windows-2022, pero NO
-      # viene en windows-2025, que es la que responde hoy a
-      # windows-latest. Se instala en vez de fijar la imagen vieja,
-      # que ademas esta anunciada para retirada.
-      - name: Instalar Inno Setup
+      # Inno Setup era preinstallato nell'immagine windows-2022, ma NON
+      # lo è in windows-2025, che è quella che oggi risponde a
+      # windows-latest. Si installa invece di fissare l'immagine
+      # vecchia, che tra l'altro è annunciata per il ritiro.
+      - name: Installare Inno Setup
         run: choco install innosetup --no-progress -y
 
-      - name: Construir el instalador
+      - name: Costruire l'installer
         shell: pwsh
         run: |
           $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-          if (-not (Test-Path $iscc)) { throw "no encuentro ISCC en $iscc" }
+          if (-not (Test-Path $iscc)) { throw "non trovo ISCC in $iscc" }
 
-          # Entrecomillado: la ruta del runner no lleva espacios hoy,
-          # pero la de una maquina cualquiera si.
+          # Tra virgolette: il percorso del runner oggi non ha spazi,
+          # ma quello di una macchina qualsiasi sì.
           & $iscc "/DVersion=${{ steps.v.outputs.version }}" `
-                  "/DPublish=$(Join-Path $PWD 'publicado-x86')" `
-                  "instalador\pastepad.iss"
-          if ($LASTEXITCODE -ne 0) { throw "ISCC fallo con $LASTEXITCODE" }
+                  "/DPublish=$(Join-Path $PWD 'pubblicato-x86')" `
+                  "installer\pastepad.iss"
+          if ($LASTEXITCODE -ne 0) { throw "ISCC è fallito con $LASTEXITCODE" }
 
-      # El nombre del asset es un contrato, no una casualidad: es el
-      # patron que el aviso de version nueva espera encontrar en la
-      # release. Si alguien lo cambia —en el .iss o aqui— el aviso no
-      # falla a gritos, deja de avisar y nadie se entera. Que reviente
-      # la publicacion es infinitamente mejor.
-      - name: Comprobar el nombre del asset
+      # Il nome dell'asset è un contratto, non un caso: è quello che
+      # citano le note di release e le istruzioni di verifica. Se
+      # qualcuno lo cambia —nell'.iss o qui— conviene che esploda la
+      # pubblicazione piuttosto che uscire una release con istruzioni
+      # che non corrispondono al file.
+      - name: Controllare il nome dell'asset
         shell: pwsh
         run: |
-          $esperado = "pastepad-${{ steps.v.outputs.version }}-instalador.exe"
-          $hay = @(Get-ChildItem dist -Filter *.exe | Select-Object -ExpandProperty Name)
+          $atteso = "pastepad-${{ steps.v.outputs.version }}-installer.exe"
+          $presenti = @(Get-ChildItem dist -Filter *.exe | Select-Object -ExpandProperty Name)
 
-          Write-Host "esperado: $esperado"
-          Write-Host "hay     : $($hay -join ', ')"
+          Write-Host "atteso  : $atteso"
+          Write-Host "presenti: $($presenti -join ', ')"
 
-          if ($hay -notcontains $esperado) {
-            throw "el instalador no se llama '$esperado'. El aviso de version " +
-                  "nueva busca ese nombre; con otro, deja de avisar en silencio."
+          if ($presenti -notcontains $atteso) {
+            throw "l'installer non si chiama '$atteso'."
           }
 
-          if ($hay.Count -ne 1) {
-            throw "hay $($hay.Count) ejecutables en dist; tiene que haber uno"
+          if ($presenti.Count -ne 1) {
+            throw "ci sono $($presenti.Count) eseguibili in dist; deve essercene uno"
           }
 
-      - name: Hashes
+      - name: Hash
         shell: pwsh
         run: |
-          $f = "pastepad-${{ steps.v.outputs.version }}-instalador.exe"
-          if (-not (Test-Path "dist\$f")) { throw "no se genero $f" }
+          $f = "pastepad-${{ steps.v.outputs.version }}-installer.exe"
+          if (-not (Test-Path "dist\$f")) { throw "$f non è stato generato" }
 
           $mb = [math]::Round((Get-Item "dist\$f").Length / 1MB, 1)
-          Write-Host "instalador: $mb MB"
+          Write-Host "installer: $mb MB"
 
           $h = (Get-FileHash "dist\$f" -Algorithm SHA256).Hash
           "$h  $f" | Out-File -Encoding ascii dist\SHA256.txt
@@ -140,7 +140,7 @@ jobs:
         with:
           name: pastepad
           path: |
-            dist/pastepad-${{ steps.v.outputs.version }}-instalador.exe
+            dist/pastepad-${{ steps.v.outputs.version }}-installer.exe
             dist/SHA256.txt
 
       - name: Publish release
@@ -148,53 +148,52 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/pastepad-${{ steps.v.outputs.version }}-instalador.exe
+            dist/pastepad-${{ steps.v.outputs.version }}-installer.exe
             dist/SHA256.txt
           body: |
-            ## Si ya tienes pastepad
+            ## Se hai già pastepad
 
-            **Esta es la ultima version que hay que instalar a mano.** A
-            partir de aqui, pastepad mira una vez al dia si hay algo
-            nuevo y te lo dice dentro del panel. Se puede apagar en
-            Apariencia.
+            pastepad controlla una volta al giorno se c'è qualcosa di
+            nuovo e te lo dice dentro il pannello. Si può spegnere in
+            Aspetto.
 
-            **Si vienes de la 4.0.0, actualiza.** Esa version tenia seis
-            fallos, y **dos de ellos destruian texto en silencio**: se
-            veia bien en pantalla y lo que quedaba guardado estaba mal.
+            Installare sopra sostituisce ciò che c'è. La tua cronologia
+            e i tuoi testi salvati non si toccano: vivono in un'altra
+            cartella.
 
-            Instalar encima reemplaza lo que haya. Tu historial y tus
-            textos guardados no se tocan: viven en otra carpeta.
+            ## Installazione
 
-            ## Instalacion
+            **`pastepad-${{ steps.v.outputs.version }}-installer.exe`**
 
-            **`pastepad-${{ steps.v.outputs.version }}-instalador.exe`**
+            Eseguilo e basta. **Non chiede l'amministratore.** Si
+            installa solo per il tuo utente, in
+            `%LOCALAPPDATA%\Programs\pastepad`.
 
-            Ejecutalo y listo. **No pide administrador.** Se instala solo
-            para tu usuario, en `%LOCALAPPDATA%\Programs\pastepad`.
+            Scorciatoia per aprire il pannello: **Ctrl + Shift + V**
 
-            Atajo para abrir el panel: **Ctrl + Shift + V**
+            ## I tuoi dati non si toccano disinstallando
 
-            ## Tus datos no se tocan al desinstalar
+            Il programma si installa in una cartella e i tuoi dati
+            vivono in un'altra, `%LOCALAPPDATA%\pastepad`. Disinstallare
+            si porta via il programma e **non può toccare la tua
+            cronologia né i tuoi testi salvati**, perché non stanno più
+            nello stesso posto.
 
-            El programa se instala en una carpeta y tus datos viven en
-            otra, `%LOCALAPPDATA%\pastepad`. Desinstalar se lleva el
-            programa y **no puede tocar tu historial ni tus textos
-            guardados**, porque ya no estan en el mismo sitio.
-
-            Si quieres borrarlos tambien, borra esa carpeta a mano.
+            Se vuoi eliminare anche quelli, cancella quella cartella a
+            mano.
 
             ## Windows Defender
 
-            Va a salir "Windows protegio su PC" la primera vez. Mas
-            informacion -> Ejecutar de todas formas.
+            La prima volta comparirà "PC protetto da Windows". Ulteriori
+            informazioni -> Esegui comunque.
 
-            No es que el archivo tenga nada raro: SmartScreen avisa de
-            cualquier ejecutable sin firmar hasta que acumula
-            descargas. Se compila en un runner limpio de GitHub Actions
-            a partir de este codigo, y el registro es publico.
+            Non è che il file abbia qualcosa di strano: SmartScreen
+            avvisa per qualsiasi eseguibile non firmato finché non
+            accumula download. Si compila su un runner pulito di GitHub
+            Actions a partire da questo codice, e il registro è pubblico.
 
-            ## Verificar la descarga
+            ## Verificare il download
 
             ```powershell
-            Get-FileHash pastepad-${{ steps.v.outputs.version }}-instalador.exe -Algorithm SHA256
+            Get-FileHash pastepad-${{ steps.v.outputs.version }}-installer.exe -Algorithm SHA256
             ```

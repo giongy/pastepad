@@ -5,50 +5,49 @@ using Pastepad.Nucleo;
 namespace Pastepad.App;
 
 /// <summary>
-/// Coordina todo: el almacen, el buzon de Windows, la bandeja y el
-/// panel. Es el unico sitio donde esas cuatro cosas se conocen.
+/// Coordina tutto: l'archivio, la cassetta di Windows, l'area di notifica
+/// e il pannello. È l'unico posto dove queste quattro cose si conoscono.
 /// </summary>
 public partial class App : Application
 {
-    internal static App Actual => (App)Current;
+    internal static App Attuale => (App)Current;
 
-    internal Almacen Almacen { get; private set; } = null!;
+    internal Archivio Archivio { get; private set; } = null!;
     internal Indice Indice { get; private set; } = null!;
 
-    Buzon? _buzon;
-    Bandeja? _bandeja;
-    Cierre? _cierre;
-    Panel? _panel;
-    Timer? _volcado;
-    Timer? _novedades;
+    Cassetta? _cassetta;
+    AreaNotifica? _areaNotifica;
+    Chiusura? _chiusura;
+    Pannello? _pannello;
+    Timer? _riversamento;
+    Timer? _aggiornamenti;
 
     /// <summary>
-    /// Cuanto se espera antes de la primera comprobacion de version, y
-    /// cada cuanto despues.
+    /// Quanto si aspetta prima del primo controllo di versione, e ogni
+    /// quanto dopo.
     ///
-    /// El retraso no es por prudencia: el arranque esta medido en ~420 ms
-    /// y no se toca por una consulta a internet que nadie ha pedido y a
-    /// nadie le corre prisa.
+    /// Il ritardo non è per prudenza: l'avvio è misurato in ~420 ms e non
+    /// lo si tocca per una richiesta a internet che nessuno ha chiesto e
+    /// per cui nessuno ha fretta.
     /// </summary>
-    static readonly TimeSpan PrimeraComprobacion = TimeSpan.FromSeconds(45);
+    static readonly TimeSpan PrimoControllo = TimeSpan.FromSeconds(45);
 
-    static readonly TimeSpan CadaDia = TimeSpan.FromHours(24);
+    static readonly TimeSpan OgniGiorno = TimeSpan.FromHours(24);
 
     /// <summary>
-    /// La ventana que tenia el foco cuando se pulso el atajo. Se guarda
-    /// en ese instante y no despues: en cuanto el panel aparece, esta
-    /// informacion ya se perdio.
+    /// La finestra che aveva il focus quando è stata premuta la
+    /// scorciatoia. Si salva in quell'istante e non dopo: appena il
+    /// pannello compare, questa informazione è persa.
     /// </summary>
-    nint _ventanaPrevia;
+    nint _finestraPrecedente;
 
     /// <summary>
-    /// La ultima secuencia del portapapeles que escribimos nosotros. Sin
-    /// esto, pegar volveria a meter en el historial lo que se acaba de
-    /// pegar.
+    /// L'ultima sequenza degli appunti scritta da noi. Senza, incollare
+    /// rimetterebbe nella cronologia ciò che si è appena incollato.
     /// </summary>
-    uint _secuenciaPropia;
+    uint _sequenzaPropria;
 
-    uint _ultimaSecuencia;
+    uint _ultimaSequenza;
 
     public App()
     {
@@ -56,655 +55,653 @@ public partial class App : Application
 
         UnhandledException += (_, a) =>
         {
-            Registro.Fallo("Application.UnhandledException", a.Exception);
+            Registro.Errore("Application.UnhandledException", a.Exception);
 
-            // No se marca como manejada: un fallo en el arbol de XAML que
-            // no sabemos tratar no debe dejarse pasar en silencio.
+            // Non si segna come gestita: un errore nell'albero XAML che
+            // non sappiamo trattare non va lasciato passare in silenzio.
         };
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        Almacen = new Almacen(
-            Program.CarpetaDatos is { } carpeta ? Rutas.EnCarpeta(carpeta) : null,
-            Registro.Fallo,
-            Registro.Anotar);
-        // Antes de que escriba nada. Si los archivos estan acabando en
-        // otro sitio, lo que leemos no es lo del usuario y lo que
-        // escribieramos tampoco iria donde el cree: mejor una sesion
-        // inutil que uno de esos arranques en blanco que parecen «se
-        // borro todo».
-        if (Paquete.RutaDesviada(Almacen.Rutas.Carpeta) is { } real)
+        Archivio = new Archivio(
+            Program.CartellaDati is { } cartella ? Percorsi.InCartella(cartella) : null,
+            Registro.Errore,
+            Registro.Annota);
+        // Prima che scriva qualcosa. Se i file stanno finendo altrove,
+        // ciò che leggiamo non è dell'utente e nemmeno ciò che
+        // scrivessimo andrebbe dove lui crede: meglio una sessione
+        // inutile che uno di quegli avvii in bianco che sembrano «si
+        // è cancellato tutto».
+        if (Pacchetto.PercorsoDeviato(Archivio.Percorsi.Cartella) is { } reale)
         {
-            Registro.Anotar(
-                $"ATENCION: se pidio la carpeta {Almacen.Rutas.Carpeta} y "
-                + $"Windows la esta sirviendo desde {real}. Los archivos que "
-                + "se ven NO son los del usuario. Sesion en solo lectura.");
+            Registro.Annota(
+                $"ATTENZIONE: è stata chiesta la cartella {Archivio.Percorsi.Cartella} e "
+                + $"Windows la sta servendo da {reale}. I file che "
+                + "si vedono NON sono quelli dell'utente. Sessione in sola lettura.");
 
-            Almacen.Congelar(Textos.T(
-                "pastepad se ha abierto dentro de otra aplicación y Windows "
-              + "está desviando sus archivos, así que no ve tus datos reales. "
-              + "Para no dañarlos, esta sesión no guardará nada. Ciérralo y "
-              + "ábrelo desde el menú Inicio."));
+            Archivio.Congela("pastepad si è aperto dentro un'altra applicazione e Windows "
+              + "sta deviando i suoi file, quindi non vede i tuoi dati reali. "
+              + "Per non danneggiarli, questa sessione non salverà nulla. Chiudilo e "
+              + "riaprilo dal menu Start.");
         }
 
-        Indice = new Indice(Almacen);
+        Indice = new Indice(Archivio);
 
-        // Antes de crear el panel: sus textos se resuelven al construirlo.
-        Textos.Idioma = Almacen.Pref("idioma", Textos.IdiomaDef)
-                        ?? Textos.IdiomaDef;
+        _pannello = new Pannello();
 
-        _panel = new Panel();
-
-        // Si los datos no se pudieron leer, el usuario tiene que
-        // enterarse ahora y no cuando descubra que falta medio
-        // historial. Se abre el panel a proposito: un aviso que nadie
-        // mira no es un aviso.
-        if (Almacen.Problema is not null)
+        // Se i dati non si sono potuti leggere, l'utente deve
+        // saperlo adesso e non quando scopre che manca mezza
+        // cronologia. Il pannello si apre apposta: un avviso che
+        // nessuno guarda non è un avviso.
+        if (Archivio.Problema is not null)
         {
-            Registro.Anotar("ARRANQUE DEGRADADO: " + Almacen.Problema);
-            _panel.Avisar(Almacen.Problema);
-            _panel.Asomar();
+            Registro.Annota("AVVIO DEGRADATO: " + Archivio.Problema);
+            _pannello.Avvisa(Archivio.Problema);
+            _pannello.Affiora();
         }
 
-        // El buzon se crea en el hilo de interfaz, que es donde
-        // RegisterHotKey acepta el HWND y donde la bomba de WinUI
-        // despacha sus mensajes.
-        _buzon = new Buzon();
-        _buzon.Atajo += AlAtajo;
-        _buzon.Portapapeles += AlPortapapeles;
-        _buzon.Mostrarse += () => MostrarPanel();
-        _buzon.Salir += Cerrar;
+        // La cassetta si crea nel thread dell'interfaccia, che è dove
+        // RegisterHotKey accetta l'HWND e dove il ciclo di WinUI smista
+        // i suoi messaggi.
+        _cassetta = new Cassetta();
+        _cassetta.Scorciatoia += AllaScorciatoia;
+        _cassetta.Appunti += NegliAppunti;
+        _cassetta.Mostrati += () => MostraPannello();
+        _cassetta.Esci += Chiudi;
 
-        string atajo = Almacen.Pref("atajo", Config.AtajoDef) ?? Config.AtajoDef;
+        string scorciatoia = Archivio.Pref("scorciatoia", Config.ScorciatoiaDef) ?? Config.ScorciatoiaDef;
 
-        bool suyo = _buzon.PonerAtajo(atajo);
-        bool deFabrica = !suyo && _buzon.PonerAtajo(Config.AtajoDef);
+        bool suo = _cassetta.MettiScorciatoia(scorciatoia);
+        bool diFabbrica = !suo && _cassetta.MettiScorciatoia(Config.ScorciatoiaDef);
 
-        if (deFabrica)
-            Registro.Anotar($"'{atajo}' no se pudo poner; se uso el de fabrica");
+        if (diFabbrica)
+            Registro.Annota($"'{scorciatoia}' non si è potuta impostare; si è usata quella di fabbrica");
 
-        _bandeja = new Bandeja(_buzon.Handle, "pastepad");
+        _areaNotifica = new AreaNotifica(_cassetta.Handle, "pastepad");
 
-        // La escucha del cierre va aparte del buzon porque el buzon no
-        // puede oirla: ver el comentario de Cierre.cs. Y el registro para
-        // que nos reabran va aqui, no antes, para que la linea del log
-        // salga despues de la del arranque.
-        _cierre = new Cierre();
-        _cierre.Volcar += () => Almacen.Volcar(forzar: true);
-        _cierre.Terminar += Cerrar;
+        // L'ascolto della chiusura va a parte dalla cassetta perché la
+        // cassetta non può sentirla: vedi il commento di Chiusura.cs. E la
+        // registrazione per farci riaprire va qui, non prima, perché la
+        // riga del log esca dopo quella dell'avvio.
+        _chiusura = new Chiusura();
+        _chiusura.Riversa += () => Archivio.Riversa(forza: true);
+        _chiusura.Termina += Chiudi;
 
-        Cierre.PedirQueNosReabran();
+        Chiusura.ChiediDiRiaprirci();
 
-        AplicarAutoarranque();
+        ApplicaAvvioAutomatico();
 
-        _ultimaSecuencia = Portapapeles.Secuencia();
+        _ultimaSequenza = Appunti.Sequenza();
 
-        // El historial se vuelca cada pocos segundos en vez de en cada
-        // copia: escribir el JSON entero costaba 7,8 ms y mas de un mega
-        // por cada Ctrl+C.
-        _volcado = new Timer(
-            _ => _panel?.DispatcherQueue.TryEnqueue(() => Almacen.Volcar()),
-            null, Almacen.IntervaloVolcado, Almacen.IntervaloVolcado);
+        // La cronologia si riversa ogni pochi secondi invece che a ogni
+        // copia: scrivere l'intero JSON costava 7,8 ms e più di un mega
+        // per ogni Ctrl+C.
+        _riversamento = new Timer(
+            _ => _pannello?.DispatcherQueue.TryEnqueue(() => Archivio.Riversa()),
+            null, Archivio.IntervalloRiversamento, Archivio.IntervalloRiversamento);
 
-        // Si lo que fallo es el ATAJO, el aviso no puede vivir solo en el
-        // panel: el panel se abre con el atajo. Quien tiene el problema
-        // es exactamente quien no puede llegar al mensaje que se lo
-        // explica, y desde fuera eso se ve como «esta arrancado y no
-        // hace nada».
+        // Se a fallire è la SCORCIATOIA, l'avviso non può vivere solo nel
+        // pannello: il pannello si apre con la scorciatoia. Chi ha il
+        // problema è esattamente chi non può arrivare al messaggio che
+        // glielo spiega, e da fuori si vede come «è avviato e non fa
+        // niente».
         //
-        // Paso en una maquina de trabajo, donde otro programa ya tenia
-        // cogido el Ctrl+Q: la tecla se le colaba al programa de delante
-        // —que es la señal de que pastepad no la registro— y no habia
-        // forma de enterarse. El globo de la bandeja si llega, y el
-        // propio icono es el camino para abrir el panel y cambiarlo.
-        if (_buzon.Problema is not null) _panel.Avisar(_buzon.Problema);
+        // È successo su una macchina di lavoro, dove un altro programma
+        // aveva già preso Ctrl+Q: il tasto finiva al programma davanti
+        // —che è il segnale che pastepad non l'ha registrato— e non c'era
+        // modo di accorgersene. Il fumetto dell'area di notifica invece
+        // arriva, e l'icona stessa è la strada per aprire il pannello e
+        // cambiarla.
+        if (_cassetta.Problema is not null) _pannello.Avvisa(_cassetta.Problema);
 
-        // **El caso peor no es quedarse sin atajo: es cambiarlo sin
-        // decirlo.** Cuando el atajo del usuario esta cogido por otro
-        // programa, pastepad cae al de fabrica y hasta ahora se quedaba
-        // tan ancho — sin Problema que enseñar, porque el de fabrica si
-        // habia entrado—. El usuario sigue pulsando el suyo para siempre,
-        // no pasa nada, y encima la tecla se le cuela al programa que
-        // tenga delante, que es la señal de que pastepad no la recibio.
+        // **Il caso peggiore non è restare senza scorciatoia: è cambiarla
+        // senza dirlo.** Quando la scorciatoia dell'utente è presa da un
+        // altro programma, pastepad ricade su quella di fabbrica e finora
+        // restava tranquillo — senza un Problema da mostrare, perché
+        // quella di fabbrica era entrata—. L'utente continua a premere
+        // la sua per sempre, non succede niente, e in più il tasto
+        // finisce al programma che ha davanti, che è il segnale che
+        // pastepad non l'ha ricevuto.
         //
-        // Pasa en maquinas de trabajo, donde hay mas programas peleando
-        // por las combinaciones. Y no se puede avisar solo en el panel:
-        // el panel se abre con el atajo.
-        if (deFabrica)
+        // Succede sulle macchine di lavoro, dove ci sono più programmi
+        // che si contendono le combinazioni. E non si può avvisare solo
+        // nel pannello: il pannello si apre con la scorciatoia.
+        if (diFabbrica)
         {
-            _bandeja?.Avisar(
-                Textos.T("Tu atajo estaba ocupado"),
-                Textos.T("Otro programa ya usa %s, así que pastepad está "
-                       + "usando %s. Haz clic en este icono para abrir el "
-                       + "panel y elegir otro.",
-                    Config.Legible(atajo), Config.Legible(Config.AtajoDef)));
+            _areaNotifica?.Avvisa(
+                "La tua scorciatoia era occupata",
+                Testi.Componi("Un altro programma usa già %s, quindi pastepad sta "
+                       + "usando %s. Fai clic su questa icona per aprire il "
+                       + "pannello e sceglierne un'altra.",
+                    Config.Leggibile(scorciatoia), Config.Leggibile(Config.ScorciatoiaDef)));
         }
-        else if (!suyo)
+        else if (!suo)
         {
-            _bandeja?.Avisar(
-                Textos.T("pastepad se ha quedado sin atajo"),
-                Textos.T("Ninguna de las combinaciones se pudo registrar. "
-                       + "Haz clic en este icono para abrir el panel y "
-                       + "elegir otra."));
+            _areaNotifica?.Avvisa(
+                "pastepad è rimasto senza scorciatoia",
+                "Non è stato possibile registrare nessuna combinazione. "
+                       + "Fai clic su questa icona per aprire il pannello e "
+                       + "sceglierne un'altra.");
         }
 
-        // Todo lo que toca el almacen va por el hilo de interfaz, que es
-        // desde donde se toca en todos los demas sitios. Lo unico que
-        // sale de ahi es la peticion, que se espera con await.
-        _novedades = new Timer(
-            _ => _panel?.DispatcherQueue.TryEnqueue(async () =>
-                await ComprobarNovedades()),
-            null, PrimeraComprobacion, CadaDia);
+        // Tutto ciò che tocca l'archivio passa dal thread dell'interfaccia,
+        // che è da dove lo si tocca in tutti gli altri posti. L'unica cosa
+        // che ne esce è la richiesta, che si aspetta con await.
+        _aggiornamenti = new Timer(
+            _ => _pannello?.DispatcherQueue.TryEnqueue(async () =>
+                await ControllaAggiornamenti()),
+            null, PrimoControllo, OgniGiorno);
 
-        // Lo ultimo del arranque, y solo si no hemos tenido que enseñar
-        // el panel ya: si el almacen venia roto esta abierto delante del
-        // usuario, y moverlo a -32000 seria hacerlo desaparecer.
-        if (!_panel.EstaVisible) _panel.Calentar();
+        // L'ultima cosa dell'avvio, e solo se non abbiamo già dovuto
+        // mostrare il pannello: se l'archivio era rotto è aperto davanti
+        // all'utente, e spostarlo a -32000 sarebbe farlo sparire.
+        if (!_pannello.EVisibile) _pannello.Riscalda();
 
-        // Cuanto tarda en estar listo, desde la primera linea de Main.
-        // En caliente sale una cosa y en frio otra muy distinta: el
-        // arranque en frio de verdad son 476 archivos que nadie ha
-        // tocado todavia, y solo se mide reiniciando la maquina y
-        // leyendo esta linea.
-        Registro.Anotar(string.Format(
-            "listo en {0:F0} ms",
+        // Quanto ci mette a essere pronto, dalla prima riga di Main.
+        // A caldo esce una cosa e a freddo un'altra molto diversa:
+        // l'avvio a freddo vero sono 476 file che nessuno ha ancora
+        // toccato, e si misura solo riavviando la macchina e leggendo
+        // questa riga.
+        Registro.Annota(string.Format(
+            "pronto in {0:F0} ms",
             System.Diagnostics.Stopwatch
-                .GetElapsedTime(Program.Arranque).TotalMilliseconds));
+                .GetElapsedTime(Program.Avvio).TotalMilliseconds));
     }
 
     /// <summary>
-    /// Arrancar con Windows, segun la preferencia del usuario. La decide
-    /// la aplicacion en cada arranque y nadie mas: el instalador ya no
-    /// escribe en HKCU\...\Run.
+    /// Avviarsi con Windows, secondo la preferenza dell'utente. La
+    /// decide l'applicazione a ogni avvio e nessun altro: l'installer
+    /// non scrive più in HKCU\...\Run.
     ///
-    /// Se reescribe siempre, exista ya o no. Esa es la forma de corregir
-    /// una ruta vieja, y con instalador de por medio pasa de verdad:
-    /// quien tuviera la version anterior en %LOCALAPPDATA%\pastepad y
-    /// ponga la nueva en \Programs\pastepad se queda con la entrada
-    /// apuntando a un ejecutable que ya no esta. La version anterior
-    /// tenia el mismo problema y se resolvia a mano — "si mueves la
-    /// carpeta, abrelo una vez desde el sitio nuevo".
+    /// Si riscrive sempre, che esista già o no. È il modo di correggere
+    /// un percorso vecchio, e con un installer di mezzo succede davvero:
+    /// chi aveva la versione precedente in %LOCALAPPDATA%\pastepad e
+    /// mette la nuova in \Programs\pastepad resta con la voce che punta
+    /// a un eseguibile che non c'è più. La versione precedente aveva lo
+    /// stesso problema e si risolveva a mano — "se sposti la cartella,
+    /// aprilo una volta dal posto nuovo".
     /// </summary>
-    void AplicarAutoarranque()
+    void ApplicaAvvioAutomatico()
     {
-        // --datos existe para probar sin tocar lo del usuario, y hasta la
-        // 4.2.0 no lo cumplia: aislaba los datos pero reescribia igual la
-        // entrada del registro, dejando el autoarranque apuntando a una
-        // compilacion de pruebas que manana ya no esta. Paso dos veces en
-        // una misma sesion.
+        // --dati esiste per provare senza toccare le cose dell'utente, e
+        // fino alla 4.2.0 non lo rispettava: isolava i dati ma riscriveva
+        // lo stesso la voce di registro, lasciando l'avvio automatico
+        // puntato a una build di prova che domani non c'è più. È successo
+        // due volte nella stessa sessione.
         //
-        // El registro es de la instalacion de verdad. Una sesion con
-        // --datos no tiene nada que decir ahi.
-        if (Program.CarpetaDatos is not null)
+        // Il registro è dell'installazione vera. Una sessione con
+        // --dati lì non ha niente da dire.
+        if (Program.CartellaDati is not null)
         {
-            Registro.Anotar("sesion con --datos: no se toca el autoarranque");
+            Registro.Annota("sessione con --dati: l'avvio automatico non si tocca");
             return;
         }
 
-        string preferencia =
-            Almacen.Pref(Autoarranque.Clave, Autoarranque.PorDefecto)
-            ?? Autoarranque.PorDefecto;
+        string preferenza =
+            Archivio.Pref(AvvioAutomatico.Chiave, AvvioAutomatico.ComePredefinito)
+            ?? AvvioAutomatico.ComePredefinito;
 
-        bool quiere = Autoarranque.Quiere(preferencia);
+        bool vuole = AvvioAutomatico.Vuole(preferenza);
 
-        // La tarea programada, en un hilo de fondo y sin esperarla: lanza
-        // schtasks, que cuesta mas que todo el arranque junto. Nada de lo
-        // que viene detras depende de ella.
-        _ = Task.Run(() => Arranque.AsegurarTarea(quiere));
+        // L'attività pianificata, in un thread in sottofondo e senza
+        // aspettarla: lancia schtasks, che costa più di tutto l'avvio
+        // messo insieme. Niente di ciò che segue dipende da lei.
+        _ = Task.Run(() => Avvio.AssicuraAttivitaPianificata(vuole));
 
-        // El valor que habia, para poder decir de que a que. Se lee y se
-        // vuelve a leer despues de escribir en vez de componer la ruta a
-        // mano: asi los dos lados se comparan en el mismo formato, con
-        // las comillas que Windows guarda.
-        string? antes = Arranque.ValorActual();
+        // Il valore che c'era, per poter dire da cosa a cosa. Si legge e
+        // si rilegge dopo aver scritto invece di comporre il percorso a
+        // mano: così i due lati si confrontano nello stesso formato, con
+        // le virgolette che Windows salva.
+        string? prima = Avvio.ValoreAttuale();
 
-        if (quiere)
+        if (vuole)
         {
-            Arranque.Poner(true);
+            Avvio.Metti(true);
 
-            string ahora = Arranque.ValorActual()
+            string adesso = Avvio.ValoreAttuale()
                            ?? Environment.ProcessPath
-                           ?? "(ruta desconocida)";
+                           ?? "(percorso sconosciuto)";
 
-            // Reescribir la entrada de otro programa no puede pasar sin
-            // dejar rastro: quien lo mire despues tiene derecho a saber
-            // que habia antes y cuando cambio.
-            Registro.Anotar(
-                antes is null
-                    ? $"arranque con Windows: registrado en {ahora}"
-                    : antes == ahora
-                        ? $"arranque con Windows: ya estaba puesto en {ahora}"
-                        : $"arranque con Windows: se ha reescrito de {antes} a {ahora}");
+            // Riscrivere la voce di un altro programma non può passare
+            // senza lasciare traccia: chi la guarda dopo ha diritto di
+            // sapere cosa c'era prima e quando è cambiato.
+            Registro.Annota(
+                prima is null
+                    ? $"avvio con Windows: registrato in {adesso}"
+                    : prima == adesso
+                        ? $"avvio con Windows: era già impostato in {adesso}"
+                        : $"avvio con Windows: riscritto da {prima} a {adesso}");
 
             return;
         }
 
-        if (antes is not null)
+        if (prima is not null)
         {
-            Arranque.Poner(false);
+            Avvio.Metti(false);
 
-            // Con el valor que tenia: si el usuario cambia de idea, ahi
-            // esta lo que habia que devolver.
-            Registro.Anotar(
-                $"arranque con Windows: quitado ({Autoarranque.Clave}"
-                + $"='{preferencia}'); apuntaba a {antes}");
+            // Con il valore che aveva: se l'utente cambia idea, lì c'è
+            // ciò che andava rimesso.
+            Registro.Annota(
+                $"avvio con Windows: tolto ({AvvioAutomatico.Chiave}"
+                + $"='{preferenza}'); puntava a {prima}");
 
             return;
         }
 
-        Registro.Anotar(
-            $"arranque con Windows: no se registra ({Autoarranque.Clave}"
-            + $"='{preferencia}')");
+        Registro.Annota(
+            $"avvio con Windows: non si registra ({AvvioAutomatico.Chiave}"
+            + $"='{preferenza}')");
     }
 
-    // ------------------------------------------- version nueva
+    // ------------------------------------------- versione nuova
 
     /// <summary>
-    /// Mira si hay version nueva y, si la hay y no se ha avisado ya de
-    /// esa, la enseña en la banda del panel.
+    /// Guarda se c'è una versione nuova e, se c'è e non si è già
+    /// avvisato di quella, la mostra nella fascia del pannello.
     ///
-    /// Nunca lanza: es lo que se le pide a algo que corre solo, de
-    /// fondo, y que el usuario no ha pedido. Un fallo aqui no puede
-    /// tumbar la aplicacion ni salir en pantalla; se anota y se
-    /// reintenta mañana.
+    /// Non lancia mai: è ciò che si chiede a qualcosa che gira da solo,
+    /// in sottofondo, e che l'utente non ha chiesto. Un errore qui non
+    /// può far cadere l'applicazione né comparire a schermo; si annota e
+    /// si riprova domani.
     /// </summary>
-    async Task ComprobarNovedades()
+    async Task ControllaAggiornamenti()
     {
         try
         {
-            if (!Almacen.Pref(Versiones.ClaveAvisar, Versiones.AvisarDef))
+            if (!Archivio.Pref(Versioni.ChiaveAvvisa, Versioni.AvvisaDef))
                 return;
 
-            var ahora = DateTimeOffset.Now;
-            string? ultima = Almacen.Pref<string>(Versiones.ClaveComprobacion);
+            var adesso = DateTimeOffset.Now;
+            string? ultima = Archivio.Pref<string>(Versioni.ChiaveControllo);
 
-            if (!Versiones.TocaComprobar(ultima, ahora)) return;
+            if (!Versioni.ToccaControllare(ultima, adesso)) return;
 
-            var publicada = await Actualizacion.Consultar();
+            var pubblicata = await Aggiornamento.Consulta();
 
-            // La fecha se guarda solo si la consulta salio bien. Si
-            // fallo, que se vuelva a intentar y no se pierda un dia.
-            if (publicada is null) return;
+            // La data si salva solo se la richiesta è andata bene. Se è
+            // fallita, che si riprovi e non si perda un giorno.
+            if (pubblicata is null) return;
 
-            Almacen.PonerPref(Versiones.ClaveComprobacion, Versiones.Hoy(ahora));
+            Archivio.MettiPref(Versioni.ChiaveControllo, Versioni.Oggi(adesso));
 
-            string? avisada = Almacen.Pref<string>(Versiones.ClaveAvisada);
+            string? avvisata = Archivio.Pref<string>(Versioni.ChiaveAvvisata);
 
-            if (!Versiones.TocaAvisar(Config.Version, publicada.Version, avisada))
+            if (!Versioni.ToccaAvvisare(Config.Version, pubblicata.Version, avvisata))
             {
-                // Tambien se anota lo que sale bien: el dia que el aviso
-                // deje de funcionar, el fallo es que nadie se entera de
-                // que nadie se entera.
-                Registro.Anotar(
-                    $"actualizaciones: instalada {Config.Version}, publicada "
-                    + $"{publicada.Version}; nada que avisar");
+                // Si annota anche ciò che va bene: il giorno in cui l'avviso
+                // smette di funzionare, l'errore è che nessuno si accorge
+                // che nessuno se ne accorge.
+                Registro.Annota(
+                    $"aggiornamenti: installata {Config.Version}, pubblicata "
+                    + $"{pubblicata.Version}; niente da segnalare");
 
                 return;
             }
 
-            Almacen.PonerPref(Versiones.ClaveAvisada, publicada.Version);
+            Archivio.MettiPref(Versioni.ChiaveAvvisata, pubblicata.Version);
 
-            Registro.Anotar(
-                $"actualizaciones: hay {publicada.Version} y se tiene "
-                + $"{Config.Version}; se avisa");
+            Registro.Annota(
+                $"aggiornamenti: c'è la {pubblicata.Version} e si ha la "
+                + $"{Config.Version}; si avvisa");
 
-            _panel?.AvisarNovedad(publicada.Version, publicada.Pagina);
+            _pannello?.AvvisaNovita(pubblicata.Version, pubblicata.Pagina);
         }
         catch (Exception e)
         {
-            Registro.Fallo("comprobar si hay version nueva", e);
+            Registro.Errore("controllare se c'è una versione nuova", e);
         }
     }
 
-    // ------------------------------------------------------- el atajo
+    // ---------------------------------------------------- la scorciatoia
 
-    void AlAtajo()
+    void AllaScorciatoia()
     {
-        // Lo primero de todo, antes de tocar ninguna ventana.
-        _ventanaPrevia = Foco.VentanaActiva();
+        // Prima di tutto, prima di toccare qualsiasi finestra.
+        _finestraPrecedente = FocusFinestra.FinestraAttiva();
 
-        if (_panel is null) return;
+        if (_pannello is null) return;
 
-        if (_panel.EstaVisible)
+        if (_pannello.EVisibile)
         {
-            _panel.Esconder();
+            _pannello.Nascondi();
             return;
         }
 
-        // El camino entero, en tres trozos, porque hasta ahora solo se
-        // medía el de en medio —«panel en 25 ms»— y el usuario decía que
-        // tardaba. Los dos que faltaban son justo donde puede estar:
+        // Il percorso intero, in tre pezzetti, perché finora si misurava
+        // solo quello di mezzo —«pannello in 25 ms»— e l'utente diceva
+        // che ci metteva tanto. I due che mancavano sono proprio dove può
+        // stare il ritardo:
         //
-        //   cola     lo que la pulsacion espero a que la recogieramos.
-        //            Si el proceso lleva diez minutos parado y Windows lo
-        //            ha echado de la memoria o lo ha frenado por estar en
-        //            segundo plano, el retraso aparece aqui y en ningun
-        //            otro sitio.
-        //   asomar   lo de siempre: pedir la ventana y darle el foco.
-        //   dibujo   desde que Asomar vuelve hasta que hay pixeles. Show()
-        //            no espera al primer fotograma.
+        //   coda      quanto la pressione ha aspettato che la raccogliessimo.
+        //             Se il processo è fermo da dieci minuti e Windows l'ha
+        //             tolto dalla memoria o l'ha rallentato perché è in
+        //             secondo piano, il ritardo compare qui e in nessun
+        //             altro posto.
+        //   comparsa  il solito: chiedere la finestra e darle il focus.
+        //   disegno   da quando Affiora torna a quando ci sono pixel. Show()
+        //             non aspetta il primo fotogramma.
         //
-        // Y al lado, cuanto llevaba el programa sin hacer nada. Sin ese
-        // dato las cifras no se pueden agrupar en «recien usado» y «diez
-        // minutos parado», que es la comparacion que hace falta.
-        int cola = _buzon?.EsperaDelAtajo ?? 0;
-        var parado = System.Diagnostics.Stopwatch.GetElapsedTime(_ultimaActividad);
-        var sinAbrir = System.Diagnostics.Stopwatch.GetElapsedTime(_ultimaApertura);
+        // E accanto, da quanto il programma non faceva niente. Senza quel
+        // dato le cifre non si possono raggruppare in «appena usato» e
+        // «dieci minuti fermo», che è il confronto che serve.
+        int coda = _cassetta?.AttesaDellaScorciatoia ?? 0;
+        var fermo = System.Diagnostics.Stopwatch.GetElapsedTime(_ultimaAttivita);
+        var senzaAprire = System.Diagnostics.Stopwatch.GetElapsedTime(_ultimaApertura);
 
-        long marca = System.Diagnostics.Stopwatch.GetTimestamp();
+        long segno = System.Diagnostics.Stopwatch.GetTimestamp();
 
-        MostrarPanel();
+        MostraPannello();
 
-        double asomar = System.Diagnostics.Stopwatch
-            .GetElapsedTime(marca).TotalMilliseconds;
+        double affiora = System.Diagnostics.Stopwatch
+            .GetElapsedTime(segno).TotalMilliseconds;
 
-        _panel.AlPrimerFotograma(() =>
+        _pannello.AlPrimoFotogramma(() =>
         {
-            Registro.Anotar(string.Format(
-                "panel: cola {0} ms + asomar {1:F1} ms + dibujo {2:F1} ms "
-                + "= {3:F1} ms ({4:F1} min sin abrirlo, {5:F1} min sin nada)",
-                cola,
-                asomar,
-                System.Diagnostics.Stopwatch.GetElapsedTime(marca).TotalMilliseconds
-                    - asomar,
-                cola + System.Diagnostics.Stopwatch
-                    .GetElapsedTime(marca).TotalMilliseconds,
+            Registro.Annota(string.Format(
+                "pannello: coda {0} ms + comparsa {1:F1} ms + disegno {2:F1} ms "
+                + "= {3:F1} ms ({4:F1} min senza aprirlo, {5:F1} min senza niente)",
+                coda,
+                affiora,
+                System.Diagnostics.Stopwatch.GetElapsedTime(segno).TotalMilliseconds
+                    - affiora,
+                coda + System.Diagnostics.Stopwatch
+                    .GetElapsedTime(segno).TotalMilliseconds,
 
-                // El primero es el que predice si va a tardar; el segundo
-                // se queda porque distingue «frio» de «ademas dormido».
-                sinAbrir.TotalMinutes,
-                parado.TotalMinutes));
+                // Il primo è quello che predice se ci metterà tanto; il
+                // secondo resta perché distingue «freddo» da «in più addormentato».
+                senzaAprire.TotalMinutes,
+                fermo.TotalMinutes));
 
-            // Solo en la primera apertura del proceso, que es la unica
-            // en la que se ha visto la cabecera sin pintar.
-            if (_panel?.Diagnostico() is { } detalle) Registro.Anotar(detalle);
+            // Solo alla prima apertura del processo, che è l'unica in
+            // cui si è vista l'intestazione non disegnata.
+            if (_pannello?.Diagnostica() is { } dettaglio) Registro.Annota(dettaglio);
         });
 
-        Actividad();
+        Attivita();
         _ultimaApertura = System.Diagnostics.Stopwatch.GetTimestamp();
     }
 
     /// <summary>
-    /// Cuando el programa hizo algo por ultima vez. Lo mueven el atajo y
-    /// cada copia: son las dos cosas que lo despiertan.
+    /// Quando il programma ha fatto qualcosa l'ultima volta. Lo muovono
+    /// la scorciatoia e ogni copia: sono le due cose che lo svegliano.
     /// </summary>
-    long _ultimaActividad = System.Diagnostics.Stopwatch.GetTimestamp();
+    long _ultimaAttivita = System.Diagnostics.Stopwatch.GetTimestamp();
 
     /// <summary>
-    /// Cuando se abrio el panel por ultima vez, que **no es lo mismo** y
-    /// es lo que de verdad predice si va a tardar.
+    /// Quando è stato aperto il pannello l'ultima volta, che **non è la
+    /// stessa cosa** ed è ciò che predice davvero se ci metterà tanto.
     ///
-    /// Se separo al leer el log de la maquina del usuario: una apertura
-    /// decia «llevaba 0,5 min parado» y entre ella y la anterior habia
-    /// ocho minutos de reloj. Habia estado copiando mientras trabajaba, y
-    /// cada copia reiniciaba el contador — pero capturar una copia es
-    /// barato y no mantiene caliente nada de lo que dibuja el panel. La
-    /// cifra decia «recien usado» de algo que llevaba ocho minutos frio,
-    /// y con ella la lentitud que el usuario nota era invisible.
+    /// Fu separato leggendo il log della macchina dell'utente:
+    /// un'apertura diceva «era fermo da 0,5 min» e tra quella e la
+    /// precedente c'erano otto minuti di orologio. Aveva copiato mentre
+    /// lavorava, e ogni copia azzerava il contatore — ma catturare una
+    /// copia costa poco e non tiene caldo niente di ciò che disegna il
+    /// pannello. La cifra diceva «appena usato» di qualcosa che era
+    /// freddo da otto minuti, e con lei la lentezza che l'utente nota
+    /// era invisibile.
     /// </summary>
     long _ultimaApertura = System.Diagnostics.Stopwatch.GetTimestamp();
 
-    void Actividad() =>
-        _ultimaActividad = System.Diagnostics.Stopwatch.GetTimestamp();
+    void Attivita() =>
+        _ultimaAttivita = System.Diagnostics.Stopwatch.GetTimestamp();
 
-    void MostrarPanel()
+    void MostraPannello()
     {
-        _panel?.Asomar();
+        _pannello?.Affiora();
     }
 
-    // -------------------------------------------------- el portapapeles
+    // ------------------------------------------------------ gli appunti
 
-    void AlPortapapeles()
+    void NegliAppunti()
     {
-        uint secuencia = Portapapeles.Secuencia();
+        uint sequenza = Appunti.Sequenza();
 
-        // WM_CLIPBOARDUPDATE no llega una vez por copia sino una por
-        // cada sesion que abre quien copia: PowerShell dispara tres.
-        // El contador de Windows es lo que distingue una copia de
-        // verdad de un aviso repetido.
-        if (secuencia == _ultimaSecuencia) return;
-        _ultimaSecuencia = secuencia;
+        // WM_CLIPBOARDUPDATE non arriva una volta per copia ma una per
+        // ogni sessione aperta da chi copia: PowerShell ne fa partire
+        // tre. Il contatore di Windows è ciò che distingue una copia
+        // vera da un avviso ripetuto.
+        if (sequenza == _ultimaSequenza) return;
+        _ultimaSequenza = sequenza;
 
-        // Una copia tambien despierta al programa: si el usuario copio
-        // hace diez segundos, no llevaba diez minutos parado por mucho
-        // que no haya tocado el atajo.
-        Actividad();
+        // Anche una copia sveglia il programma: se l'utente ha copiato
+        // dieci secondi fa, non era fermo da dieci minuti per quanto
+        // non abbia toccato la scorciatoia.
+        Attivita();
 
-        // Lo que acabamos de poner nosotros para pegarlo no se reanota.
-        if (secuencia == _secuenciaPropia) return;
+        // Ciò che abbiamo appena messo noi per incollarlo non si riannota.
+        if (sequenza == _sequenzaPropria) return;
 
-        if (Almacen.Pref("pausado", false)) return;
+        if (Archivio.Pref("in_pausa", false)) return;
 
-        var contenido = Portapapeles.Leer();
+        var contenuto = Appunti.Leggi();
 
-        switch (contenido.Tipo)
+        switch (contenuto.Tipo)
         {
-            case TipoContenido.Privado:
-                Registro.Anotar("copia marcada como privada: no se guarda");
+            case TipoContenuto.Privato:
+                Registro.Annota("copia segnata come privata: non si salva");
                 break;
 
-            case TipoContenido.Texto when contenido.Texto is not null:
-                if (Almacen.Anotar(new Entrada
+            case TipoContenuto.Testo when contenuto.Testo is not null:
+                if (Archivio.Annota(new Voce
                 {
-                    Tipo = Entrada.Texto_,
-                    Texto = contenido.Texto,
+                    Tipo = Voce.Testo_,
+                    Testo = contenuto.Testo,
                 }))
                 {
-                    RefrescarLista();
+                    AggiornaLista();
                 }
                 break;
 
-            case TipoContenido.Imagen when contenido.Imagen is not null:
-                if (Almacen.GuardarImagen(Portapapeles.DibABmp(contenido.Imagen)))
-                    RefrescarLista();
+            case TipoContenuto.Immagine when contenuto.Immagine is not null:
+                if (Archivio.SalvaImmagine(Appunti.DibABmp(contenuto.Immagine)))
+                    AggiornaLista();
                 break;
         }
     }
 
     /// <summary>
-    /// El indice cachea el texto normalizado de cada entrada, asi que
-    /// hay que avisarle cuando el almacen cambia.
+    /// L'indice tiene in cache il testo normalizzato di ogni voce,
+    /// quindi va avvisato quando l'archivio cambia.
     /// </summary>
-    internal void RefrescarLista()
+    internal void AggiornaLista()
     {
-        Indice.Invalidar();
-        _panel?.Refrescar();
+        Indice.Invalida();
+        _pannello?.Aggiorna();
     }
 
-    // ------------------------------------------------------- el pegado
+    // -------------------------------------------------------- l'incolla
 
     /// <summary>
-    /// Copia la entrada, devuelve el foco a donde estaba y pega alli.
+    /// Copia la voce, restituisce il focus dov'era e incolla lì.
     /// </summary>
-    internal async void Pegar(Entrada entrada)
+    internal async void Incolla(Voce voce)
     {
         try
         {
-            bool copiado = entrada.EsImagen
-                ? entrada.Ruta is not null && Portapapeles.CopiarImagen(entrada.Ruta)
-                : Portapapeles.Copiar(
-                    [Modelo.CrearFragmento(entrada.Texto ?? "")], sinFormato: true);
+            bool copiato = voce.EUnImmagine
+                ? voce.Percorso is not null && Appunti.CopiaImmagine(voce.Percorso)
+                : Appunti.Copia(
+                    [Regole.CreaFrammento(voce.Testo ?? "")], senzaFormato: true);
 
-            await TrasCopiar(copiado);
+            await DopoLaCopia(copiato);
         }
         catch (Exception e)
         {
-            Registro.Fallo("Pegar", e);
+            Registro.Errore("Incolla", e);
         }
     }
 
     /// <summary>
-    /// Pega un texto con formato: es lo que distingue un guardado de una
-    /// entrada del historial, que siempre va plana.
+    /// Incolla un testo con formato: è ciò che distingue un salvato da
+    /// una voce della cronologia, che va sempre semplice.
     /// </summary>
-    internal async void PegarFragmentos(
-        IReadOnlyList<Fragmento> fragmentos, bool sinFormato)
+    internal async void IncollaFrammenti(
+        IReadOnlyList<Frammento> frammenti, bool senzaFormato)
     {
         try
         {
-            await TrasCopiar(Portapapeles.Copiar(fragmentos, sinFormato));
+            await DopoLaCopia(Appunti.Copia(frammenti, senzaFormato));
         }
         catch (Exception e)
         {
-            Registro.Fallo("PegarFragmentos", e);
+            Registro.Errore("IncollaFrammenti", e);
         }
     }
 
     /// <summary>
-    /// Devuelve el foco a donde estaba y pega alli. Es la parte
-    /// delicada del ciclo y por eso vive en un solo sitio: guardar el
-    /// hwnd anterior, engancharle el hilo y soltar Ctrl+V.
+    /// Restituisce il focus dov'era e incolla lì. È la parte delicata
+    /// del ciclo e per questo vive in un solo posto: salvare l'hwnd
+    /// precedente, agganciarne il thread e mandare Ctrl+V.
     /// </summary>
-    async Task TrasCopiar(bool copiado)
+    async Task DopoLaCopia(bool copiato)
     {
-        if (!copiado)
+        if (!copiato)
         {
-            _panel?.Avisar(Textos.T("No se pudo copiar al portapapeles."));
+            _pannello?.Avvisa("Impossibile copiare negli appunti.");
             return;
         }
 
-        _secuenciaPropia = Portapapeles.Secuencia();
-        _ultimaSecuencia = _secuenciaPropia;
+        _sequenzaPropria = Appunti.Sequenza();
+        _ultimaSequenza = _sequenzaPropria;
 
-        _panel?.Esconder();
+        _pannello?.Nascondi();
 
-        if (!Foco.Devolver(_ventanaPrevia))
+        if (!FocusFinestra.Restituisci(_finestraPrecedente))
         {
-            // Queda copiado: el usuario puede pegar a mano. Es peor no
-            // decirselo que decirlo.
+            // Resta copiato: l'utente può incollare a mano. È peggio non
+            // dirglielo che dirlo.
             //
-            // Y va por la bandeja, no por el panel. El panel se acaba de
-            // esconder tres lineas mas arriba, asi que pintar el aviso
-            // ahi era escribirlo en una ventana invisible: el usuario se
-            // quedaba con el texto copiado, sin pegar y sin saber por
-            // que. Ademas el aviso sobrevivia escondido y reaparecia en
-            // la apertura siguiente, ya sin nada que ver con lo que
-            // estuviera haciendo entonces.
-            _bandeja?.Avisar(
-                Textos.T("Copiado, pero no pegado"),
-                Textos.T("No pude volver a la ventana anterior. "
-                       + "Está en el portapapeles: pega con Ctrl+V."));
+            // E passa dall'area di notifica, non dal pannello. Il pannello
+            // si è appena nascosto tre righe più sopra, quindi disegnare
+            // l'avviso lì era scriverlo in una finestra invisibile:
+            // l'utente restava con il testo copiato, non incollato e senza
+            // sapere perché. In più l'avviso sopravviveva nascosto e
+            // ricompariva all'apertura successiva, ormai senza niente a
+            // che vedere con ciò che stava facendo in quel momento.
+            _areaNotifica?.Avvisa(
+                "Copiato, ma non incollato",
+                "Non sono riuscito a tornare alla finestra precedente. "
+                       + "È negli appunti: incolla con Ctrl+V.");
 
             return;
         }
 
-        // Windows necesita un instante para asentar el primer plano antes
-        // de aceptar las teclas, pero **cuanto no se sabe de antemano**.
-        // Antes se esperaban 60 ms fijos: de sobra en una maquina
-        // desahogada —y se pagaban siempre— y posiblemente cortos en una
-        // cargada, donde el Ctrl+V salia antes de que el destino pudiera
-        // recibirlo. Ahora se espera a que la ventana este delante de
-        // verdad, que es lo que se queria saber.
-        long antes = System.Diagnostics.Stopwatch.GetTimestamp();
+        // Windows ha bisogno di un istante per assestare il primo piano
+        // prima di accettare i tasti, ma **quanto non si sa in anticipo**.
+        // Prima si aspettavano 60 ms fissi: troppi su una macchina scarica
+        // —e si pagavano sempre— e forse pochi su una carica, dove il
+        // Ctrl+V usciva prima che la destinazione potesse riceverlo.
+        // Adesso si aspetta che la finestra sia davvero davanti, che è
+        // ciò che si voleva sapere.
+        long prima = System.Diagnostics.Stopwatch.GetTimestamp();
 
-        int espera = await Task.Run(() => Foco.EsperarAlFrente(_ventanaPrevia));
+        int attesa = await Task.Run(() => FocusFinestra.AspettaInPrimoPiano(_finestraPrecedente));
 
-        Foco.PegarConTeclado();
+        FocusFinestra.IncollaConTastiera();
 
-        Registro.Anotar(string.Format(
-            "pegado: foco en {0} ms + total {1:F1} ms",
-            espera,
-            System.Diagnostics.Stopwatch.GetElapsedTime(antes).TotalMilliseconds));
+        Registro.Annota(string.Format(
+            "incollato: focus in {0} ms + totale {1:F1} ms",
+            attesa,
+            System.Diagnostics.Stopwatch.GetElapsedTime(prima).TotalMilliseconds));
     }
 
-    /// <summary>Deja el contenido en el portapapeles sin pegarlo.</summary>
-    internal void CopiarSolo(Elemento elemento)
+    /// <summary>Lascia il contenuto negli appunti senza incollarlo.</summary>
+    internal void CopiaSoltanto(Elemento elemento)
     {
         try
         {
-            bool copiado = elemento switch
+            bool copiato = elemento switch
             {
-                Entrada { EsImagen: true, Ruta: { } ruta } =>
-                    Portapapeles.CopiarImagen(ruta),
+                Voce { EUnImmagine: true, Percorso: { } percorso } =>
+                    Appunti.CopiaImmagine(percorso),
 
-                Entrada entrada => Portapapeles.Copiar(
-                    [Modelo.CrearFragmento(entrada.Texto ?? "")], sinFormato: true),
+                Voce voce => Appunti.Copia(
+                    [Regole.CreaFrammento(voce.Testo ?? "")], senzaFormato: true),
 
-                Snippet snippet => Portapapeles.Copiar(snippet.Runs),
+                Snippet snippet => Appunti.Copia(snippet.Runs),
 
                 _ => false,
             };
 
-            if (!copiado)
+            if (!copiato)
             {
-                _panel?.Avisar(Textos.T("No se pudo copiar al portapapeles."));
+                _pannello?.Avvisa("Impossibile copiare negli appunti.");
                 return;
             }
 
-            _secuenciaPropia = Portapapeles.Secuencia();
-            _ultimaSecuencia = _secuenciaPropia;
+            _sequenzaPropria = Appunti.Sequenza();
+            _ultimaSequenza = _sequenzaPropria;
 
-            _panel?.Esconder();
+            _pannello?.Nascondi();
         }
         catch (Exception e)
         {
-            Registro.Fallo("CopiarSolo", e);
+            Registro.Errore("CopiaSoltanto", e);
         }
     }
 
     /// <summary>
-    /// Abre el enlace en el navegador. Se ofrece solo cuando el texto
-    /// entero es la direccion: un parrafo que la menciona de pasada no
-    /// cuenta.
+    /// Apre il link nel browser. Si offre solo quando l'intero testo è
+    /// l'indirizzo: un paragrafo che lo menziona di passaggio non conta.
     ///
-    /// Es una accion mas del menu de la fila, no lo que hace el clic.
-    /// Cuando lo era, un enlace no se podia pegar en ningun sitio.
+    /// È un'azione in più del menu della riga, non ciò che fa il clic.
+    /// Quando lo era, un link non si poteva incollare da nessuna parte.
     /// </summary>
-    internal void AbrirEnlace(string texto)
+    internal void ApriLink(string testo)
     {
-        _panel?.Esconder();
+        _pannello?.Nascondi();
 
         try
         {
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
-                FileName = Modelo.UrlDe(texto),
+                FileName = Regole.UrlDi(testo),
                 UseShellExecute = true,
             });
         }
         catch (Exception e)
         {
-            Registro.Fallo("AbrirEnlace", e);
+            Registro.Errore("ApriLink", e);
 
-            // Por la bandeja por lo mismo que el aviso de pegar: el panel
-            // se esconde arriba del todo de este metodo, asi que aqui ya
-            // no hay ventana donde escribir.
-            _bandeja?.Avisar(
-                Textos.T("No se pudo abrir el enlace"),
-                Textos.T("Windows no encontró con qué abrirlo."));
+            // Dall'area di notifica per lo stesso motivo dell'avviso di
+            // incolla: il pannello si nasconde in cima a questo metodo,
+            // quindi qui non c'è più una finestra dove scrivere.
+            _areaNotifica?.Avvisa(
+                "Impossibile aprire il link",
+                "Windows non ha trovato con cosa aprirlo.");
         }
     }
 
     /// <summary>
-    /// Cambia el atajo global en caliente. False si Windows no lo da
-    /// —normalmente porque otro programa se lo quedo—, y entonces la
-    /// interfaz tiene que decirlo en vez de callarse.
+    /// Cambia la scorciatoia globale a caldo. False se Windows non la
+    /// concede —di solito perché se l'è presa un altro programma—, e
+    /// allora l'interfaccia deve dirlo invece di tacere.
     /// </summary>
-    internal bool PonerAtajo(string atajo) => _buzon?.PonerAtajo(atajo) ?? false;
+    internal bool MettiScorciatoia(string scorciatoia) => _cassetta?.MettiScorciatoia(scorciatoia) ?? false;
 
-    // -------------------------------------------------------- el cierre
+    // ------------------------------------------------------- la chiusura
 
-    bool _cerrando;
+    bool _chiudendo;
 
-    void Cerrar()
+    void Chiudi()
     {
-        // Ya no lo pide solo la bandeja: tambien el Restart Manager, y
-        // ese puede mandar WM_ENDSESSION y despues WM_CLOSE. Entrar dos
-        // veces desecharia dos veces y volcaria sobre un almacen a medio
-        // soltar.
-        if (_cerrando) return;
-        _cerrando = true;
+        // Non la chiede più solo l'area di notifica: anche il Restart
+        // Manager, e quello può mandare WM_ENDSESSION e poi WM_CLOSE.
+        // Entrare due volte scarterebbe due volte e riverserebbe su un
+        // archivio rilasciato a metà.
+        if (_chiudendo) return;
+        _chiudendo = true;
 
-        Registro.Anotar("cerrando");
+        Registro.Annota("chiusura in corso");
 
-        Almacen.Volcar(forzar: true);
+        Archivio.Riversa(forza: true);
 
-        _volcado?.Dispose();
-        _novedades?.Dispose();
-        _bandeja?.Dispose();
-        _cierre?.Dispose();
-        _buzon?.Dispose();
+        _riversamento?.Dispose();
+        _aggiornamenti?.Dispose();
+        _areaNotifica?.Dispose();
+        _chiusura?.Dispose();
+        _cassetta?.Dispose();
 
         Exit();
     }

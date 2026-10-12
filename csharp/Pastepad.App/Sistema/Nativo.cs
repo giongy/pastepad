@@ -3,46 +3,46 @@ using System.Runtime.InteropServices;
 namespace Pastepad.App.Sistema;
 
 /// <summary>
-/// Todo lo que habla con Windows, en un solo sitio. Aparte del resto
-/// para que el codigo de la interfaz no tenga que saber nada de handles
-/// ni de estructuras del sistema.
+/// Tutto ciò che parla con Windows, in un solo posto. Separato dal resto
+/// perché il codice dell'interfaccia non debba sapere niente di handle
+/// né di strutture di sistema.
 ///
-/// Las firmas estan escritas a mano y no generadas: son pocas y asi se
-/// ven. Si esta lista crece mucho, la alternativa es CsWin32.
+/// Le firme sono scritte a mano e non generate: sono poche e così si
+/// vedono. Se questa lista cresce molto, l'alternativa è CsWin32.
 /// </summary>
 internal static partial class Nativo
 {
-    // --- mensajes ---------------------------------------------------
+    // --- messaggi ---------------------------------------------------
 
     public const uint WM_DESTROY = 0x0002;
     public const uint WM_HOTKEY = 0x0312;
     public const uint WM_CLIPBOARDUPDATE = 0x031D;
 
-    /// <summary>Lo manda una segunda instancia para pedir el panel.</summary>
-    public const uint WM_MOSTRARSE = 0x0400 + 7;   // WM_USER + 7
+    /// <summary>Lo manda una seconda istanza per chiedere il pannello.</summary>
+    public const uint WM_MOSTRATI = 0x0400 + 7;   // WM_USER + 7
 
-    /// <summary>Lo manda el icono de la bandeja al hacerle clic.</summary>
-    public const uint WM_BANDEJA = 0x0400 + 8;     // WM_USER + 8
+    /// <summary>Lo manda l'icona dell'area di notifica al clic.</summary>
+    public const uint WM_AREANOTIFICA = 0x0400 + 8;     // WM_USER + 8
 
     public const uint WM_LBUTTONUP = 0x0202;
     public const uint WM_RBUTTONUP = 0x0205;
     public const uint WM_COMMAND = 0x0111;
 
-    // --- el aviso de que nos van a cerrar ---------------------------
+    // --- l'avviso che stanno per chiuderci ---------------------------
 
     public const uint WM_CLOSE = 0x0010;
     public const uint WM_QUERYENDSESSION = 0x0011;
     public const uint WM_ENDSESSION = 0x0016;
 
     /// <summary>
-    /// Llega en el lParam de WM_QUERYENDSESSION cuando quien cierra no
-    /// es Windows apagandose, sino el Restart Manager haciendole sitio a
-    /// un instalador. Sirve para distinguir "me actualizan" de "se apaga
-    /// el equipo", que en el registro no es lo mismo.
+    /// Arriva nell'lParam di WM_QUERYENDSESSION quando a chiudere non è
+    /// Windows che si spegne, ma il Restart Manager che fa posto a un
+    /// installer. Serve a distinguere "mi aggiornano" da "si spegne il
+    /// computer", che nel registro non è la stessa cosa.
     /// </summary>
     public const nint ENDSESSION_CLOSEAPP = 0x1;
 
-    // --- modificadores del atajo ------------------------------------
+    // --- modificatori della scorciatoia ------------------------------
 
     public const uint MOD_ALT = 0x0001;
     public const uint MOD_CONTROL = 0x0002;
@@ -50,7 +50,7 @@ internal static partial class Nativo
     public const uint MOD_WIN = 0x0008;
     public const uint MOD_NOREPEAT = 0x4000;
 
-    // --- teclas -----------------------------------------------------
+    // --- tasti ------------------------------------------------------
 
     public const byte VK_SHIFT = 0x10;
     public const byte VK_CONTROL = 0x11;
@@ -59,22 +59,22 @@ internal static partial class Nativo
 
     public const uint KEYEVENTF_KEYUP = 0x0002;
 
-    // --- portapapeles -----------------------------------------------
+    // --- appunti ----------------------------------------------------
 
     public const uint CF_UNICODETEXT = 13;
     public const uint CF_DIB = 8;
 
-    // --- varios -----------------------------------------------------
+    // --- vari -------------------------------------------------------
 
     public const nint HWND_MESSAGE = -3;
 
     /// <summary>
-    /// Ventana emergente sin marco. Sin WS_VISIBLE: nace oculta y nunca
-    /// se muestra.
+    /// Finestra popup senza cornice. Senza WS_VISIBLE: nasce nascosta e
+    /// non si mostra mai.
     /// </summary>
     public const uint WS_POPUP = 0x80000000;
 
-    /// <summary>Fuera de Alt+Tab y de la barra de tareas.</summary>
+    /// <summary>Fuori da Alt+Tab e dalla barra delle applicazioni.</summary>
     public const uint WS_EX_TOOLWINDOW = 0x00000080;
 
     public const int SW_RESTORE = 9;
@@ -82,7 +82,7 @@ internal static partial class Nativo
     public const uint MONITOR_DEFAULTTONEAREST = 2;
     public const int ERROR_CLASS_ALREADY_EXISTS = 1410;
 
-    // --- estructuras ------------------------------------------------
+    // --- strutture --------------------------------------------------
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct WNDCLASSW
@@ -114,8 +114,8 @@ internal static partial class Nativo
         public int right;
         public int bottom;
 
-        public readonly int Ancho => right - left;
-        public readonly int Alto => bottom - top;
+        public readonly int Larghezza => right - left;
+        public readonly int Altezza => bottom - top;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -137,15 +137,15 @@ internal static partial class Nativo
 
     /// <summary>
     /// «Display a balloon notification. The szInfo, szInfoTitle,
-    /// dwInfoFlags, and uTimeout members are valid.» Y para quitarlo,
-    /// el mismo aviso con szInfo vacio.
+    /// dwInfoFlags, and uTimeout members are valid.» E per toglierlo,
+    /// lo stesso avviso con szInfo vuoto.
     /// </summary>
     public const uint NIF_INFO = 0x00000010;
 
     /// <summary>
-    /// El triangulo de advertencia del globo. Sin titulo no se dibuja
-    /// ninguno: «if the szInfoTitle member is zero-length, the icon is
-    /// not shown».
+    /// Il triangolo di avvertimento del fumetto. Senza titolo non se ne
+    /// disegna nessuno: «if the szInfoTitle member is zero-length, the
+    /// icon is not shown».
     /// </summary>
     public const uint NIIF_WARNING = 0x00000002;
 
@@ -169,23 +169,23 @@ internal static partial class Nativo
         public nint hBalloonIcon;
     }
 
-    // --- ventanas ---------------------------------------------------
+    // --- finestre ---------------------------------------------------
 
-    // DllImport y no LibraryImport: el generador no sabe convertir
-    // structs con cadenas dentro (SYSLIB1051), y WNDCLASSW las lleva.
+    // DllImport e non LibraryImport: il generatore non sa convertire
+    // struct con stringhe dentro (SYSLIB1051), e WNDCLASSW le ha.
     [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    public static extern ushort RegisterClassW(ref WNDCLASSW clase);
+    public static extern ushort RegisterClassW(ref WNDCLASSW classe);
 
     [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16,
         SetLastError = true)]
     public static partial nint CreateWindowExW(
-        uint estiloExtra, string clase, string titulo, uint estilo,
-        int x, int y, int ancho, int alto,
-        nint padre, nint menu, nint instancia, nint parametro);
+        uint stileExtra, string classe, string titolo, uint stile,
+        int x, int y, int larghezza, int altezza,
+        nint padre, nint menu, nint istanza, nint parametro);
 
     [LibraryImport("user32.dll")]
     public static partial nint DefWindowProcW(
-        nint hwnd, uint mensaje, nint wParam, nint lParam);
+        nint hwnd, uint messaggio, nint wParam, nint lParam);
 
     [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -194,50 +194,50 @@ internal static partial class Nativo
     [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16,
         SetLastError = true)]
     public static partial nint FindWindowExW(
-        nint padre, nint tras, string? clase, string? titulo);
+        nint padre, nint dietro, string? classe, string? titolo);
 
     [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool PostMessageW(
-        nint hwnd, uint mensaje, nint wParam, nint lParam);
+        nint hwnd, uint messaggio, nint wParam, nint lParam);
 
     [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16,
         SetLastError = true)]
-    public static partial nint GetModuleHandleW(string? nombre);
+    public static partial nint GetModuleHandleW(string? nome);
 
-    // --- que nos reabran despues de actualizarnos -------------------
+    // --- farci riaprire dopo un aggiornamento --------------------
 
     /// <summary>
-    /// Le dice a Windows con que linea de comandos volver a abrirnos si
-    /// nos cierra. Sin esta llamada el Restart Manager NO reabre nada:
+    /// Dice a Windows con quale riga di comando riaprirci se ci chiude.
+    /// Senza questa chiamata il Restart Manager NON riapre niente:
     /// "Restart Manager can only restart applications that have been
     /// registered for restart. This is the only way that the Restart
     /// Manager can determine the command-line command to use".
     ///
-    /// Devuelve un HRESULT, no un booleano.
+    /// Restituisce un HRESULT, non un booleano.
     /// </summary>
     [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
     public static partial int RegisterApplicationRestart(
-        string? lineaComandos, uint banderas);
+        string? rigaDiComando, uint flag);
 
-    /// <summary>No reabrirnos si lo que hubo fue un cierre inesperado.</summary>
+    /// <summary>Non riaprirci se c'è stata una chiusura inattesa.</summary>
     public const uint RESTART_NO_CRASH = 1;
 
-    /// <summary>Ni si Windows nos da por colgados.</summary>
+    /// <summary>Né se Windows ci considera bloccati.</summary>
     public const uint RESTART_NO_HANG = 2;
 
-    // --- atajo global -----------------------------------------------
+    // --- scorciatoia globale ----------------------------------------
 
     [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool RegisterHotKey(
-        nint hwnd, int id, uint modificadores, uint tecla);
+        nint hwnd, int id, uint modificatori, uint tasto);
 
     [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool UnregisterHotKey(nint hwnd, int id);
 
-    // --- portapapeles -----------------------------------------------
+    // --- appunti ----------------------------------------------------
 
     [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -252,7 +252,7 @@ internal static partial class Nativo
 
     [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static partial bool OpenClipboard(nint duena);
+    public static partial bool OpenClipboard(nint proprietaria);
 
     [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -270,14 +270,14 @@ internal static partial class Nativo
     public static partial nint GetClipboardData(uint formato);
 
     [LibraryImport("user32.dll", SetLastError = true)]
-    public static partial nint SetClipboardData(uint formato, nint datos);
+    public static partial nint SetClipboardData(uint formato, nint dati);
 
     [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16,
         SetLastError = true)]
-    public static partial uint RegisterClipboardFormatW(string nombre);
+    public static partial uint RegisterClipboardFormatW(string nome);
 
     [LibraryImport("kernel32.dll", SetLastError = true)]
-    public static partial nint GlobalAlloc(uint banderas, nuint bytes);
+    public static partial nint GlobalAlloc(uint flag, nuint bytes);
 
     [LibraryImport("kernel32.dll", SetLastError = true)]
     public static partial nint GlobalLock(nint memoria);
@@ -292,7 +292,7 @@ internal static partial class Nativo
     [LibraryImport("kernel32.dll", SetLastError = true)]
     public static partial nint GlobalFree(nint memoria);
 
-    // --- foco -------------------------------------------------------
+    // --- focus ------------------------------------------------------
 
     [LibraryImport("user32.dll")]
     public static partial nint GetForegroundWindow();
@@ -314,7 +314,7 @@ internal static partial class Nativo
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static partial bool ShowWindow(nint hwnd, int orden);
+    public static partial bool ShowWindow(nint hwnd, int ordine);
 
     [LibraryImport("user32.dll", SetLastError = true)]
     public static partial uint GetWindowThreadProcessId(nint hwnd, out uint pid);
@@ -322,48 +322,48 @@ internal static partial class Nativo
     [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool AttachThreadInput(
-        uint hiloPropio, uint hiloDestino, [MarshalAs(UnmanagedType.Bool)] bool enganchar);
+        uint threadProprio, uint threadDestinazione, [MarshalAs(UnmanagedType.Bool)] bool aggancia);
 
     [LibraryImport("kernel32.dll")]
     public static partial uint GetCurrentThreadId();
 
     [LibraryImport("user32.dll")]
     public static partial void keybd_event(
-        byte tecla, byte codigo, uint banderas, nuint extra);
+        byte tasto, byte codice, uint flag, nuint extra);
 
     /// <summary>
-    /// Si la tecla esta fisicamente pulsada AHORA. El bit alto del
-    /// resultado es el que lo dice; el bajo habla de si se pulso desde la
-    /// ultima llamada, y ese no nos sirve.
+    /// Se il tasto è fisicamente premuto ADESSO. Lo dice il bit alto
+    /// del risultato; quello basso dice se è stato premuto dall'ultima
+    /// chiamata, e non ci serve.
     ///
-    /// Hace falta para no soltar teclas que nadie ha pulsado: ver
-    /// Foco.PegarConTeclado.
+    /// Serve per non rilasciare tasti che nessuno ha premuto: vedi
+    /// FocusFinestra.IncollaConTastiera.
     /// </summary>
     [LibraryImport("user32.dll")]
-    public static partial short GetAsyncKeyState(int tecla);
+    public static partial short GetAsyncKeyState(int tasto);
 
     /// <summary>
-    /// Cuando se PUSO en la cola el mensaje que se esta despachando, no
-    /// cuando se atiende: «the elapsed time, in milliseconds, from the
-    /// time the system was started to the time the message was created
-    /// (that is, placed in the thread's message queue)».
+    /// Quando è stato MESSO in coda il messaggio che si sta smistando,
+    /// non quando viene servito: «the elapsed time, in milliseconds,
+    /// from the time the system was started to the time the message was
+    /// created (that is, placed in the thread's message queue)».
     ///
-    /// Restandoselo a GetTickCount sale lo que el mensaje espero a que
-    /// alguien lo recogiera, que es el unico trozo del camino del atajo
-    /// que hasta ahora no se medía y donde tiene que estar el retraso que
-    /// el usuario nota tras diez minutos parado.
+    /// Sottraendolo a GetTickCount esce quanto il messaggio ha aspettato
+    /// che qualcuno lo raccogliesse, che è l'unico tratto del percorso
+    /// della scorciatoia che finora non si misurava e dove deve stare il
+    /// ritardo che l'utente nota dopo dieci minuti di inattività.
     /// </summary>
     [LibraryImport("user32.dll")]
     public static partial int GetMessageTime();
 
-    // --- pantalla ---------------------------------------------------
+    // --- schermo ----------------------------------------------------
 
     [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool GetCursorPos(out POINT punto);
 
     [LibraryImport("user32.dll")]
-    public static partial nint MonitorFromPoint(POINT punto, uint banderas);
+    public static partial nint MonitorFromPoint(POINT punto, uint flag);
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -372,50 +372,51 @@ internal static partial class Nativo
     [LibraryImport("user32.dll")]
     public static partial int GetDpiForWindow(nint hwnd);
 
-    // --- donde acaban de verdad los archivos -------------------------
+    // --- dove finiscono davvero i file ------------------------------
 
     public const uint GENERIC_WRITE = 0x40000000;
     public const uint CREATE_ALWAYS = 2;
 
     /// <summary>
-    /// El archivo se borra solo al cerrar el handle. Asi la sonda no
-    /// deja rastro ni aunque el programa muera con ella abierta.
+    /// Il file si cancella da solo alla chiusura dell'handle. Così la
+    /// sonda non lascia traccia nemmeno se il programma muore con lei
+    /// aperta.
     /// </summary>
     public const uint FILE_FLAG_DELETE_ON_CLOSE = 0x04000000;
 
-    public static readonly nint HANDLE_INVALIDO = -1;
+    public static readonly nint HANDLE_NON_VALIDO = -1;
 
     [LibraryImport("kernel32.dll", EntryPoint = "CreateFileW",
                    StringMarshalling = StringMarshalling.Utf16,
                    SetLastError = true)]
     public static partial nint CreateFileW(
-        string nombre, uint acceso, uint comparte, nint seguridad,
-        uint creacion, uint banderas, nint plantilla);
+        string nome, uint accesso, uint condivide, nint sicurezza,
+        uint creazione, uint flag, nint modello);
 
     /// <summary>
-    /// La ruta REAL del archivo o carpeta que hay detras de un handle,
-    /// que no tiene por que ser la que se pidio: cuando el proceso vive
-    /// dentro del contenedor de una aplicacion empaquetada, Windows
-    /// redirige %LOCALAPPDATA% y esta es la unica forma de verlo desde
-    /// dentro. Devuelve la longitud, o 0 si fallo.
+    /// Il percorso REALE del file o della cartella dietro un handle,
+    /// che non è per forza quello chiesto: quando il processo vive
+    /// dentro il contenitore di un'applicazione impacchettata, Windows
+    /// reindirizza %LOCALAPPDATA% e questo è l'unico modo di vederlo da
+    /// dentro. Restituisce la lunghezza, o 0 se fallisce.
     /// </summary>
     [LibraryImport("kernel32.dll", EntryPoint = "GetFinalPathNameByHandleW",
                    StringMarshalling = StringMarshalling.Utf16,
                    SetLastError = true)]
     public static partial uint GetFinalPathNameByHandleW(
-        nint handle, [Out] char[] buffer, uint largo, uint banderas);
+        nint handle, [Out] char[] buffer, uint lungo, uint flag);
 
     [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool CloseHandle(nint handle);
 
-    // --- bandeja ----------------------------------------------------
+    // --- area di notifica -------------------------------------------
 
-    // Igual que RegisterClassW: NOTIFYICONDATAW lleva cadenas de tamaño
-    // fijo, que el generador tampoco convierte.
+    // Come RegisterClassW: NOTIFYICONDATAW ha stringhe di dimensione
+    // fissa, che il generatore nemmeno converte.
     [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool Shell_NotifyIconW(uint mensaje, ref NOTIFYICONDATAW datos);
+    public static extern bool Shell_NotifyIconW(uint messaggio, ref NOTIFYICONDATAW dati);
 
     public const uint IMAGE_ICON = 1;
     public const uint LR_LOADFROMFILE = 0x00000010;
@@ -424,14 +425,14 @@ internal static partial class Nativo
     [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16,
         SetLastError = true)]
     public static partial nint LoadImageW(
-        nint instancia, string nombre, uint tipo, int ancho, int alto, uint banderas);
+        nint istanza, string nome, uint tipo, int larghezza, int altezza, uint flag);
 
     [LibraryImport("user32.dll", SetLastError = true)]
-    public static partial nint LoadIconW(nint instancia, nint nombre);
+    public static partial nint LoadIconW(nint istanza, nint nome);
 
     public static readonly nint IDI_APPLICATION = 32512;
 
-    // --- menu de la bandeja -----------------------------------------
+    // --- menu dell'area di notifica ---------------------------------
 
     public const uint MF_STRING = 0x00000000;
     public const uint MF_SEPARATOR = 0x00000800;
@@ -445,7 +446,7 @@ internal static partial class Nativo
         SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool AppendMenuW(
-        nint menu, uint banderas, nuint id, string? texto);
+        nint menu, uint flag, nuint id, string? testo);
 
     [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -453,5 +454,5 @@ internal static partial class Nativo
 
     [LibraryImport("user32.dll", SetLastError = true)]
     public static partial int TrackPopupMenuEx(
-        nint menu, uint banderas, int x, int y, nint hwnd, nint parametros);
+        nint menu, uint flag, int x, int y, nint hwnd, nint parametri);
 }

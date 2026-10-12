@@ -1,58 +1,65 @@
-# Security
+# Sicurezza
 
-## What this app stores, and where
+## Cosa salva questa app, e dove
 
-Everything lives in plain files next to the executable:
+Tutto vive in file semplici in `%LOCALAPPDATA%\pastepad`:
 
-| File | Contents |
+| File | Contenuto |
 |---|---|
-| `historial.json` | Everything you copied, in plain text |
-| `snippets.json` | Texts you chose to save |
-| `imagenes/` | Screenshots you copied, as BMP |
+| `cronologia.json` | Tutto ciò che hai copiato, in chiaro |
+| `snippets.json` | I testi che hai scelto di salvare |
+| `note.json` | Le note del blocco |
+| `immagini\` | Le schermate che hai copiato, come BMP |
 
-**None of it is encrypted.** Anyone with access to that folder, or to a
-backup of it, can read everything you have copied.
+**Niente di tutto questo è cifrato.** Chiunque abbia accesso a quella
+cartella, o a un suo backup, può leggere tutto ciò che hai copiato.
 
-## What is *not* stored
+## Cosa *non* viene salvato
 
-Windows defines
-[clipboard formats](https://learn.microsoft.com/en-us/windows/win32/dataxchg/clipboard-formats)
-that let an application mark content as private. pastepad honours all
-four and does not even open the clipboard when one is present:
+Windows definisce dei
+[formati degli appunti](https://learn.microsoft.com/en-us/windows/win32/dataxchg/clipboard-formats)
+che permettono a un'applicazione di marcare un contenuto come privato.
+pastepad li rispetta tutti e quattro e non salva ciò che ne porta uno:
 
 - `Clipboard Viewer Ignore`
 - `ExcludeClipboardContentFromMonitorProcessing`
-- `CanIncludeInClipboardHistory` set to 0
-- `CanUploadToCloudClipboard` set to 0
+- `CanIncludeInClipboardHistory` impostato a 0
+- `CanUploadToCloudClipboard` impostato a 0
 
-KeePass, Bitwarden, Windows Credential Manager and Chrome's incognito
-mode all set these. So passwords copied from a password manager do not
-end up in the history.
+KeePass, Bitwarden, Gestione credenziali di Windows e la modalità in
+incognito di Chrome li impostano tutti. Quindi le password copiate da un
+gestore di password non finiscono nella cronologia.
 
-A password you type by hand and copy yourself is *not* covered — nothing
-marks it as private. The pause button exists for those moments.
+Una password che scrivi a mano e copi tu *non* è coperta — niente la
+marca come privata. Il pulsante di pausa esiste per quei momenti.
 
-## Recommendations
+## Raccomandazioni
 
-- Don't put the folder in OneDrive, Dropbox or any sync service. A
-  plain-text record of everything you copy does not belong in the cloud.
-- Empty the history regularly if you share the machine.
-- Pause capture before working with anything sensitive.
-- On a managed or work computer, check with whoever handles security
-  policy before installing this.
+- Non mettere la cartella in OneDrive, Dropbox o in un servizio di
+  sincronizzazione. Un registro in chiaro di tutto ciò che copi non deve
+  stare nel cloud.
+- Svuota la cronologia regolarmente se condividi il computer.
+- Metti in pausa la cattura prima di lavorare con qualcosa di sensibile.
+- Su un computer aziendale o gestito, parla con chi si occupa delle
+  regole di sicurezza prima di installarlo.
 
-## About the executable
+## La rete
 
-The `.exe` is not code-signed — a certificate costs several hundred
-dollars a year. Windows Defender will warn on first run; this is a
-[known PyInstaller false positive](https://github.com/pyinstaller/pyinstaller/issues/6754).
+L'app fa una sola richiesta di rete: una volta al giorno chiede alla API
+di GitHub qual è l'ultima release del progetto originale, per avvisare
+se c'è una versione nuova. Non invia dati e non scarica niente. Si
+spegne in Aspetto.
 
-If you would rather not trust a binary from the internet: the release
-workflow builds it on a clean GitHub runner from the source in this
-repository, the build log is public, and every release ships a SHA256
-checksum. Or build it yourself with `build.bat` — it takes two minutes.
+## L'eseguibile
 
-## Reporting a problem
+L'`.exe` non è firmato. Windows avviserà alla prima esecuzione: succede
+con qualsiasi eseguibile non firmato finché non accumula download.
 
-Open an issue. If it is something you would rather not post publicly,
-say so in the issue without details and I will follow up.
+Se preferisci non fidarti di un binario preso da internet, compilalo tu
+dai sorgenti di questo repository con `.\pubblica.ps1`: bastano il .NET
+10 SDK e un paio di minuti.
+
+## Segnalare un problema
+
+Apri una issue. Se è qualcosa che preferisci non pubblicare, dillo nella
+issue senza dettagli e verrai ricontattato.

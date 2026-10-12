@@ -1,225 +1,227 @@
 <div align="center">
 
-<img src="docs/banner.svg" alt="pastepad — a clipboard manager for Windows" width="880">
+<img src="docs/banner.svg" alt="pastepad — un gestore di appunti per Windows" width="880">
 
 <hr>
 
-[![version](https://img.shields.io/github/v/release/Josemgu/pastepad?style=flat-square&label=version&color=2DD4A7&labelColor=1B1B1F)](https://github.com/Josemgu/pastepad/releases/latest)
-[![build](https://img.shields.io/github/actions/workflow/status/Josemgu/pastepad/release.yml?style=flat-square&label=build&labelColor=1B1B1F)](https://github.com/Josemgu/pastepad/actions/workflows/release.yml)
-![windows](https://img.shields.io/badge/windows-10%20%7C%2011-0078D4?style=flat-square&labelColor=1B1B1F)
-[![licence](https://img.shields.io/github/license/Josemgu/pastepad?style=flat-square&label=licence&color=6B6B75&labelColor=1B1B1F)](LICENSE)
-
-[English](README.md) · [Español](docs/README.es.md)
-
-**A clipboard manager for Windows.**
-
-[![Download for Windows](https://img.shields.io/badge/Download%20for%20Windows-2DD4A7?style=for-the-badge&logo=windows&logoColor=052E23&labelColor=2DD4A7)](https://github.com/Josemgu/pastepad/releases/latest)
+**Un gestore di appunti per Windows, in italiano.**
 
 </div>
 
-Windows keeps 25 clipboard entries and forgets them when you restart.
-pastepad keeps 80, plus whatever you file into your own folders, which
-never expire.
+Windows conserva 25 voci degli appunti e le dimentica al riavvio.
+pastepad ne conserva 80, più tutto ciò che archivi nelle tue cartelle,
+che non scade mai.
 
-Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd> anywhere. Type two
-letters, hit <kbd>Enter</kbd>, and the text lands in the field you were
-working in.
+Premi <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd> ovunque. Scrivi due
+lettere, premi <kbd>Invio</kbd>, e il testo finisce nel campo in cui
+stavi lavorando.
 
-<div align="center">
+Questa è una copia in italiano di
+[pastepad di Josemgu](https://github.com/Josemgu/pastepad): interfaccia,
+codice e documentazione sono stati tradotti. Nomi dei file di dati e
+chiavi dei JSON sono cambiati, quindi i dati non sono compatibili con
+quelli della versione originale.
 
-<img src="docs/capturas/en-flujo.gif" alt="Pressing Ctrl+Shift+V over a draft, typing two letters to filter, and the saved text landing at the cursor" width="620">
+## Cosa fa
 
-<img src="docs/capturas/en-saved.png" alt="Saved tab" width="270">
-<img src="docs/capturas/en-appearance.png" alt="Appearance dialog" width="270">
+Tutto ciò che copi compare in Recenti, testo e schermate allo stesso
+modo. Fissa ciò che usi spesso e resta in alto.
 
-</div>
+I testi salvati vivono in cartelle a cui dai tu il nome, e uno con dei
+`[[campi]]` dentro diventa un modello — pastepad li chiede prima di
+incollare.
 
-## What it does
+Ogni testo salvato è una di cinque cose — segnalibro, modello, email,
+prompt IA o nota — e Salvati tiene ognuna nel suo gruppo richiudibile.
+pastepad propone quella adatta a ciò che hai scritto e tu la cambi se ha
+sbagliato.
 
-Everything you copy shows up under Recent, text and screenshots alike.
-Pin what you use often and it stays on top.
+Email e prompt IA sono i due che non indovina mai, ed è proprio per
+questo che puoi sceglierli: tutti e due sono testo normale senza niente
+dentro che dica cosa sono. Cinque corpi di email che iniziano tutti con
+"Ciao a tutti," erano cinque note in più, e una raccolta di prompt
+spariva in mezzo a loro.
 
-Saved texts live in folders you name, and one with `[[fields]]` in it
-becomes a template — pastepad asks for them before pasting.
+Copia un indirizzo web da solo e la riga mostra il dominio e una voce
+Apri nel browser nel suo menu. Il clic continua a incollare, come tutto
+il resto della cronologia.
 
-Every saved text is one of five things — bookmark, template, email, AI
-prompt or note — and Saved keeps each in its own collapsible group.
-pastepad proposes the one that fits what you wrote and you change it if
-it got it wrong.
+**Un segnalibro che hai salvato invece si apre.** Salvare un indirizzo
+come segnalibro significa che vuoi visitarlo, quindi il clic fa quello;
+copiarlo e incollarlo stanno nel menu dei tre punti. Se preferisci che
+incolli, cambia il suo tipo in Nota.
 
-Emails and AI prompts are the two it never guesses, which is exactly why
-you can pick them: both are ordinary text with nothing inside them that
-says what they are. Five email bodies that all open with "Hi team," were
-five more notes, and a library of prompts disappeared among them.
+La scheda Note è un blocco a parte: ciò che scrivi lì resta lì e non si
+incolla. Si apre come una lavagna dentro il pannello e si salva a ogni
+tasto.
 
-Copy a web address on its own and the row shows the domain and an Open
-in browser entry in its menu. Clicking still pastes, like everything
-else in the history.
+La ricerca copre Recenti e Salvati. Le parole possono arrivare in
+qualsiasi ordine e gli accenti si ignorano.
 
-**A bookmark you saved opens instead.** Saving an address as a bookmark
-means you want to visit it, so clicking it does that; copying and pasting
-it are in the three-dot menu. If you would rather it pasted, change its
-type to Note.
+I gestori di password marcano il loro contenuto come privato, e pastepad
+non lo registra mai. KeePass, Bitwarden, Gestione credenziali di Windows
+e le finestre in incognito di Chrome lo fanno tutti.
 
-Search covers both tabs. Words can come in any order and accents are
-ignored.
+## Modelli
 
-Password managers mark their content as private, and pastepad never
-records it. KeePass, Bitwarden, Windows Credential Manager and Chrome's
-incognito windows all do this.
+Tutto ciò che metti tra `[[doppie parentesi quadre]]` diventa uno spazio
+da riempire. La riga è marcata perché si capisca a colpo d'occhio quali
+chiederanno, e i modelli stanno in un loro gruppo sotto Salvati.
 
-## Templates
+**Crearne uno**
 
-Anything you wrap in `[[double brackets]]` becomes a blank to fill in.
-The row is marked `{}` so you can tell at a glance which ones will ask,
-and templates sit in their own group under Saved.
+1. Apri il pannello, vai su **Salvati**, premi **Nuovo**.
+2. Scrivi il testo, e metti le `[[parentesi]]` intorno a ciò che cambia
+   ogni volta.
+3. Scegli una cartella sotto **Salva in** e premi **Salva**.
 
-**Making one**
+**Usarlo**
 
-1. Open the panel, go to **Saved**, press **New**.
-2. Write the text, and put `[[brackets]]` around whatever changes each
-   time.
-3. Choose a folder under **Save into** and press **Add**.
+Clicca nel campo che vuoi riempire, apri il pannello, e clicca il
+modello. Compare **Completa prima di incollare** con una casella per
+ogni spazio. Riempile e premi **Incolla**.
 
-**Using it**
-
-Click into the field you want to fill, open the panel, and click the
-template. **Fill in before pasting** appears with one box per blank.
-Fill them and press **Paste**.
-
-For details you retype constantly:
-
-```
-Name: [[name]]
-Surname: [[surname]]
-Date of birth: [[date of birth]]
-```
-
-For an email:
+Per i dati che riscrivi di continuo:
 
 ```
-Hi [[name]], following up on [[topic]] from [[date]].
+Nome: [[nome]]
+Cognome: [[cognome]]
+Data di nascita: [[data di nascita]]
 ```
 
-**Emails: one folder for subjects, one for bodies**
+Per un'email:
 
-In Gmail and Outlook the subject and the body are two separate fields,
-and pastepad pastes into one field at a time — the one your cursor was
-in. Rather than fight that, give each one its own folder:
+```
+Ciao [[nome]], ti riscrivo a proposito di [[argomento]] del [[data]].
+```
 
-1. Make a folder called **Subjects** and another called **Bodies**.
-2. Click the subject field, open the panel, pick from **Subjects**.
-3. Click the body, open the panel again, pick from **Bodies**.
+**Email: una cartella per gli oggetti, una per i corpi**
 
-Two pastes, and you choose the body you want each time instead of being
-tied to one. Folders show as chips along the top, so each list is one
-click away.
+In Gmail e Outlook l'oggetto e il corpo sono due campi separati, e
+pastepad incolla in un campo alla volta — quello in cui stava il
+cursore. Invece di combattere, dai a ognuno la sua cartella:
 
-## Using it
+1. Crea una cartella chiamata **Oggetti** e un'altra chiamata **Corpi**.
+2. Clicca nel campo dell'oggetto, apri il pannello, scegli da
+   **Oggetti**.
+3. Clicca nel corpo, riapri il pannello, scegli da **Corpi**.
 
-| Key | Action |
+Due incolla, e scegli ogni volta il corpo che vuoi invece di essere
+legato a uno. Le cartelle possono mostrarsi come etichette in alto, così
+ogni lista è a un clic.
+
+## Come si usa
+
+| Tasto | Azione |
 |:--|:--|
-| <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>V</kbd> | Open the panel at the cursor |
-| Type | Filter as you go |
-| <kbd>↑</kbd> <kbd>↓</kbd> | Move through results |
-| <kbd>Enter</kbd> | Paste |
-| <kbd>Esc</kbd> | Close |
+| <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>V</kbd> | Apre il pannello vicino al cursore |
+| Scrivere | Filtra mentre scrivi |
+| <kbd>↑</kbd> <kbd>↓</kbd> | Si muove tra i risultati |
+| <kbd>Invio</kbd> | Incolla |
+| <kbd>Esc</kbd> | Chiude |
 
-Click into the field you want to fill before opening the panel. pastepad
-remembers which window had focus and gives it back before pasting.
+Clicca nel campo che vuoi riempire prima di aprire il pannello. pastepad
+ricorda quale finestra aveva il focus e glielo restituisce prima di
+incollare.
 
-The X only hides the panel. To close it for good, use Exit from the tray
-icon.
+La X nasconde soltanto il pannello. Per chiuderlo davvero, usa Esci
+dall'icona nell'area di notifica.
 
-## Installing
+## Installazione
 
-Download the installer from the
-[latest release](https://github.com/Josemgu/pastepad/releases/latest)
-and run it. It weighs 47 MB.
+Serve il [.NET 10 SDK](https://dotnet.microsoft.com/download). Dalla
+radice del repo:
 
-```
-program   %LOCALAPPDATA%\Programs\pastepad
-data      %LOCALAPPDATA%\pastepad
-uninstall Settings → Apps → Installed apps
+```powershell
+.\pubblica.ps1
 ```
 
-It installs for your user only, so there is no administrator prompt —
-not when installing and not when updating. Uninstalling removes the
-program and leaves your data alone, which is why the two are in separate
-folders.
-
-pastepad tells you when a new version is out and updates without losing
-what you just copied.
-
-## The Windows warning
-
-The first run shows *"Windows protected your PC"*. Choose **More info**,
-then **Run anyway**.
-
-SmartScreen does not read the licence or the source. It looks for a
-signature and for download history, and a new unsigned program has
-neither. A free certificate from [SignPath](https://signpath.org/) is
-being requested, which is what makes the warning go away for good.
-
-Every release ships a `SHA256.txt` so you can check your download
-matches the build.
-
-## How it's built
-
-C# on .NET 10 with WinUI 3. The clipboard, the global shortcut, the tray
-icon and the focus handoff are Win32 calls; the rest is XAML. The data
-layer has 99 tests that run without opening a window.
-
-Versions up to 3.0.1 were written in Python with Flet. That was
-abandoned because the global shortcut stopped answering after a few
-presses. The old code lives in the `ultima-version-python` tag, and
-[PLAN.md](PLAN.md) and [TRASPASO.md](TRASPASO.md) record the reasoning.
-
-## Your data
-
-In `%LOCALAPPDATA%\pastepad`, as plain files you can copy or back up:
+Compila in Release e copia il programma in
+`%LOCALAPPDATA%\Programs\pastepad`. Si avvia da `pastepad.exe` in quella
+cartella; l'eseguibile da solo non basta, serve l'intera cartella.
 
 ```
-snippets.json     saved texts and folders
-historial.json    automatic history
-config.json       language, theme, colour, shortcut, size
-imagenes\         copied screenshots
+programma   %LOCALAPPDATA%\Programs\pastepad
+dati        %LOCALAPPDATA%\pastepad
 ```
 
-The history is not encrypted. Password-manager content is dropped on its
-own, but anything else you copy does get written down. The broom in the
-footer empties the history and the pause button stops capture. See
+Si installa solo per il tuo utente, quindi non chiede l'amministratore.
+Programma e dati stanno in cartelle separate apposta: togliere il
+programma lascia stare i tuoi dati.
+
+Chi preferisce un installer in un solo file può costruirlo con
+[Inno Setup](https://jrsoftware.org/isinfo.php) a partire da
+`installer/pastepad.iss`.
+
+## L'avviso di Windows
+
+Un eseguibile non firmato fa comparire *"PC protetto da Windows"* la
+prima volta. Scegli **Ulteriori informazioni**, poi **Esegui comunque**.
+
+SmartScreen non legge la licenza né il sorgente. Cerca una firma e una
+storia di download, e un programma nuovo non firmato non ha né l'una né
+l'altra.
+
+## Com'è fatto
+
+C# su .NET 10 con WinUI 3. Gli appunti, la scorciatoia globale, l'icona
+nell'area di notifica e il passaggio del focus sono chiamate Win32; il
+resto è XAML. Lo strato dei dati ha 118 prove che girano senza aprire
+una finestra.
+
+Le versioni fino alla 3.0.1 erano scritte in Python con Flet. Fu
+abbandonato perché la scorciatoia globale smetteva di rispondere dopo
+poche pressioni. Il codice vecchio vive nel tag `ultima-version-python`,
+e [PIANO.md](PIANO.md) e [PASSAGGIO.md](PASSAGGIO.md) raccontano il
+ragionamento.
+
+## I tuoi dati
+
+In `%LOCALAPPDATA%\pastepad`, come file semplici che puoi copiare o
+mettere in backup:
+
+```
+snippets.json     testi salvati e cartelle
+cronologia.json   cronologia automatica
+note.json         le note del blocco
+config.json       tema, colore, scorciatoia, dimensione
+immagini\         schermate copiate
+```
+
+La cronologia non è cifrata. Il contenuto dei gestori di password si
+scarta da solo, ma tutto il resto che copi viene scritto. La scopa nel
+piede svuota la cronologia e il pulsante di pausa ferma la cattura. Vedi
 [SECURITY.md](SECURITY.md).
 
-Do not keep the folder inside OneDrive. Sync can lock the files while
-pastepad is writing them.
+Non tenere la cartella dentro OneDrive. La sincronizzazione può bloccare
+i file mentre pastepad li scrive.
 
-## Making it yours
+## Personalizzarlo
 
-Four languages: English, Español, Português, Français.
+Dodici sfondi e diciotto colori di accento. "Come Windows" cambia il
+tema dal vivo quando lo fa il sistema. Ogni accento è stato verificato
+per il contrasto con il testo che ci si disegna sopra.
 
-Twelve backgrounds and eighteen accent colours. "Follow Windows" changes
-the theme live when the system does. Every accent was checked for
-contrast against the text drawn on it.
-
-The panel resizes by dragging its edges and remembers where you left it.
+Il pannello si ridimensiona trascinandone i bordi e ricorda dove l'hai
+lasciato.
 
 ## Design
 
-The interface was drawn before it was built: 35 SVG mockups in
-[docs/mockups](docs/mockups), with the palette, measurements and
-behaviour in [ESPECIFICACION-UI.md](docs/ESPECIFICACION-UI.md).
+L'interfaccia fu disegnata prima di essere costruita: 35 maquette SVG in
+[docs/mockups](docs/mockups), con la tavolozza, le misure e il
+comportamento in [SPECIFICHE-UI.md](docs/SPECIFICHE-UI.md).
 
-## Why another one
+## Perché un altro
 
-[Ditto](https://github.com/sabrogden/Ditto) and
-[CopyQ](https://github.com/hluk/CopyQ) are good programs with years of
-work behind them. This one exists because my daily work needed two
-things neither does out of the box: fill-in templates for notes I retype
-constantly, and rich-text paste that survives into Outlook.
+[Ditto](https://github.com/sabrogden/Ditto) e
+[CopyQ](https://github.com/hluk/CopyQ) sono buoni programmi con anni di
+lavoro alle spalle. Questo esiste perché all'autore servivano due cose
+che nessuno dei due fa così com'è: modelli da riempire per le note che
+si riscrivono di continuo, e incolla con formato che sopravvive fino a
+Outlook.
 
 ---
 
 <div align="center">
-<sub>by <a href="https://github.com/Josemgu">Josemgu</a></sub>
+<sub>progetto originale di <a href="https://github.com/Josemgu">Josemgu</a></sub>
 </div>

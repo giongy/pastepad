@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            // Sempre con --dati: senza, l'app usa %LOCALAPPDATA%\pastepad
+            // e registra l'avvio automatico su questa build di prova.
+            "name": "pastepad (dati di prova)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "compila",
+            "program": "${workspaceFolder}/csharp/Pastepad.App/bin/x64/Debug/net10.0-windows10.0.26100.0/win-x64/pastepad.exe",
+            "args": [
+                "--dati",
+                "${env:TEMP}\\pastepad-prova"
+            ],
+            "cwd": "${workspaceFolder}/csharp/Pastepad.App/bin/x64/Debug/net10.0-windows10.0.26100.0/win-x64",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        }
+    ]
+}

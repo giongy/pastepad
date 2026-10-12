@@ -1,0 +1,867 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Window
+    x:Class="Pastepad.App.Pannello"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Pastepad.App"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="pastepad"
+    mc:Ignorable="d">
+
+    <!--
+        Mica è il materiale di Fluent Design che usa lo stesso Win+V. Ciò
+        che si vede dentro il pannello è la tavolozza delle specifiche,
+        che è opaca apposta; Mica resta per ciò che sta fuori dagli
+        angoli arrotondati, che altrimenti uscirebbe nero.
+    -->
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <!--
+        Senza raggio e senza bordo propri, apposta.
+
+        Gli angoli li arrotonda Windows sul rettangolo della finestra.
+        Se in più li arrotondiamo qui con un raggio maggiore, la fascia
+        tra le due curve resta non dipinta e lascia vedere ciò che c'è
+        dietro: su uno sfondo chiaro si vedevano due cunei scuri negli
+        angoli in alto. Un solo arrotondamento, e lo mette il sistema.
+
+        Anche il bordo di 1 px lo disegna Windows con la finestra,
+        quindi il nostro serviva solo a raddoppiarlo.
+    -->
+    <Border
+        x:Name="Cornice"
+        Background="{ThemeResource PpSfondo}"
+        BorderThickness="0"
+        CornerRadius="0">
+
+        <Border.Resources>
+            <!--  La riga e l'intestazione di gruppo, scelte per tipo.  -->
+            <DataTemplate x:Key="ModelloRiga" x:DataType="local:Riga">
+                <Border
+                    Background="{x:Bind Sfondo, Mode=OneWay}"
+                    BorderBrush="{x:Bind BordoColore, Mode=OneWay}"
+                    BorderThickness="{x:Bind BordoSpessore, Mode=OneWay}"
+                    CornerRadius="14"
+                    Height="{x:Bind Altezza}"
+                    Padding="{x:Bind Riempimento, Mode=OneWay}"
+                    PointerEntered="Riga_Entra"
+                    PointerExited="Riga_Esce">
+
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!--
+                            La barra bianca di 3 px della riga attiva.
+                            È il segnale di focus che non dipende dal
+                            colore, quindi non si sostituisce con lo
+                            sfondo di accento.
+                        -->
+                        <Rectangle
+                            Grid.Column="0"
+                            Width="3"
+                            Height="28"
+                            Fill="{ThemeResource PpBarraFocus}"
+                            RadiusX="2"
+                            RadiusY="2"
+                            VerticalAlignment="Center"
+                            Visibility="{x:Bind VediBarra, Mode=OneWay}" />
+
+                        <FontIcon
+                            Grid.Column="0"
+                            FontFamily="Segoe Fluent Icons"
+                            FontSize="17"
+                            Foreground="{x:Bind ColoreSpunta, Mode=OneWay}"
+                            Glyph="{x:Bind GlifoSpunta, Mode=OneWay}"
+                            VerticalAlignment="Center"
+                            Visibility="{x:Bind VediSpunta, Mode=OneWay}" />
+
+                        <FontIcon
+                            Grid.Column="1"
+                            FontFamily="Segoe Fluent Icons"
+                            FontSize="15"
+                            Foreground="{x:Bind ColoreIcona, Mode=OneWay}"
+                            Glyph="{x:Bind Icona}"
+                            VerticalAlignment="Center"
+                            Visibility="{x:Bind VediIcona, Mode=OneWay}" />
+
+                        <StackPanel
+                            Grid.Column="2"
+                            Spacing="2"
+                            VerticalAlignment="Center">
+                            <TextBlock
+                                FontWeight="{x:Bind PesoTitolo, Mode=OneWay}"
+                                Foreground="{x:Bind ColoreTitolo, Mode=OneWay}"
+                                Style="{StaticResource PpTestoRiga}"
+                                Text="{x:Bind Titolo}" />
+                            <TextBlock
+                                Foreground="{x:Bind ColoreDettaglio, Mode=OneWay}"
+                                Style="{StaticResource PpSottotitoloRiga}"
+                                Text="{x:Bind Dettaglio}"
+                                Visibility="{x:Bind VediDettaglio}" />
+                        </StackPanel>
+
+                        <FontIcon
+                            Grid.Column="3"
+                            FontFamily="Segoe Fluent Icons"
+                            FontSize="13"
+                            Foreground="{x:Bind ColorePuntina, Mode=OneWay}"
+                            Glyph="&#xE718;"
+                            VerticalAlignment="Center"
+                            Visibility="{x:Bind VediPuntina, Mode=OneWay}" />
+
+                        <Button
+                            Grid.Column="4"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            CornerRadius="13"
+                            FontFamily="Segoe Fluent Icons"
+                            FontSize="15"
+                            Foreground="{x:Bind ColoreMenu, Mode=OneWay}"
+                            Height="26"
+                            MinHeight="26"
+                            MinWidth="26"
+                            Padding="0"
+                            VerticalAlignment="Center"
+                            Visibility="{x:Bind VediMenu, Mode=OneWay}"
+                            Width="26">
+                            <Button.Content>
+                                <TextBlock
+                                    FontFamily="Segoe Fluent Icons"
+                                    FontSize="15"
+                                    Text="&#xE712;" />
+                            </Button.Content>
+                            <Button.Flyout>
+                                <MenuFlyout Placement="Bottom">
+                                    <MenuFlyoutItem
+                                        Click="Menu_Apri"
+                                        Text="{x:Bind TxtApri}"
+                                        Visibility="{x:Bind VediApri}" />
+                                    <MenuFlyoutSeparator Visibility="{x:Bind VediApri}" />
+                                    <MenuFlyoutItem
+                                        Click="Menu_Incolla"
+                                        Text="{x:Bind TxtIncolla}"
+                                        Visibility="{x:Bind VediIncolla}" />
+                                    <MenuFlyoutItem
+                                        Click="Menu_IncollaSemplice"
+                                        Text="{x:Bind TxtIncollaSemplice}"
+                                        Visibility="{x:Bind VediIncolla}" />
+                                    <MenuFlyoutItem Click="Menu_Copia" Text="{x:Bind TxtCopia}" />
+                                    <MenuFlyoutSeparator />
+                                    <MenuFlyoutItem
+                                        Click="Menu_Fissa"
+                                        Text="{x:Bind TestoFissa}"
+                                        Visibility="{x:Bind VediFissa}" />
+                                    <MenuFlyoutItem
+                                        Click="Menu_Modifica"
+                                        Text="{x:Bind TxtModifica}"
+                                        Visibility="{x:Bind VediModifica}" />
+                                    <MenuFlyoutSeparator />
+                                    <MenuFlyoutItem
+                                        Click="Menu_Elimina"
+                                        Foreground="{ThemeResource PpRosso}"
+                                        Text="{x:Bind TxtElimina}" />
+                                </MenuFlyout>
+                            </Button.Flyout>
+                        </Button>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+
+            <!--
+                Senza un Tapped proprio: a chiudere il gruppo pensa
+                Lista_ItemClick. Con tutti e due agganciati ogni clic
+                arrivava due volte, e il secondo leggeva il DataContext
+                di un contenitore che l'Aggiorna del primo aveva già
+                riciclato, quindi chiudeva il gruppo sbagliato.
+            -->
+            <!--
+                Il riquadro di una nota. È un altro modello e non la riga
+                di sempre con più altezza: ciò che cambia non è la
+                dimensione, è che qui si mostrano PIÙ linee del testo.
+                Una nota veloce schiacciata in una riga lascia riquadri
+                che iniziano tutti uguali e non si distinguono tra loro.
+
+                Senza icona di tipo e senza Incolla: in questa scheda
+                sono tutte note e nessuna si incolla.
+            -->
+            <DataTemplate x:Key="ModelloAnnotazione" x:DataType="local:Riga">
+                <Border
+                    Background="{x:Bind SfondoAnnotazione, Mode=OneWay}"
+                    BorderBrush="{x:Bind BordoAnnotazione, Mode=OneWay}"
+                    BorderThickness="2"
+                    CornerRadius="10"
+                    MinHeight="{x:Bind Altezza}"
+                    Padding="16,10,10,14"
+                    PointerEntered="Riga_Entra"
+                    PointerExited="Riga_Esce">
+
+                    <Grid RowSpacing="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!--
+                            La data a DESTRA, come nelle note veloci: la
+                            sinistra è da dove si legge, e lì deve
+                            cominciare il testo.
+                        -->
+                        <Grid Grid.Row="0">
+                            <TextBlock
+                                FontFamily="{StaticResource PpCarattere}"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Foreground="{x:Bind ColoreAnnotazione, Mode=OneWay}"
+                                HorizontalAlignment="Left"
+                                MaxLines="1"
+                                Text="{x:Bind Nome}"
+                                TextTrimming="CharacterEllipsis"
+                                VerticalAlignment="Center"
+                                Visibility="{x:Bind VediNome}" />
+
+                            <TextBlock
+                                FontFamily="{StaticResource PpCarattere}"
+                                FontSize="11"
+                                Foreground="{x:Bind ColoreDataAnnotazione, Mode=OneWay}"
+                                HorizontalAlignment="Right"
+                                Margin="0,0,26,0"
+                                Text="{x:Bind Dettaglio}"
+                                VerticalAlignment="Center" />
+
+                            <Button
+                                Background="Transparent"
+                                BorderThickness="0"
+                                CornerRadius="13"
+                                Foreground="{x:Bind ColoreAnnotazione, Mode=OneWay}"
+                                Height="24"
+                                HorizontalAlignment="Right"
+                                MinHeight="24"
+                                MinWidth="24"
+                                Padding="0"
+                                VerticalAlignment="Top"
+                                Visibility="{x:Bind VediMenu, Mode=OneWay}"
+                                Width="24">
+                                <Button.Content>
+                                    <TextBlock
+                                        FontFamily="Segoe Fluent Icons"
+                                        FontSize="14"
+                                        Text="&#xE712;" />
+                                </Button.Content>
+                                <Button.Flyout>
+                                    <MenuFlyout Placement="Bottom">
+                                        <MenuFlyoutItem Click="Menu_Modifica" Text="{x:Bind TxtModifica}" />
+                                        <MenuFlyoutItem Click="Menu_Copia" Text="{x:Bind TxtCopia}" />
+                                        <MenuFlyoutSeparator />
+                                        <MenuFlyoutItem
+                                            Click="Menu_Elimina"
+                                            Foreground="{ThemeResource PpRosso}"
+                                            Text="{x:Bind TxtElimina}" />
+                                    </MenuFlyout>
+                                </Button.Flyout>
+                            </Button>
+                        </Grid>
+
+                        <!--
+                            Senza PpTestoRiga apposta: quello stile porta
+                            MaxLines=1 e NoWrap, che è ciò che vuole una
+                            riga e il contrario di ciò che vuole un
+                            riquadro. Ereditandolo, il riquadro mostrava
+                            una sola linea e mezzo riquadro vuoto sotto.
+                        -->
+                        <TextBlock
+                            Grid.Row="1"
+                            FontFamily="{StaticResource PpCarattere}"
+                            FontSize="13"
+                            Foreground="{x:Bind ColoreAnnotazione, Mode=OneWay}"
+                            LineHeight="19"
+                            MaxLines="5"
+                            Text="{x:Bind Vista}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="Wrap" />
+                    </Grid>
+                </Border>
+            </DataTemplate>
+
+            <DataTemplate x:Key="ModelloGruppo" x:DataType="local:Gruppo">
+                <Border
+                    Background="Transparent"
+                    CornerRadius="12"
+                    Height="32"
+                    Padding="8,0,12,0">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            Grid.Column="0"
+                            FontFamily="Segoe Fluent Icons"
+                            FontSize="14"
+                            Foreground="{ThemeResource PpMedio}"
+                            Glyph="{x:Bind Chevron}" />
+                        <FontIcon
+                            Grid.Column="1"
+                            FontFamily="Segoe Fluent Icons"
+                            FontSize="14"
+                            Foreground="{x:Bind ColoreIcona}"
+                            Glyph="{x:Bind Icona}" />
+                        <TextBlock
+                            Grid.Column="2"
+                            FontFamily="{StaticResource PpCarattere}"
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Foreground="{ThemeResource PpMedio}"
+                            Text="{x:Bind Etichetta}"
+                            VerticalAlignment="Center" />
+                        <TextBlock
+                            Grid.Column="3"
+                            FontFamily="{StaticResource PpCarattere}"
+                            FontSize="11"
+                            Foreground="{ThemeResource PpTenue}"
+                            Text="{x:Bind Quanti}"
+                            VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+            </DataTemplate>
+
+            <local:SelettoreDiRiga
+                x:Key="SelettoreRiga"
+                DiAnnotazione="{StaticResource ModelloAnnotazione}"
+                DiRiga="{StaticResource ModelloRiga}"
+                DiGruppo="{StaticResource ModelloGruppo}" />
+        </Border.Resources>
+
+        <Grid>
+            <Grid.KeyboardAccelerators>
+                <!--  Esc nasconde il pannello, come fa lo stesso Win+V.  -->
+                <KeyboardAccelerator Invoked="Escape_Invoked" Key="Escape" />
+            </Grid.KeyboardAccelerators>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!--  ======================================== intestazione  -->
+            <Grid Grid.Row="0" Margin="16,8,8,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!--
+                    La fascia da cui si trascina la finestra. Va solo
+                    nella parte sinistra: se coprisse i tre pulsanti,
+                    Windows si terrebbe i loro clic come se fossero
+                    della barra del titolo.
+                -->
+                <Border
+                    x:Name="ZonaTrascinamento"
+                    Grid.Column="0"
+                    Background="Transparent" />
+
+                <StackPanel
+                    Grid.Column="0"
+                    Orientation="Horizontal"
+                    Spacing="12"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        x:Name="EtichettaScorciatoia"
+                        FontFamily="{StaticResource PpCarattere}"
+                        FontSize="11"
+                        Foreground="{ThemeResource PpTenue}"
+                        Text="Ctrl + Shift + V" />
+                    <TextBlock
+                        x:Name="AvvisoPausa"
+                        FontFamily="{StaticResource PpCarattere}"
+                        FontSize="11"
+                        FontWeight="SemiBold"
+                        Foreground="{ThemeResource PpRosso}"
+                        Text="● In pausa"
+                        Visibility="Collapsed" />
+                </StackPanel>
+
+                <StackPanel
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    Spacing="10">
+                    <Button
+                        x:Name="PulsantePausa"
+                        Click="Pausa_Click"
+                        Content="&#xE769;"
+                        Style="{StaticResource PpIconaIntestazione}"
+                        ToolTipService.ToolTip="Metti in pausa la cattura" />
+                    <Button
+                        x:Name="PulsanteAspetto"
+                        Click="Aspetto_Click"
+                        Content="&#xE790;"
+                        Style="{StaticResource PpIconaIntestazione}"
+                        ToolTipService.ToolTip="Aspetto" />
+                    <Button
+                        x:Name="PulsanteChiudi"
+                        Click="Chiudi_Click"
+                        Content="&#xE8BB;"
+                        Style="{StaticResource PpIconaIntestazione}"
+                        ToolTipService.ToolTip="Chiudi" />
+                </StackPanel>
+            </Grid>
+
+            <!--  ======================================= barra di ricerca  -->
+            <Border
+                x:Name="CorniceBarraRicerca"
+                Grid.Row="1"
+                Background="{ThemeResource PpElevato}"
+                BorderBrush="{ThemeResource PpElevato}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Height="42"
+                Margin="16,8,16,0"
+                Padding="14,0,12,0">
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon
+                        Grid.Column="0"
+                        FontFamily="Segoe Fluent Icons"
+                        FontSize="14"
+                        Foreground="{ThemeResource PpTenue}"
+                        Glyph="&#xE721;" />
+                    <TextBox
+                        x:Name="BarraRicerca"
+                        Grid.Column="1"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        FontFamily="{StaticResource PpCarattere}"
+                        FontSize="13"
+                        Foreground="{ThemeResource PpTesto}"
+                        GotFocus="BarraRicerca_Focus"
+                        KeyDown="BarraRicerca_KeyDown"
+                        LostFocus="BarraRicerca_Focus"
+                        MinHeight="0"
+                        Padding="0"
+                        PlaceholderForeground="{ThemeResource PpTenue}"
+                        PlaceholderText="Cerca ovunque"
+                        TextChanged="BarraRicerca_TextChanged"
+                        VerticalAlignment="Center">
+                        <TextBox.Resources>
+                            <!--
+                                Il TextBox porta i propri sfondi per
+                                stato. Senza spegnerli, la barra di
+                                ricerca diventava grigia al passaggio del
+                                mouse dentro una casella che ha già il
+                                suo colore.
+                            -->
+                            <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+                            <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+                            <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+                            <SolidColorBrush x:Key="TextControlBorderBrush" Color="Transparent" />
+                            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="Transparent" />
+                            <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="Transparent" />
+                            <Thickness x:Key="TextControlBorderThemeThickness">0</Thickness>
+                            <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+                        </TextBox.Resources>
+                    </TextBox>
+                </Grid>
+            </Border>
+
+            <!--  ============================================== schede  -->
+            <Grid
+                Grid.Row="2"
+                ColumnSpacing="4"
+                Margin="16,10,16,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button
+                    x:Name="TabRecenti"
+                    Grid.Column="0"
+                    Click="Tab_Recenti"
+                    Content="Recenti"
+                    HorizontalAlignment="Stretch"
+                    Style="{StaticResource PpScheda}" />
+                <Button
+                    x:Name="TabSalvati"
+                    Grid.Column="1"
+                    Click="Tab_Salvati"
+                    Content="Salvati"
+                    HorizontalAlignment="Stretch"
+                    Style="{StaticResource PpScheda}" />
+                <Button
+                    x:Name="TabNote"
+                    Grid.Column="2"
+                    Click="Tab_Note"
+                    Content="Note"
+                    HorizontalAlignment="Stretch"
+                    Style="{StaticResource PpScheda}" />
+            </Grid>
+
+            <!--  ================================== barra delle cartelle  -->
+            <Grid
+                x:Name="BarraCartelle"
+                Grid.Row="3"
+                Margin="16,8,16,0"
+                Visibility="Collapsed">
+
+                <!--  Modo menu: un solo pulsante con l'elenco a discesa dietro.  -->
+                <Button
+                    x:Name="PulsanteCartella"
+                    Background="{ThemeResource PpRiquadro}"
+                    BorderThickness="0"
+                    CornerRadius="10"
+                    Height="34"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    MinHeight="34"
+                    Padding="14,0">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <!--
+                            La cartella va sempre in ambra, accesa o
+                            no: è il segnale da cui si riconosce a
+                            colpo d'occhio.
+                        -->
+                        <FontIcon
+                            x:Name="IconaCartella"
+                            Grid.Column="0"
+                            FontFamily="Segoe Fluent Icons"
+                            FontSize="14"
+                            Foreground="{ThemeResource PpAmbra}"
+                            Glyph="&#xE8B7;" />
+                        <TextBlock
+                            x:Name="NomeCartella"
+                            Grid.Column="1"
+                            FontFamily="{StaticResource PpCarattere}"
+                            FontSize="12"
+                            Foreground="{ThemeResource PpMedio}"
+                            Text="Tutte le cartelle"
+                            TextTrimming="CharacterEllipsis"
+                            VerticalAlignment="Center" />
+                        <FontIcon
+                            x:Name="ChevronCartella"
+                            Grid.Column="2"
+                            FontFamily="Segoe Fluent Icons"
+                            FontSize="12"
+                            Foreground="{ThemeResource PpMedio}"
+                            Glyph="&#xE70D;" />
+                    </Grid>
+                    <Button.Flyout>
+                        <MenuFlyout x:Name="MenuCartelle" Placement="Bottom" />
+                    </Button.Flyout>
+                </Button>
+
+                <!--  Modo tessere: una capsula per cartella, con scorrimento.  -->
+                <ScrollViewer
+                    x:Name="TessereCartelle"
+                    HorizontalScrollBarVisibility="Hidden"
+                    HorizontalScrollMode="Enabled"
+                    VerticalScrollBarVisibility="Disabled"
+                    VerticalScrollMode="Disabled"
+                    Visibility="Collapsed">
+                    <StackPanel
+                        x:Name="ListaTessere"
+                        Orientation="Horizontal"
+                        Spacing="4" />
+                </ScrollViewer>
+            </Grid>
+
+            <!--  =============================================== lista  -->
+            <Grid Grid.Row="4">
+                <ListView
+                    x:Name="Lista"
+                    IsItemClickEnabled="True"
+                    ItemClick="Lista_ItemClick"
+                    ItemTemplateSelector="{StaticResource SelettoreRiga}"
+                    KeyDown="Lista_KeyDown"
+                    Padding="16,12,16,4"
+                    SelectionChanged="Lista_SelectionChanged"
+                    SelectionMode="Single">
+                    <ListView.Resources>
+                        <!--
+                            La riga dipinge il proprio sfondo. Se il
+                            ListViewItem dipingesse il suo sopra,
+                            l'accento della riga attiva resterebbe
+                            coperto dal grigio di selezione del sistema.
+                        -->
+                        <SolidColorBrush x:Key="ListViewItemBackground" Color="Transparent" />
+                        <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="Transparent" />
+                        <SolidColorBrush x:Key="ListViewItemBackgroundPressed" Color="Transparent" />
+                        <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="Transparent" />
+                        <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="Transparent" />
+                        <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed" Color="Transparent" />
+                        <SolidColorBrush x:Key="ListViewItemSelectionIndicatorBrush" Color="Transparent" />
+                    </ListView.Resources>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0,0,0,6" />
+                            <Setter Property="MinHeight" Value="0" />
+                            <Setter Property="MinWidth" Value="0" />
+                            <Setter Property="CornerRadius" Value="14" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                            <Setter Property="Background" Value="Transparent" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                </ListView>
+
+                <!--
+                    ================================== la lavagna
+
+                    La nota aperta, nello spazio della lista e non in un
+                    dialogo né in una finestra a parte. È ciò che ha
+                    chiesto l'utente: «una lavagna che chiamo con il
+                    comando di pastepad», che si nasconde con il pannello
+                    e torna com'era.
+
+                    Che stia qui dentro e non sopra l'intero pannello è
+                    ciò che lascia la barra di ricerca in vista mentre
+                    scrivi: si può cercare altro senza chiudere la nota,
+                    e svuotando la ricerca la nota resta dov'era.
+
+                    E siccome nascondere il pannello non distrugge
+                    l'albero XAML, ciò che è scritto resta nella casella
+                    quando lo si richiama: non c'è niente da ripristinare.
+                -->
+                <Grid
+                    x:Name="Lavagna"
+                    Margin="16,4,16,4"
+                    Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button
+                            x:Name="LavagnaIndietro"
+                            Grid.Column="0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Click="Lavagna_Indietro"
+                            CornerRadius="13"
+                            Height="26"
+                            MinHeight="26"
+                            MinWidth="26"
+                            Padding="0"
+                            Width="26">
+                            <TextBlock
+                                FontFamily="Segoe Fluent Icons"
+                                FontSize="14"
+                                Text="&#xE72B;" />
+                        </Button>
+
+                        <TextBox
+                            x:Name="LavagnaNome"
+                            Grid.Column="1"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            FontFamily="{StaticResource PpCarattere}"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Margin="4,0,4,0"
+                            TextChanged="Lavagna_Cambio"
+                            VerticalAlignment="Center" />
+
+                        <Button
+                            x:Name="LavagnaElimina"
+                            Grid.Column="2"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Click="Lavagna_Elimina"
+                            CornerRadius="13"
+                            Foreground="{ThemeResource PpRosso}"
+                            Height="26"
+                            MinHeight="26"
+                            MinWidth="26"
+                            Padding="0"
+                            Width="26">
+                            <TextBlock
+                                FontFamily="Segoe Fluent Icons"
+                                FontSize="14"
+                                Text="&#xE74D;" />
+                        </Button>
+                    </Grid>
+
+                    <!--  La barra di formato, sopra la nota.  -->
+                    <ContentControl
+                        x:Name="LavagnaBarra"
+                        Grid.Row="1"
+                        HorizontalAlignment="Left"
+                        Margin="0,0,0,8" />
+
+                    <Border
+                        Grid.Row="2"
+                        Background="{ThemeResource PpAccento}"
+                        CornerRadius="10"
+                        Padding="12,10,8,4">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <RichEditBox
+                                x:Name="LavagnaTesto"
+                                Grid.Row="0"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                FontFamily="{StaticResource PpCarattere}"
+                                IsSpellCheckEnabled="False"
+                                TextChanged="Lavagna_Cambio"
+                                VerticalAlignment="Stretch">
+                                <RichEditBox.Resources>
+                                    <!--
+                                        Come la barra di ricerca: il
+                                        controllo porta i propri sfondi e
+                                        i propri colori del testo per
+                                        stato, e vincono su ciò che gli
+                                        si mette da fuori. Senza
+                                        spegnerli, la nota usciva come
+                                        una casella scura DENTRO il
+                                        riquadro giallo.
+                                    -->
+                                    <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBorderBrush" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="Transparent" />
+                                    <Thickness x:Key="TextControlBorderThemeThickness">0</Thickness>
+                                    <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+                                </RichEditBox.Resources>
+                            </RichEditBox>
+
+                            <!--
+                                Il segno di «fatto». Non serve per
+                                salvare —quello succede già a ogni
+                                tasto— e per questo non dice «Salva»:
+                                dice che hai finito e ti riporta alla
+                                lista. Un pulsante che promette di
+                                salvare dove è già salvato insegna a
+                                diffidare del resto.
+                            -->
+                            <Button
+                                x:Name="LavagnaFatto"
+                                Grid.Row="1"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Click="Lavagna_Indietro"
+                                CornerRadius="14"
+                                Foreground="{ThemeResource PpSopra}"
+                                Height="28"
+                                HorizontalAlignment="Right"
+                                MinHeight="28"
+                                MinWidth="28"
+                                Padding="0"
+                                Width="28">
+                                <TextBlock
+                                    FontFamily="Segoe Fluent Icons"
+                                    FontSize="15"
+                                    Text="&#xE73E;" />
+                            </Button>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!--  Lo spazio quando non c'è niente da mostrare.  -->
+                <StackPanel
+                    x:Name="Vuoto"
+                    HorizontalAlignment="Center"
+                    Spacing="16"
+                    VerticalAlignment="Center"
+                    Visibility="Collapsed">
+                    <FontIcon
+                        x:Name="IconaVuoto"
+                        FontFamily="Segoe Fluent Icons"
+                        FontSize="76"
+                        Foreground="{ThemeResource PpTenue}"
+                        Glyph="&#xE77F;" />
+                    <TextBlock
+                        x:Name="TestoVuoto"
+                        FontFamily="{StaticResource PpCarattere}"
+                        FontSize="12"
+                        Foreground="{ThemeResource PpTenue}"
+                        MaxWidth="240"
+                        Text="Copia qualcosa e apparirà qui"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+
+            <!--
+                ============================================== avviso
+
+                Una fascia dentro il pannello e non un dialogo: ciò che
+                si avvisa qui non merita di interrompere. Serve per gli
+                errori —in rosso— e per la versione nuova —in accento e
+                con un pulsante accanto—, che è lo stesso posto perché è
+                lo stesso gesto: venirlo a sapere senza essere fermati.
+            -->
+            <StackPanel Grid.Row="5" Margin="16,0,16,8">
+                <TextBlock
+                    x:Name="Avviso"
+                    FontFamily="{StaticResource PpCarattere}"
+                    FontSize="11"
+                    Foreground="{ThemeResource PpRosso}"
+                    TextWrapping="Wrap"
+                    Visibility="Collapsed" />
+                <HyperlinkButton
+                    x:Name="AvvisoAzione"
+                    Click="AvvisoAzione_Click"
+                    FontFamily="{StaticResource PpCarattere}"
+                    FontSize="11"
+                    Margin="0,2,0,0"
+                    MinHeight="0"
+                    Padding="0"
+                    Visibility="Collapsed" />
+            </StackPanel>
+
+            <!--  =============================================== piede  -->
+            <StackPanel Grid.Row="6">
+                <!--
+                    La linea delle maquette: separa il piede dalla lista
+                    senza dovergli dare uno sfondo diverso.
+                -->
+                <Border
+                    Background="{ThemeResource PpBordo}"
+                    Height="1"
+                    Margin="16,0,16,12" />
+                <Grid
+                    x:Name="Piede"
+                    ColumnSpacing="8"
+                    Margin="16,0,16,12" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
